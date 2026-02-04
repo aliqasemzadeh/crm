@@ -17,7 +17,7 @@ class Logout extends Component
         session()->regenerateToken();
 
         Flux::toast(
-            heading: __('main.logged_out_successfully'),
+            text: __('main.logged_out_successfully'),
             variant: 'success',
         );
 
