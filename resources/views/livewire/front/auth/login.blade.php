@@ -15,7 +15,7 @@
                         </svg>
                     </div>
 
-                    <span class="text-xl font-semibold text-zinc-800 dark:text-white">flux</span>
+                    <span class="text-xl font-semibold text-zinc-800 dark:text-white">{{ config('app.name') }}</span>
                 </a>
             </div>
 
