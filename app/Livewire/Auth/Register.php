@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password as PasswordRule;
+use Flux\Flux;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -40,7 +41,7 @@ class Register extends Component
         Auth::login($user, true);
 
         // Optionally flash a success message
-        session()->flash('success', __('Registration successful.'));
+        Flux::toast(__('Registration successful.'));
 
         // Redirect to intended location or home
         return $this->redirectIntended(default: '/', navigate: true);

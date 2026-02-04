@@ -1,10 +1,13 @@
 <?php
 
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Route;
 
-Route::livewire('/login', \App\Livewire\Auth\Login::class)->name('login');
-Route::livewire('/register', \App\Livewire\Auth\Register::class)->name('register');
+
+Route::middleware(['guest'])->group( function () {
+    Route::livewire('/login', \App\Livewire\Auth\Login::class)->name('login');
+    Route::livewire('/register', \App\Livewire\Auth\Register::class)->name('register');
+});
+
 Route::livewire('/forget-password', \App\Livewire\Auth\ForgetPassword::class)->name('forget-password');
 Route::livewire('/change-password/{token}', \App\Livewire\Auth\ChangePassword::class)->name('change-password');
 

@@ -4,6 +4,7 @@ namespace App\Livewire\Auth;
 
 use App\Jobs\User\ChangePasswordCodeJob;
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -39,7 +40,7 @@ class ForgetPassword extends Component
 
         ChangePasswordCodeJob::dispatch($this->email, $token);
 
-        session()->flash('success', __('We have emailed your password reset link!'));
+        Flux::toast(__('We have emailed your password reset link!'));
     }
 
     #[Layout('layouts.auth')]

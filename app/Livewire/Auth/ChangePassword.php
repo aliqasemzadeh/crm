@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Models\User;
+use Flux\Flux;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Attributes\Layout;
@@ -53,7 +54,7 @@ class ChangePassword extends Component
 
         DB::table('password_reset_tokens')->where('email', $this->email)->delete();
 
-        session()->flash('success', trans('passwords.reset'));
+        Flux::toast(trans('passwords.reset'));
 
         return $this->redirect(route('login'), navigate: true);
     }
