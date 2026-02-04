@@ -1,5 +1,5 @@
 <div class="space-y-6">
-    <flux:heading class="text-center" size="xl">Welcome back</flux:heading>
+    <flux:heading class="text-center" size="xl">{{ __('Welcome back') }}</flux:heading>
 
     <div class="space-y-4">
         <flux:button class="w-full">
@@ -12,7 +12,7 @@
                 </svg>
             </x-slot>
 
-            Continue with Google
+            {{ __('Continue with Google') }}
         </flux:button>
 
         <flux:button class="w-full">
@@ -29,31 +29,37 @@
                 </svg>
             </x-slot>
 
-            Continue with GitHub
+            {{ __('Continue with GitHub') }}
         </flux:button>
     </div>
 
-    <flux:separator text="or" />
+    <flux:separator text="{{ __('or') }}" />
 
-    <div class="flex flex-col gap-6">
-        <flux:input label="Email" type="email" placeholder="email@example.com" />
+    @if (session('success'))
+        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    <form wire:submit="login" class="flex flex-col gap-6">
+        <flux:input wire:model="email" label="{{ __('Email') }}" type="email" placeholder="email@example.com" />
 
         <flux:field>
             <div class="mb-3 flex justify-between">
-                <flux:label>Password</flux:label>
+                <flux:label>{{ __('Password') }}</flux:label>
 
-                <flux:link href="#" variant="subtle" class="text-sm">Forgot password?</flux:link>
+                <flux:link href="{{ route('forget-password') }}" wire:navigate variant="subtle" class="text-sm">{{ __('Forgot password?') }}</flux:link>
             </div>
 
-            <flux:input type="password" placeholder="Your password" />
+            <flux:input wire:model="password" type="password" placeholder="{{ __('Your password') }}" />
         </flux:field>
 
-        <flux:checkbox label="Remember me for 30 days" />
+        <flux:checkbox wire:model="remember" label="{{ __('Remember me for 30 days') }}" />
 
-        <flux:button variant="primary" class="w-full">Log in</flux:button>
-    </div>
+        <flux:button type="submit" variant="primary" class="w-full">{{ __('Log In') }}</flux:button>
+    </form>
 
     <flux:subheading class="text-center">
-        First time around here? <flux:link href="{{ route('register') }}">Sign up for free</flux:link>
+        {{ __('First time around here?') }} <flux:link href="{{ route('register') }}" wire:navigate>{{ __('Sign up for free') }}</flux:link>
     </flux:subheading>
 </div>

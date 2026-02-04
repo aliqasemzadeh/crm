@@ -43,7 +43,7 @@ class Register extends Component
         session()->flash('success', __('Registration successful.'));
 
         // Redirect to intended location or home
-        return redirect()->intended('/');
+        return $this->redirectIntended(default: '/', navigate: true);
     }
 
     #[Layout('layouts.auth')]

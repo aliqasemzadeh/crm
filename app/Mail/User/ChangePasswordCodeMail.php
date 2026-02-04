@@ -16,7 +16,7 @@ class ChangePasswordCodeMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(public string $email, public string $token)
     {
         //
     }
@@ -27,7 +27,7 @@ class ChangePasswordCodeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Change Password Code Mail',
+            subject: trans('Reset Password Notification'),
         );
     }
 
@@ -37,7 +37,7 @@ class ChangePasswordCodeMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            markdown: 'emails.user.change-password-code',
         );
     }
 

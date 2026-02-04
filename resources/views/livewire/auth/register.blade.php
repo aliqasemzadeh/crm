@@ -1,5 +1,5 @@
 <div class="space-y-6">
-    <flux:heading class="text-center" size="xl">Welcome back</flux:heading>
+    <flux:heading class="text-center" size="xl">{{ __('Sign up for free') }}</flux:heading>
 
     <div class="space-y-4">
         <flux:button class="w-full">
@@ -12,7 +12,7 @@
                 </svg>
             </x-slot>
 
-            Continue with Google
+            {{ __('Continue with Google') }}
         </flux:button>
 
         <flux:button class="w-full">
@@ -29,31 +29,25 @@
                 </svg>
             </x-slot>
 
-            Continue with GitHub
+            {{ __('Continue with GitHub') }}
         </flux:button>
     </div>
 
-    <flux:separator text="or" />
+    <flux:separator text="{{ __('or') }}" />
 
-    <div class="flex flex-col gap-6">
-        <flux:input label="Email" type="email" placeholder="email@example.com" />
+    <form wire:submit="register" class="flex flex-col gap-6">
+        <flux:input wire:model="name" label="{{ __('Name') }}" placeholder="{{ __('Your name') }}" />
 
-        <flux:field>
-            <div class="mb-3 flex justify-between">
-                <flux:label>Password</flux:label>
+        <flux:input wire:model="email" label="{{ __('Email') }}" type="email" placeholder="email@example.com" />
 
-                <flux:link href="#" variant="subtle" class="text-sm">Forgot password?</flux:link>
-            </div>
+        <flux:input wire:model="password" label="{{ __('Password') }}" type="password" placeholder="{{ __('Your password') }}" />
 
-            <flux:input type="password" placeholder="Your password" />
-        </flux:field>
+        <flux:input wire:model="password_confirmation" label="{{ __('Confirm Password') }}" type="password" placeholder="{{ __('Confirm your password') }}" />
 
-        <flux:checkbox label="Remember me for 30 days" />
-
-        <flux:button variant="primary" class="w-full">Log in</flux:button>
-    </div>
+        <flux:button type="submit" variant="primary" class="w-full">{{ __('Register') }}</flux:button>
+    </form>
 
     <flux:subheading class="text-center">
-        First time around here? <flux:link href="#">Sign up for free</flux:link>
+        {{ __('Already have an account?') }} <flux:link href="{{ route('login') }}" wire:navigate>{{ __('Log In') }}</flux:link>
     </flux:subheading>
 </div>

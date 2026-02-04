@@ -44,7 +44,7 @@ class Login extends Component
         $this->reset('password');
 
         // Redirect to intended page or dashboard
-        return redirect()->intended(route('user.dashboard.index'));
+        return $this->redirectIntended(default: route('user.dashboard.index'), navigate: true);
     }
 
     #[Layout('layouts.auth')]
