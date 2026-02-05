@@ -17,7 +17,7 @@
             <div class="relative flex-1 rounded-lg px-6 py-4 bg-zinc-50 dark:bg-zinc-700">
                 <flux:subheading>{{ __('app.inventory_rial_balance') }}</flux:subheading>
 
-                <flux:heading size="xl" class="mb-2">{{ number_format($this->inventory) }}</flux:heading>
+                <flux:heading size="xl" class="mb-2">{{ number_format(0) }}</flux:heading>
 
                 <div class="flex items-center gap-1 font-medium text-sm">
 

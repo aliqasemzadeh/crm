@@ -17,13 +17,14 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/', \App\Livewire\Panels\User\Dashboard\Index::class)->name('home');
     Route::livewire('/panels/user/dashboard/index', \App\Livewire\Panels\User\Dashboard\Index::class)->name('panels.user.dashboard.index');
 
-
     Route::livewire('/panels/administrator/dashboard/index', \App\Livewire\Panels\Administrator\Dashboard\Index::class)->name('panels.administrator.dashboard.index');
+    Route::livewire('/panels/administrator/user-management/user/index', \App\Livewire\Panels\Administrator\UserManagement\User\Index::class)->name('panels.administrator.user-management.user.index');
+    Route::livewire('/panels/administrator/user-management/role/index', \App\Livewire\Panels\Administrator\UserManagement\Role\Index::class)->name('panels.administrator.user-management.role.index');
+    Route::livewire('/panels/administrator/user-management/permission/index', \App\Livewire\Panels\Administrator\UserManagement\Permission\Index::class)->name('panels.administrator.user-management.permission.index');
 
     Route::livewire('/panels/service-center/dashboard/index', \App\Livewire\Panels\ServiceCenter\Dashboard\Index::class)->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panel.service-center.assembly.index');
     Route::livewire('/panels/service-center/repair/index', \App\Livewire\Panels\ServiceCenter\Repair\Index::class)->name('panel.service-center.repair.index');
-
 
     Route::livewire('/panels/logout', \App\Livewire\Auth\Logout::class)->name('logout');
 });
