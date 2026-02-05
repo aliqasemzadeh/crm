@@ -1,4 +1,4 @@
-<flux:modal name="panel.administrator.user-management.user.roles.modal" class="min-w-full min-h-full">
+<flux:modal name="panels.administrator.user-management.user.roles.modal" class="min-w-full min-h-full">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.roles') }}: {{ isset($user) ? $user->mobile : '' }}</flux:heading>

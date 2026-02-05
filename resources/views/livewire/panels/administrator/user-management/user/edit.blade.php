@@ -1,4 +1,4 @@
-<flux:modal name="panel.administrator.user-management.user.edit.modal" class="md:w-96" flyout position="right">
+<flux:modal name="panels.administrator.user-management.user.edit.modal" class="md:w-96" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.edit_user') }} : {{ isset($mobile) ? $mobile : '' }}</flux:heading>

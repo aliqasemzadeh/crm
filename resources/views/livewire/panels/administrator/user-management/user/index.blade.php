@@ -9,7 +9,7 @@
                 <flux:subheading size="lg" class="mb-6">{{ __('app.users_description') }}</flux:subheading>
             </div>
             @can('administrator_user_management_create')
-                <flux:modal.trigger name="administrator.user-management.user.create.modal">
+                <flux:modal.trigger name="panels.administrator.user-management.user.create.modal">
                     <flux:button variant="primary">{{ __('app.create_user') }}</flux:button>
                 </flux:modal.trigger>
             @endcan
