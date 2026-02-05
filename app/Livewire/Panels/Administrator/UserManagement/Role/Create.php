@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Role;
+namespace App\Livewire\Panels\Administrator\UserManagement\Role;
 
 use Flux\Flux;
 use Livewire\Component;
@@ -23,12 +23,12 @@ class Create extends Component
         Role::create($validated);
 
         $this->dispatch('pg:eventRefresh-administrator.user-management.role.index');
-        Flux::modal('panel.administrator.user-management.role.create.modal')->close();
+        Flux::modal('panels.administrator.user-management.role.create.modal')->close();
 
     }
 
     public function render()
     {
-        return view('livewire.panel.administrator.user-management.role.create');
+        return view('livewire.panels.administrator.user-management.role.create');
     }
 }

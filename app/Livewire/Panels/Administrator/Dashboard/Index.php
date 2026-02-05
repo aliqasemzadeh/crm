@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\Dashboard;
+namespace App\Livewire\Panels\Administrator\Dashboard;
 
 use App\Models\Sepidar\INV\InventoryReceiptItem;
 use Livewire\Attributes\Computed;
@@ -32,6 +32,6 @@ class Index extends Component
     public function render()
     {
         $this->authorize('administrator_dashboard_index');
-        return view('livewire.panel.administrator.dashboard.index');
+        return view('livewire.panels.administrator.dashboard.index');
     }
 }

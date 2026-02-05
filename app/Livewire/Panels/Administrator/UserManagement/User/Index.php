@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\User;
+namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -55,11 +55,11 @@ class Index extends Component
     }
 
     #[Layout('layouts.panels.administrator')]
-    #[On('panel.administrator.user-management.user.index.render')]
+    #[On('panels.administrator.user-management.user.index.render')]
     public function render()
     {
         $this->authorize('administrator_user_management_index');
 
-        return view('livewire.panel.administrator.user-management.user.index');
+        return view('livewire.panels.administrator.user-management.user.index');
     }
 }

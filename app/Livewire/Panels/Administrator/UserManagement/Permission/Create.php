@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Permission;
+namespace App\Livewire\Panels\Administrator\UserManagement\Permission;
 
 use Flux\Flux;
 use Livewire\Component;
@@ -23,11 +23,11 @@ class Create extends Component
         Permission::create($validated);
 
         $this->dispatch('pg:eventRefresh-administrator.user-management.permission.index');
-        Flux::modal('panel.administrator.user-management.permission.create.modal')->close();
+        Flux::modal('panels.administrator.user-management.permission.create.modal')->close();
 
     }
     public function render()
     {
-        return view('livewire.panel.administrator.user-management.permission.create');
+        return view('livewire.panels.administrator.user-management.permission.create');
     }
 }

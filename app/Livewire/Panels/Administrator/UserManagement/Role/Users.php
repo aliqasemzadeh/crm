@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Role;
+namespace App\Livewire\Panels\Administrator\UserManagement\Role;
 
 use Livewire\Component;
 
@@ -23,6 +23,6 @@ class Users extends Component
     public function render()
     {
         $this->authorize('administrator_user_management_role_users');
-        return view('livewire.panel.administrator.user-management.role.users');
+        return view('livewire.panels.administrator.user-management.role.users');
     }
 }

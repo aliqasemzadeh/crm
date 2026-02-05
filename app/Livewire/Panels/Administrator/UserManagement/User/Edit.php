@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\User;
+namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
 use App\Models\User;
 use Flux\Flux;
@@ -28,7 +28,7 @@ class Edit extends Component
 
     public string $password_confirmation = '';
 
-    #[On('panel.administrator.user-management.user.edit.assign-data')]
+    #[On('panels.administrator.user-management.user.edit.assign-data')]
     public function assignData($id): void
     {
         $this->user = User::findOrFail($id);
@@ -39,7 +39,7 @@ class Edit extends Component
         $this->email = (string) ($this->user->email ?? '');
         $this->password = '';
         $this->password_confirmation = '';
-        Flux::modal('panel.administrator.user-management.user.edit.modal')->show();
+        Flux::modal('panels.administrator.user-management.user.edit.modal')->show();
     }
 
     public function edit(): void
@@ -76,12 +76,12 @@ class Edit extends Component
 
         $this->user->save();
 
-        $this->dispatch('panel.administrator.user-management.user.index.render');
-        Flux::modal('panel.administrator.user-management.user.edit.modal')->close();
+        $this->dispatch('panels.administrator.user-management.user.index.render');
+        Flux::modal('panels.administrator.user-management.user.edit.modal')->close();
     }
 
     public function render(): View
     {
-        return view('livewire.panel.administrator.user-management.user.edit');
+        return view('livewire.panels.administrator.user-management.user.edit');
     }
 }

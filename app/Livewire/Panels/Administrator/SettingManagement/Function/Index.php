@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\SettingManagement\Function;
+namespace App\Livewire\Panels\Administrator\SettingManagement\Function;
 
 use Flux\Flux;
 use Illuminate\Support\Facades\Artisan;
@@ -24,6 +24,6 @@ class Index extends Component
     #[Layout('layouts.panels.administrator')]
     public function render()
     {
-        return view('livewire.panel.administrator.setting-management.function.index');
+        return view('livewire.panels.administrator.setting-management.function.index');
     }
 }

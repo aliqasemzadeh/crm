@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Role;
+namespace App\Livewire\Panels\Administrator\UserManagement\Role;
 
 use Flux\Flux;
 use Illuminate\Validation\Rule;
@@ -23,13 +23,13 @@ class Edit extends Component
         $this->guard_name = $this->role->guard_name;
     }
 
-    #[On('panel.administrator.user-management.role.edit.assign-data')]
+    #[On('panels.administrator.user-management.role.edit.assign-data')]
     public function assignData(int $id): void
     {
         $this->role = Role::findById($id);
         $this->name = $this->role->name;
         $this->guard_name = $this->role->guard_name;
-        Flux::modal('panel.administrator.user-management.role.edit.modal')->show();
+        Flux::modal('panels.administrator.user-management.role.edit.modal')->show();
     }
 
     public function edit()
@@ -44,12 +44,12 @@ class Edit extends Component
         $this->role->update($validated);
 
         $this->dispatch('pg:eventRefresh-administrator.user-management.role.index');
-        Flux::modal('panel.administrator.user-management.role.edit.modal')->close();
+        Flux::modal('panels.administrator.user-management.role.edit.modal')->close();
 
     }
 
     public function render()
     {
-        return view('livewire.panel.administrator.user-management.role.edit');
+        return view('livewire.panels.administrator.user-management.role.edit');
     }
 }

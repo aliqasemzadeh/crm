@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Role;
+namespace App\Livewire\Panels\Administrator\UserManagement\Role;
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -36,6 +36,6 @@ class Index extends Component
     public function render()
     {
         $this->authorize('administrator_user_management_role_index');
-        return view('livewire.panel.administrator.user-management.role.index');
+        return view('livewire.panels.administrator.user-management.role.index');
     }
 }

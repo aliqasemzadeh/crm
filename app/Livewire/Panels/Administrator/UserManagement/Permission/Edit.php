@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Permission;
+namespace App\Livewire\Panels\Administrator\UserManagement\Permission;
 
 use Flux\Flux;
 use Illuminate\Validation\Rule;
@@ -23,13 +23,13 @@ class Edit extends Component
         $this->guard_name = $this->permission->guard_name;
     }
 
-    #[On('panel.administrator.user-management.permission.edit.assign-data')]
+    #[On('panels.administrator.user-management.permission.edit.assign-data')]
     public function assignData(int $id): void
     {
         $this->permission = Permission::findById($id);
         $this->name = $this->permission->name;
         $this->guard_name = $this->permission->guard_name;
-        Flux::modal('panel.administrator.user-management.permission.edit.modal')->show();
+        Flux::modal('panels.administrator.user-management.permission.edit.modal')->show();
     }
 
     public function edit()
@@ -44,11 +44,11 @@ class Edit extends Component
         $this->permission->update($validated);
 
         $this->dispatch('pg:eventRefresh-administrator.user-management.permission.index');
-        Flux::modal('panel.administrator.user-management.permission.edit.modal')->close();
+        Flux::modal('panels.administrator.user-management.permission.edit.modal')->close();
     }
 
     public function render()
     {
-        return view('livewire.panel.administrator.user-management.permission.edit');
+        return view('livewire.panels.administrator.user-management.permission.edit');
     }
 }

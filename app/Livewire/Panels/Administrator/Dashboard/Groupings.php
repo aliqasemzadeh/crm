@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\Dashboard;
+namespace App\Livewire\Panels\Administrator\Dashboard;
 
 use App\Models\Sepidar\GNR\Grouping;
 use Livewire\Attributes\Computed;
@@ -19,6 +19,6 @@ class Groupings extends Component
 
     public function render()
     {
-        return view('livewire.panel.administrator.dashboard.groupings');
+        return view('livewire.panels.administrator.dashboard.groupings');
     }
 }

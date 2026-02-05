@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\User;
+namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
 use App\Models\User;
 use Flux\Flux;
@@ -17,11 +17,11 @@ class Roles extends Component
 
     public $search;
 
-    #[On('panel.administrator.user-management.user.roles.assign-data')]
+    #[On('panels.administrator.user-management.user.roles.assign-data')]
     public function assignData($id): void
     {
         $this->user = User::findOrFail($id);
-        Flux::modal('panel.administrator.user-management.user.roles.modal')->show();
+        Flux::modal('panels.administrator.user-management.user.roles.modal')->show();
     }
 
     public function assign(Role $role)
@@ -32,7 +32,7 @@ class Roles extends Component
             return;
         }
         $this->user->assignRole($role->name);
-        $this->dispatch('panel.administrator.user-management.user.roles');
+        $this->dispatch('panels.administrator.user-management.user.roles');
     }
 
     public function delete(Role $role): void
@@ -43,10 +43,10 @@ class Roles extends Component
             return;
         }
         $this->user->removeRole($role->name);
-        $this->dispatch('panel.administrator.user-management.user.roles');
+        $this->dispatch('panels.administrator.user-management.user.roles');
     }
 
-    #[On('panel.administrator.user-management.user.roles.render')]
+    #[On('panels.administrator.user-management.user.roles.render')]
     public function render()
     {
         $this->authorize('administrator_user_management_roles');
@@ -56,6 +56,6 @@ class Roles extends Component
             $roles = Role::paginate();
         }
 
-        return view('livewire.panel.administrator.user-management.user.roles', compact('roles'));
+        return view('livewire.panels.administrator.user-management.user.roles', compact('roles'));
     }
 }

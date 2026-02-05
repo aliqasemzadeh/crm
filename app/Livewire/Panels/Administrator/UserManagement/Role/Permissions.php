@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Role;
+namespace App\Livewire\Panels\Administrator\UserManagement\Role;
 
 use Flux\Flux;
 use Livewire\Attributes\On;
@@ -22,11 +22,11 @@ class Permissions extends Component
         $this->role = Role::findById($id);
     }
 
-    #[On('panel.administrator.user-management.role.permissions.assign-data')]
+    #[On('panels.administrator.user-management.role.permissions.assign-data')]
     public function assignData(int $id): void
     {
         $this->role = Role::findById($id);
-        Flux::modal('panel.administrator.user-management.role.permissions.modal')->show();
+        Flux::modal('panels.administrator.user-management.role.permissions.modal')->show();
     }
 
     public function assign(Permission $permission)
@@ -34,7 +34,7 @@ class Permissions extends Component
         $this->authorize('administrator_user_management_role_permissions');
 
         $this->role->givePermissionTo($permission->name);
-        $this->dispatch('panel.administrator.user-management.role.permissions');
+        $this->dispatch('panels.administrator.user-management.role.permissions');
     }
 
     public function delete(Permission $permission): void
@@ -42,10 +42,10 @@ class Permissions extends Component
         $this->authorize('administrator_user_management_role_permissions');
 
         $this->role->revokePermissionTo($permission->name);
-        $this->dispatch('panel.administrator.user-management.role.permissions');
+        $this->dispatch('panels.administrator.user-management.role.permissions');
     }
 
-    #[On('panel.administrator.user-management.role.permissions.render')]
+    #[On('panels.administrator.user-management.role.permissions.render')]
     public function render()
     {
         $this->authorize('administrator_user_management_role_permissions');
@@ -55,6 +55,6 @@ class Permissions extends Component
             $permissions = Permission::paginate();
         }
 
-        return view('livewire.panel.administrator.user-management.role.permissions', compact('permissions'));
+        return view('livewire.panels.administrator.user-management.role.permissions', compact('permissions'));
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\Administrator\UserManagement\Permission;
+namespace App\Livewire\Panels\Administrator\UserManagement\Permission;
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -37,6 +37,6 @@ class Index extends Component
     public function render()
     {
         $this->authorize('administrator_user_management_permission_index');
-        return view('livewire.panel.administrator.user-management.permission.index');
+        return view('livewire.panels.administrator.user-management.permission.index');
     }
 }
