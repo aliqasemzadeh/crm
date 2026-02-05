@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\ServiceCenter\Assembly;
+namespace App\Livewire\Panels\ServiceCenter\Assembly;
 
 use Livewire\Attributes\Layout;
 use Livewire\Component;

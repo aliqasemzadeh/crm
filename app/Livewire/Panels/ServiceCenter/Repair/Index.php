@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\ServiceCenter\Repair;
+namespace App\Livewire\Panels\ServiceCenter\Repair;
 
 use App\Enums\StatusEnum;
 use App\Models\ServiceCenter\Repair;

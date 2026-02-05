@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panel\ServiceCenter\Repair;
+namespace App\Livewire\Panels\ServiceCenter\Repair;
 
 use App\Models\ServiceCenter\Repair;
 use App\Models\ServiceCenter\RepairService;
