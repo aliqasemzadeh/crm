@@ -14,7 +14,7 @@ Route::livewire('/change-password/{token}', \App\Livewire\Auth\ChangePassword::c
 Route::middleware(['auth'])->group( function () {
     Route::livewire('/crm/dashboard/index', \App\Livewire\Panels\Crm\Dashboard\Index::class)->name('crm.dashboard.index');
 
-    Route::livewire('/', \App\Livewire\Panels\User\Dashboard\Index::class)->name('user.dashboard.index');
+    Route::livewire('/', \App\Livewire\Panels\User\Dashboard\Index::class)->name('home');
     Route::livewire('/user/dashboard/index', \App\Livewire\Panels\User\Dashboard\Index::class)->name('user.dashboard.index');
 
 
