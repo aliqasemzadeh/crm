@@ -90,6 +90,6 @@ class Index extends Component
     #[Layout('layouts.panels.service-center')]
     public function render()
     {
-        return view('livewire.panel.service-center.dashboard.index');
+        return view('livewire.panels.service-center.dashboard.index');
     }
 }

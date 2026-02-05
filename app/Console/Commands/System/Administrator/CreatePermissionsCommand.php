@@ -40,7 +40,7 @@ class CreatePermissionsCommand extends Command
             $user->givePermissionTo($permission);
         }
 
-        $administrator = Role::findByname('panel.administrator');
+        $administrator = Role::findByname('administrator');
         $permissions_administrator = __('permissions.administrator');
 
         foreach ($permissions_administrator as $permission => $translate) {
@@ -66,18 +66,6 @@ class CreatePermissionsCommand extends Command
             $crm->givePermissionTo($permission);
         }
 
-        $shop = Role::findByName('shop');
-        $permissions_shop = __('permissions.shop');
-
-        foreach ($permissions_shop as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
-        }
-
-        foreach ($permissions_shop as $permission => $translate) {
-            $shop->givePermissionTo($permission);
-        }
 
         $service_center = Role::findByName('service_center');
         $permissions_service_center = __('permissions.service_center');
