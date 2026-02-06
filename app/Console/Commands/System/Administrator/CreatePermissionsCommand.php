@@ -93,5 +93,18 @@ class CreatePermissionsCommand extends Command
             $accounting->givePermissionTo($permission);
         }
 
+        $workspace = Role::findByName('workspace');
+        $permissions_workspace = __('permissions.workspace');
+
+        foreach ($permissions_workspace as $permission => $translate) {
+            Permission::firstOrCreate(
+                ['name' => $permission]
+            );
+        }
+
+        foreach ($permissions_workspace as $permission => $translate) {
+            $workspace->givePermissionTo($permission);
+        }
+
     }
 }
