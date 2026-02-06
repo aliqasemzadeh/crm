@@ -2,7 +2,7 @@
 
 return [
     'user' => 'کاربر',
-    'workspace' => 'کاربر',
+    'workspace' => 'میزکار',
     'administrator' => 'مدیریت',
     'service_center' => 'مرکز خدمات',
     'crm' => 'ارتباط با مشتریان',

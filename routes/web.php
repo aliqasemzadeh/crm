@@ -28,5 +28,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');
     Route::livewire('/panels/service-center/repair/index', \App\Livewire\Panels\ServiceCenter\Repair\Index::class)->name('panels.service-center.repair.index');
 
+    Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
+
     Route::livewire('/panels/logout', \App\Livewire\Auth\Logout::class)->name('logout');
 });

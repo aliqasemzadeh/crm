@@ -17,7 +17,7 @@
         <flux:sidebar.item icon="pc-case" badge="12" href="{{ route('panels.service-center.assembly.index') }}" wire:navigate>{{ __('app.assemblies') }}</flux:sidebar.item>
         @endcan
         @can('service_center_repair_index')
-        <flux:sidebar.item icon="repairs" href="{{ route('panels.service-center.repair.index') }}" wire:navigate>{{ __('app.repairs') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="toolbox" href="{{ route('panels.service-center.repair.index') }}" wire:navigate>{{ __('app.repairs') }}</flux:sidebar.item>
         @endcan
     </flux:sidebar.nav>
 
