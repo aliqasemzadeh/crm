@@ -9,6 +9,7 @@ return [
         'user_support_ticket_index' => 'فهرست تیکت‌های پشتیبانی کاربر',
         'user_support_ticket_create' => 'ایجاد تیکت پشتیبانی کاربر',
     ],
+
     'administrator' => [
         'administrator_access' => 'دسترسی مدیر',
 
@@ -97,10 +98,6 @@ return [
         'service_center_repair_view' => 'مشاهده پذیرش مرکز خدمات',
     ],
 
-    'shop' => [
-        'shop_access' => 'فروشگاه',
-    ],
-
     'accounting' => [
         'accounting_access' => 'دسترسی حساب داری',
         'accounting_bank_index' => 'فهرست حساب‌های بانکی',
@@ -132,4 +129,14 @@ return [
         'accounting_cheque_delete' => 'حذف تراکنش',
         'accounting_cheque_import' => 'حذف تراکنش',
     ],
+
+    'workspace' => [
+        'workspace_access' => 'میزکار',
+    ],
+
+
+    'sales' => [
+        'sales_access' => 'فروش',
+    ],
+
 ];
