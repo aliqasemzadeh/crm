@@ -2,9 +2,10 @@
 
 return [
     'user' => 'کاربر',
+    'workspace' => 'کاربر',
     'administrator' => 'مدیریت',
     'service_center' => 'مرکز خدمات',
-    'crm' => 'CRM',
-    'shop' => 'فروشگاه',
+    'crm' => 'ارتباط با مشتریان',
+    'sales' => 'فروش',
     'accounting' => 'حسابداری',
 ];
