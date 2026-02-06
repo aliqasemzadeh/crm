@@ -7,8 +7,8 @@
 
     <flux:menu>
         <flux:sidebar.nav>
-                <flux:sidebar.item icon="at-sign" href="{{ route('user.change-email') }}">{{ __('app.change_email') }}</flux:sidebar.item>
-                <flux:sidebar.item icon="key" href="{{ route('user.change-password') }}">{{ __('app.change_password') }}</flux:sidebar.item>
+                <flux:sidebar.item icon="at-sign" href="{{ route('panels.user.setting.change-email') }}">{{ __('app.change_email') }}</flux:sidebar.item>
+                <flux:sidebar.item icon="key" href="{{ route('panels.user.setting.change-email') }}">{{ __('app.change_password') }}</flux:sidebar.item>
         </flux:sidebar.nav>
 
         <flux:menu.separator />
