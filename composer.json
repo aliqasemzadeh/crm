@@ -14,7 +14,9 @@
         "livewire/flux-pro": "^2.11",
         "livewire/livewire": "^4.1",
         "opcodesio/log-viewer": "^3.21",
+        "rappasoft/laravel-authentication-log": "^6.0",
         "spatie/laravel-permission": "^6.24",
+        "torann/geoip": "^3.0",
         "tzsk/otp": "^9.0"
     },
     "require-dev": {

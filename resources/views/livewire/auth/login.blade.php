@@ -48,7 +48,7 @@
                 <flux:link href="{{ route('forget-password') }}" wire:navigate variant="subtle" class="text-sm">{{ __('Forgot password?') }}</flux:link>
             </div>
 
-            <flux:input wire:model="password" type="password" placeholder="{{ __('Your password') }}" />
+            <flux:input wire:model="password" type="password" placeholder="{{ __('Your password') }}" viewable/>
         </flux:field>
 
         <flux:checkbox wire:model="remember" label="{{ __('Remember me for 30 days') }}" />

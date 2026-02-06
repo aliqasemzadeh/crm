@@ -57,7 +57,10 @@ return [
     'guard_name' => 'گارد',
     'email' => 'ایمیل',
     'password' => 'رمز عبور',
+    'current_password' => 'رمز عبور فعلی',
+    'new_password' => 'رمز عبور جدید',
     'password_confirmation' => 'تکرار رمز عبور',
+    'password_updated_successfully' => 'رمز عبور با موفقیت تغییر یافت.',
 
     // Roles & Permissions
     'roles_description' => 'نقش‌ها را جستجو و به کاربر اختصاص دهید یا حذف کنید.',
