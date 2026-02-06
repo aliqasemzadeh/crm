@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" dir="rtl">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark" dir="{{ config('app.direction') }}">
 <head>
     @include('partials.head')
 </head>

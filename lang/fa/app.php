@@ -2,6 +2,7 @@
 
 return [
     'name' => 'نام',
+    'direction' => 'rtl',
 
     // Settings / Functions
     'function' => 'توابع سیستم',
