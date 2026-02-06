@@ -1,8 +1,8 @@
 <flux:modal name="panels.administrator.user-management.role.users.modal"  class="min-w-full min-h-full">
     <div class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('jetadmin.users') }}: {{ $role->name }}</flux:heading>
-            <flux:text class="mt-2">{{ __('jetadmin.role_users_description') }}</flux:text>
+            <flux:heading size="lg">{{ __('app.users') }}: {{ $role->name }}</flux:heading>
+            <flux:text class="mt-2">{{ __('app.role_users_description') }}</flux:text>
         </div>
         <div>
             <ul class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -19,7 +19,7 @@
                             </div>
                             <div class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
                                 @can('administrator_user_management_role_users')
-                                    <flux:button  wire:confirm="{{ __('jetadmin.are_you_sure') }}" wire:click="revoke('{{ $user->id  }}', '{{ $role->name }}')"><flux:icon.trash /></flux:button>
+                                    <flux:button  wire:confirm="{{ __('app.are_you_sure') }}" wire:click="revoke('{{ $user->id  }}', '{{ $role->name }}')"><flux:icon.trash /></flux:button>
                                 @endcan
                             </div>
                         </div>
