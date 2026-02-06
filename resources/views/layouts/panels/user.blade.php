@@ -13,6 +13,7 @@
         <flux:sidebar.item icon="home" href="{{ route('panels.user.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
         <flux:sidebar.item icon="key" href="{{ route('panels.user.setting.change-password') }}" wire:navigate>{{ __('app.change_password') }}</flux:sidebar.item>
         <flux:sidebar.item icon="at-sign" href="{{ route('panels.user.setting.change-email') }}" wire:navigate>{{ __('app.change_email') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="smartphone" href="{{ route('panels.user.setting.change-mobile') }}" wire:navigate>{{ __('app.change_mobile') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />

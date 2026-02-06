@@ -3,8 +3,6 @@
     <flux:sidebar.profile name="{{ \Illuminate\Support\Facades\Auth::user()->name ?? \Illuminate\Support\Facades\Auth::mobile() }}" />
     @endauth
 
-
-
     <flux:menu>
         <flux:sidebar.nav>
                 <flux:sidebar.item icon="at-sign" href="{{ route('panels.user.setting.change-email') }}">{{ __('app.change_email') }}</flux:sidebar.item>

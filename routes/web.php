@@ -18,6 +18,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/user/dashboard/index', \App\Livewire\Panels\User\Dashboard\Index::class)->name('panels.user.dashboard.index');
     Route::livewire('/panels/user/setting/change-password', \App\Livewire\Panels\User\Setting\ChangePassword::class)->name('panels.user.setting.change-password');
     Route::livewire('/panels/user/setting/change-email', \App\Livewire\Panels\User\Setting\ChangeEmail::class)->name('panels.user.setting.change-email');
+    Route::livewire('/panels/user/setting/change-mobile', \App\Livewire\Panels\User\Setting\ChangeMobile::class)->name('panels.user.setting.change-mobile');
 
 
     Route::livewire('/panels/administrator/dashboard/index', \App\Livewire\Panels\Administrator\Dashboard\Index::class)->name('panels.administrator.dashboard.index');
@@ -32,6 +33,8 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/service-center/repair/index', \App\Livewire\Panels\ServiceCenter\Repair\Index::class)->name('panels.service-center.repair.index');
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
+
+    Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
 
     Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');
 
