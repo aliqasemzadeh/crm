@@ -9,7 +9,7 @@
                 <flux:subheading size="lg" class="mb-6">{{ __('app.permissions_description') }}</flux:subheading>
             </div>
             @can('administrator_user_management_permission_create')
-                <flux:modal.trigger name="administrator.user-management.permission.create.modal">
+                <flux:modal.trigger name="panels.administrator.user-management.permission.create.modal">
                     <flux:button variant="primary">{{ __('app.create_permission') }}</flux:button>
                 </flux:modal.trigger>
             @endcan
@@ -47,7 +47,7 @@
                 <flux:table.cell class="whitespace-nowrap">{{ $permission->created_at?->format('Y-m-d H:i') }}</flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
                     @can('administrator_user_management_permission_edit')
-                        <flux:button size="xs" variant="primary" wire:click="$dispatch('administrator.user-management.permission.edit.assign-data', { id: '{{ $permission->id }}' })">{{ __('app.edit') }}</flux:button>
+                        <flux:button size="xs" variant="primary" wire:click="$dispatch('panels.administrator.user-management.permission.edit.assign-data', { id: '{{ $permission->id }}' })">{{ __('app.edit') }}</flux:button>
                     @endcan
                     @can('administrator_user_management_permission_delete')
                         <flux:button size="xs" variant="danger">{{ __('app.delete') }}</flux:button>
