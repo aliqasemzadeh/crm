@@ -1,6 +1,7 @@
 <div class="space-y-6">
     <flux:heading class="text-center" size="xl">{{ __('Sign up for free') }}</flux:heading>
 
+    @if(config('main.auth.socialite'))
     <div class="space-y-4">
         <flux:button class="w-full">
             <x-slot name="icon">
@@ -34,6 +35,8 @@
     </div>
 
     <flux:separator text="{{ __('or') }}" />
+    @endif
+
 
     <form wire:submit="register" class="flex flex-col gap-6">
         <flux:input wire:model="first_name" label="{{ __('app.first_name') }}" />
