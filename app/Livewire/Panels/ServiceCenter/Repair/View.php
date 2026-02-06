@@ -25,6 +25,6 @@ class View extends Component
     }
     public function render()
     {
-        return view('livewire.panel.service-center.repair.view');
+        return view('livewire.panels.service-center.repair.view');
     }
 }

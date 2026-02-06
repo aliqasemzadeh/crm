@@ -27,6 +27,6 @@ class Problem extends Component
 
     public function render(): View
     {
-        return view('livewire.panel.service-center.repair.problem');
+        return view('livewire.panels.service-center.repair.problem');
     }
 }

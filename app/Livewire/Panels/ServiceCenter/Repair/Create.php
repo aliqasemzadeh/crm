@@ -252,6 +252,6 @@ class Create extends Component
 
     public function render()
     {
-        return view('livewire.panel.service-center.repair.create');
+        return view('livewire.panels.service-center.repair.create');
     }
 }

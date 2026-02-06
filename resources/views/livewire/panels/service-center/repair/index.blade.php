@@ -187,28 +187,28 @@
                             <flux:button
                                 size="xs"
                                 variant="primary"
-                                wire:click="$dispatch('panel.service-center.repair.view.assign-data', { id: {{ $repair->id }} })"
+                                wire:click="$dispatch('panels.service-center.repair.view.assign-data', { id: {{ $repair->id }} })"
                             >
                                 {{ __('app.view') }}
                             </flux:button>
                             <flux:button
                                 size="xs"
                                 variant="danger"
-                                wire:click="$dispatch('panel.service-center.repair.problem.assign-data', { id: {{ $repair->id }} })"
+                                wire:click="$dispatch('panels.service-center.repair.problem.assign-data', { id: {{ $repair->id }} })"
                             >
                                 {{ __('app.problem') }}
                             </flux:button>
                             @endcan
                             @can('service_center_repair_services')
                             <flux:button size="xs" variant="primary" color="orange"
-                                         wire:click="$dispatch('panel.service-center.repair.services.assign-data', { id: {{ $repair->id }} })"
+                                         wire:click="$dispatch('panels.service-center.repair.services.assign-data', { id: {{ $repair->id }} })"
                             >
                                 {{ __('app.services') }}
                             </flux:button>
                             @endcan
                             @can('service_center_repair_logs')
                             <flux:button size="xs" variant="primary" color="lime"
-                                         wire:click="$dispatch('panel.service-center.repair.logs.assign-data', { id: {{ $repair->id }} })"
+                                         wire:click="$dispatch('panels.service-center.repair.logs.assign-data', { id: {{ $repair->id }} })"
                             >
                                 {{ __('app.logs') }}
                             </flux:button>
@@ -216,7 +216,7 @@
 
                                 @can('service_center_repair_edit')
                                     <flux:button size="xs" variant="primary" color="blue"
-                                                 wire:click="$dispatch('panel.service-center.repair.edit.assign-data', { id: {{ $repair->id }} })"
+                                                 wire:click="$dispatch('panels.service-center.repair.edit.assign-data', { id: {{ $repair->id }} })"
                                     >
                                         {{ __('app.edit') }}
                                     </flux:button>

@@ -125,6 +125,6 @@ class Index extends Component
     #[On('panel.service-center.repair.index.render')]
     public function render()
     {
-        return view('livewire.panel.service-center.repair.index');
+        return view('livewire.panels.service-center.repair.index');
     }
 }

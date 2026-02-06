@@ -284,6 +284,6 @@ class Edit extends Component
 
     public function render()
     {
-        return view('livewire.panel.service-center.repair.edit');
+        return view('livewire.panels.service-center.repair.edit');
     }
 }

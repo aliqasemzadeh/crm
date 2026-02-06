@@ -96,6 +96,6 @@ class Services extends Component
 
     public function render()
     {
-        return view('livewire.panel.service-center.repair.services');
+        return view('livewire.panels.service-center.repair.services');
     }
 }

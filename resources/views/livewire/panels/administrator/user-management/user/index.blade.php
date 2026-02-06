@@ -50,13 +50,13 @@
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">
                         @can('administrator_user_management_edit')
-                            <flux:button size="xs" variant="primary" wire:click="$dispatch('panel.administrator.user-management.user.edit.assign-data', { id: '{{ $user->id }}' })">{{ __('app.edit') }}</flux:button>
+                            <flux:button size="xs" variant="primary" wire:click="$dispatch('panels.administrator.user-management.user.edit.assign-data', { id: '{{ $user->id }}' })">{{ __('app.edit') }}</flux:button>
                         @endcan
                         @can('administrator_user_management_roles')
-                            <flux:button size="xs" variant="primary" color="orange" wire:click="$dispatch('panel.administrator.user-management.user.roles.assign-data', { id: '{{ $user->id }}' })">{{ __('app.roles') }}</flux:button>
+                            <flux:button size="xs" variant="primary" color="orange" wire:click="$dispatch('panels.administrator.user-management.user.roles.assign-data', { id: '{{ $user->id }}' })">{{ __('app.roles') }}</flux:button>
                         @endcan
                         @can('administrator_user_management_permissions')
-                            <flux:button size="xs" variant="primary" color="lime" wire:click="$dispatch('panel.administrator.user-management.user.permissions.assign-data', { id: '{{ $user->id }}' })">{{ __('app.permissions') }}</flux:button>
+                            <flux:button size="xs" variant="primary" color="lime" wire:click="$dispatch('panels.administrator.user-management.user.permissions.assign-data', { id: '{{ $user->id }}' })">{{ __('app.permissions') }}</flux:button>
                         @endcan
                         @can('administrator_user_management_delete')
                             <flux:button size="xs" variant="danger">{{ __('app.delete') }}</flux:button>

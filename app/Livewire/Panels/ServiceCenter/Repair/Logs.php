@@ -105,6 +105,6 @@ class Logs extends Component
 
     public function render()
     {
-        return view('livewire.panel.service-center.repair.logs');
+        return view('livewire.panels.service-center.repair.logs');
     }
 }

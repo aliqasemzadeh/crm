@@ -15,6 +15,6 @@ class Index extends Component
     #[Layout('layouts.panels.service-center')]
     public function render()
     {
-        return view('livewire.panel.service-center.assembly.index');
+        return view('livewire.panels.service-center.assembly.index');
     }
 }
