@@ -16,6 +16,9 @@ Route::middleware(['auth'])->group( function () {
 
     Route::livewire('/', \App\Livewire\Panels\User\Dashboard\Index::class)->name('home');
     Route::livewire('/panels/user/dashboard/index', \App\Livewire\Panels\User\Dashboard\Index::class)->name('panels.user.dashboard.index');
+    Route::livewire('/panels/user/logout', \App\Livewire\Panels\User\Setting\ChangePassword::class)->name('panels.user.change-password');
+    Route::livewire('/panels/user/email', \App\Livewire\Panels\User\Setting\ChangeEmail::class)->name('panels.user.change-email');
+
 
     Route::livewire('/panels/administrator/dashboard/index', \App\Livewire\Panels\Administrator\Dashboard\Index::class)->name('panels.administrator.dashboard.index');
     Route::livewire('/panels/administrator/user-management/user/index', \App\Livewire\Panels\Administrator\UserManagement\User\Index::class)->name('panels.administrator.user-management.user.index');
@@ -31,6 +34,5 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
 
     Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');
-    Route::livewire('/user/logout', \App\Livewire\User\ChangePassword::class)->name('user.change-password');
-    Route::livewire('/user/email', \App\Livewire\User\ChangeEmail::class)->name('user.change-email');
+
 });

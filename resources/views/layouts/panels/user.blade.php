@@ -10,7 +10,9 @@
     <flux:sidebar.search placeholder="Search..." />
 
     <flux:sidebar.nav>
-        <flux:sidebar.item icon="home" href="#" current>{{ __('app.dashboard') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="home" href="{{ route('panels.user.dashboard.index') }}" current>{{ __('app.dashboard') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="key" href="#">{{ __('app.change_password') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="at-sign" href="#">{{ __('app.change_email') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />

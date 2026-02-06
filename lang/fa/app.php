@@ -855,4 +855,5 @@ return [
     'user' => 'کاربر',
     'user_panel' => 'کاربر',
     'change_password' => 'تغییر رمز عبور',
+    'change_email' => 'تغییر ایمیل',
 ];
