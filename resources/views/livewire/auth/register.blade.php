@@ -36,15 +36,14 @@
     <flux:separator text="{{ __('or') }}" />
 
     <form wire:submit="register" class="flex flex-col gap-6">
-        <flux:input wire:model="name" label="{{ __('Name') }}" placeholder="{{ __('Your name') }}" />
+        <flux:input wire:model="first_name" label="{{ __('app.first_name') }}" />
+        <flux:input wire:model="last_name" label="{{ __('app.last_name') }}" />
+        <flux:input wire:model="mobile" label="{{ __('app.mobile') }}" />
+        <flux:input wire:model="email" label="{{ __('app.email') }}" type="email" placeholder="email@example.com" />
+        <flux:input wire:model="password" label="{{ __('app.password') }}" type="password" viewable />
+        <flux:input wire:model="password_confirmation" label="{{ __('app.password_confirmation') }}" type="password" viewable />
 
-        <flux:input wire:model="email" label="{{ __('Email') }}" type="email" placeholder="email@example.com" />
-
-        <flux:input wire:model="password" label="{{ __('Password') }}" type="password" placeholder="{{ __('Your password') }}" />
-
-        <flux:input wire:model="password_confirmation" label="{{ __('Confirm Password') }}" type="password" placeholder="{{ __('Confirm your password') }}" />
-
-        <flux:button type="submit" variant="primary" class="w-full">{{ __('Register') }}</flux:button>
+        <flux:button type="submit" variant="primary" class="w-full">{{ __('app.register') }}</flux:button>
     </form>
 
     <flux:subheading class="text-center">

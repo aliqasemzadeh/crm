@@ -61,6 +61,8 @@ return [
     'new_password' => 'رمز عبور جدید',
     'password_confirmation' => 'تکرار رمز عبور',
     'password_updated_successfully' => 'رمز عبور با موفقیت تغییر یافت.',
+    'register' => 'ثبت نام',
+    'login_id' => 'ایمیل یا شماره موبایل',
 
     // Roles & Permissions
     'roles_description' => 'نقش‌ها را جستجو و به کاربر اختصاص دهید یا حذف کنید.',

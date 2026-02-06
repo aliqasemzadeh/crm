@@ -12,7 +12,9 @@ use Livewire\Component;
 
 class Register extends Component
 {
-    public string $name = '';
+    public string $first_name = '';
+    public string $last_name = '';
+    public string $mobile = '';
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
@@ -20,7 +22,9 @@ class Register extends Component
     protected function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'mobile' => ['required', 'string', 'max:255', 'unique:users,mobile'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'password' => ['required', 'string', PasswordRule::min(8), 'confirmed'],
         ];
@@ -32,7 +36,9 @@ class Register extends Component
 
         // Create the user; password will be hashed via User model casts
         $user = User::create([
-            'name' => $validated['name'],
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'mobile' => $validated['mobile'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
         ]);

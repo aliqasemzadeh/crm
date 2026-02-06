@@ -9,14 +9,14 @@ use Livewire\Component;
 
 class Login extends Component
 {
-    public string $email = '';
+    public string $login_id = '';
     public string $password = '';
     public bool $remember = false;
 
     protected function rules(): array
     {
         return [
-            'email' => ['required', 'email'],
+            'login_id' => ['required', 'string'],
             'password' => ['required', 'string'],
             'remember' => ['boolean'],
         ];
@@ -24,16 +24,18 @@ class Login extends Component
 
     public function login()
     {
-        $validated = $this->validate();
+        $this->validate();
+
+        $fieldType = filter_var($this->login_id, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
 
         $credentials = [
-            'email' => $validated['email'],
-            'password' => $validated['password'],
+            $fieldType => $this->login_id,
+            'password' => $this->password,
         ];
 
         if (! Auth::guard('web')->attempt($credentials, $this->remember)) {
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'login_id' => trans('auth.failed'),
             ]);
         }
 
@@ -44,7 +46,7 @@ class Login extends Component
         $this->reset('password');
 
         // Redirect to intended page or dashboard
-        return $this->redirectIntended(default: route('user.dashboard.index'), navigate: true);
+        return $this->redirectIntended(default: route('home'), navigate: true);
     }
 
     #[Layout('layouts.auth')]

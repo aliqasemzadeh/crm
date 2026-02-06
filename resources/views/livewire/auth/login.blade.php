@@ -39,11 +39,11 @@
 
 
     <form wire:submit="login" class="flex flex-col gap-6">
-        <flux:input wire:model="email" label="{{ __('Email') }}" type="email" placeholder="email@example.com" />
+        <flux:input wire:model="login_id" label="{{ __('app.login_id') }}" placeholder="email@example.com / 09..." />
 
         <flux:field>
             <div class="mb-3 flex justify-between">
-                <flux:label>{{ __('Password') }}</flux:label>
+                <flux:label>{{ __('app.password') }}</flux:label>
 
                 <flux:link href="{{ route('forget-password') }}" wire:navigate variant="subtle" class="text-sm">{{ __('Forgot password?') }}</flux:link>
             </div>
@@ -53,7 +53,7 @@
 
         <flux:checkbox wire:model="remember" label="{{ __('Remember me for 30 days') }}" />
 
-        <flux:button type="submit" variant="primary" class="w-full">{{ __('Log In') }}</flux:button>
+        <flux:button type="submit" variant="primary" class="w-full">{{ __('app.login.title') }}</flux:button>
     </form>
 
     <flux:subheading class="text-center">
