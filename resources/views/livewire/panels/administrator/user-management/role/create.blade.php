@@ -1,4 +1,4 @@
-<flux:modal name="panels.administrator.user-management.role.create.modal" class="md:w-96">
+<flux:modal name="panels.administrator.user-management.role.create.modal" flyout position="right" class="md:w-96">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.create_role') }}</flux:heading>

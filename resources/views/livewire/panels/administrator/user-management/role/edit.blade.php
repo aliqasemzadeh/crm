@@ -1,4 +1,4 @@
-<flux:modal name="panels.administrator.user-management.role.edit.modal" class="md:w-96">
+<flux:modal name="panels.administrator.user-management.role.edit.modal" flyout position="right" class="md:w-96">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.edit_role') }} : {{ $role->name }}</flux:heading>
