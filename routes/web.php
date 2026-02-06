@@ -30,5 +30,7 @@ Route::middleware(['auth'])->group( function () {
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
 
-    Route::livewire('/panels/logout', \App\Livewire\Auth\Logout::class)->name('logout');
+    Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');
+    Route::livewire('/user/logout', \App\Livewire\User\ChangePassword::class)->name('user.change-password');
+    Route::livewire('/user/email', \App\Livewire\User\ChangeEmail::class)->name('user.change-email');
 });
