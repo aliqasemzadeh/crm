@@ -4,9 +4,11 @@
     @endcan
 
         @can('workspace_access')
-            <flux:sidebar.item icon="user" href="{{ route('panels.workspace.dashboard.index') }}">{{ __('app.workspace') }}</flux:sidebar.item>
+            <flux:sidebar.item icon="columns-3-cog" href="{{ route('panels.workspace.dashboard.index') }}">{{ __('app.workspace') }}</flux:sidebar.item>
         @endcan
-
+        @can('administrator_access')
+            <flux:sidebar.item icon="user-star" href="{{ route('panels.administrator.dashboard.index') }}">{{ __('app.administrator') }}</flux:sidebar.item>
+        @endcan
     @can('service_center_access')
     <flux:sidebar.item icon="cpu" href="{{ route('panels.service-center.dashboard.index') }}">{{ __('app.service_center') }}</flux:sidebar.item>
     @endcan
@@ -15,7 +17,5 @@
     <flux:sidebar.item icon="handshake" href="{{ route('panels.crm.dashboard.index') }}">{{ __('app.crm') }}</flux:sidebar.item>
     @endcan
 
-    @can('administrator_access')
-    <flux:sidebar.item icon="user-star" href="{{ route('panels.administrator.dashboard.index') }}">{{ __('app.administrator') }}</flux:sidebar.item>
-    @endcan
+
 </flux:sidebar.nav>
