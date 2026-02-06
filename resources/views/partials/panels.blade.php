@@ -12,10 +12,10 @@
     @endcan
 
     @can('crm_access')
-    <flux:sidebar.item icon="crm" href="{{ route('panels.crm.dashboard.index') }}">{{ __('app.crm') }}</flux:sidebar.item>
+    <flux:sidebar.item icon="handshake" href="{{ route('panels.crm.dashboard.index') }}">{{ __('app.crm') }}</flux:sidebar.item>
     @endcan
 
     @can('administrator_access')
-    <flux:sidebar.item icon="settings" href="{{ route('panels.administrator.dashboard.index') }}">{{ __('app.administrator') }}</flux:sidebar.item>
+    <flux:sidebar.item icon="user-star" href="{{ route('panels.administrator.dashboard.index') }}">{{ __('app.administrator') }}</flux:sidebar.item>
     @endcan
 </flux:sidebar.nav>

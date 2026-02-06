@@ -6,15 +6,11 @@
 
 
     <flux:menu>
-        @if(0)
         <flux:menu.radio.group>
-            <flux:menu.radio checked>Olivia Martin</flux:menu.radio>
-            <flux:menu.radio>Truly Delta</flux:menu.radio>
+            <flux:menu.radio>{{ __('app.change_password') }}</flux:menu.radio>
         </flux:menu.radio.group>
 
         <flux:menu.separator />
-         @endif
-
         <flux:menu.item icon="arrow-right-start-on-rectangle" href="{{ route('logout') }}">{{ __('app.logout.title') }}</flux:menu.item>
     </flux:menu>
 </flux:dropdown>

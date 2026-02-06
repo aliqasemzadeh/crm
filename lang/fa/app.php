@@ -854,4 +854,5 @@ return [
     'identification_code' => 'شناسه',
     'user' => 'کاربر',
     'user_panel' => 'کاربر',
+    'change_password' => 'تغییر رمز عبور',
 ];
