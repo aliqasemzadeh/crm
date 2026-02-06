@@ -19,20 +19,20 @@
     </div>
 
     @can('service_center_repair_create')
-    <livewire:panel.service-center.repair.create />
+    <livewire:panels.service-center.repair.create />
     @endcan
     @can('service_center_repair_view')
-    <livewire:panel.service-center.repair.problem />
-    <livewire:panel.service-center.repair.view />
+    <livewire:panels.service-center.repair.problem />
+    <livewire:panels.service-center.repair.view />
     @endcan
     @can('service_center_repair_services')
-    <livewire:panel.service-center.repair.services />
+    <livewire:panels.service-center.repair.services />
     @endcan
     @can('service_center_repair_logs')
-    <livewire:panel.service-center.repair.logs />
+    <livewire:panels.service-center.repair.logs />
     @endcan
     @can('service_center_repair_edit')
-        <livewire:panel.service-center.repair.edit />
+        <livewire:panels.service-center.repair.edit />
     @endcan
 
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
