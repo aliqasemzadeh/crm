@@ -14,9 +14,10 @@
 
 
         <flux:menu>
-            <flux:menu.radio.group>
-
-            </flux:menu.radio.group>
+            <flux:sidebar.nav>
+                <flux:sidebar.item icon="at-sign" href="{{ route('panels.user.setting.change-email') }}">{{ __('app.change_email') }}</flux:sidebar.item>
+                <flux:sidebar.item icon="key" href="{{ route('panels.user.setting.change-email') }}">{{ __('app.change_password') }}</flux:sidebar.item>
+            </flux:sidebar.nav>
 
             <flux:menu.separator />
 

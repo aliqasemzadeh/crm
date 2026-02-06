@@ -38,7 +38,7 @@ return [
     'delete' => 'حذف',
     'service_center' => 'مرکز خدمات',
     'shop' => 'فروشگاه',
-    'crm' => 'CRM',
+    'crm' => 'ارتباط با مشتریان',
     'administrator' => 'مدیریت',
     'search_placeholder' => 'جستجو...',
     'orders' => 'سفارش‌ها',
