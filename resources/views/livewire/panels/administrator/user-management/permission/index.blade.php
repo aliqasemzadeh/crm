@@ -21,7 +21,18 @@
     <livewire:panels.administrator.user-management.permission.create />
     <livewire:panels.administrator.user-management.permission.edit />
 
-    <flux:table>
+    <flux:table :paginate="$this->permissions">
+        <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
+            <flux:table.column colspan="4" class="bg-white dark:bg-zinc-900">
+                <div class="flex flex-col gap-1 pe-2 items-end">
+                    <flux:input
+                        size="sm"
+                        placeholder="{{ __('app.search_placeholder') }}"
+                        wire:model.live="search"
+                    />
+                </div>
+            </flux:table.column>
+        </flux:table.columns>
         <flux:table.columns>
             <flux:table.column sortable :sorted="$sortBy === 'name'" :direction="$sortDirection" wire:click="sort('name')">{{ __('app.name') }}</flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'guard_name'" :direction="$sortDirection" wire:click="sort('guard_name')">{{ __('app.guard_name') }}</flux:table.column>

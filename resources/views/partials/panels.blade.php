@@ -3,7 +3,7 @@
         <flux:sidebar.item icon="user" href="{{ route('panels.user.dashboard.index') }}">{{ __('app.user_panel') }}</flux:sidebar.item>
     @endcan
 
-        @can('workspace')
+        @can('workspace_access')
             <flux:sidebar.item icon="user" href="{{ route('panels.workspace.dashboard.index') }}">{{ __('app.workspace') }}</flux:sidebar.item>
         @endcan
 

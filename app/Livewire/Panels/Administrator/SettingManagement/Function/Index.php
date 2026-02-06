@@ -11,6 +11,7 @@ class Index extends Component
 {
     public function updatePermissions()
     {
+        Artisan::call('system:administrator:create-roles-command');
         Artisan::call('system:administrator:create-permissions-command');
         Flux::toast(__('app.permissions_updated'));
     }
