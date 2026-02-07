@@ -32,7 +32,9 @@ class Create extends Component
         $validated['created_by'] = auth()->id();
 
         $task = Task::create($validated);
-        $task->users()->syncWithoutDetaching([['role' => 'reviewer', 'assigned_at' => now(), 'assigned_by' => auth()->id()]]);
+        $task->users()->syncWithoutDetaching([
+            auth()->id() => ['role' => 'reviewer', 'assigned_at' => now(), 'assigned_by' => auth()->id()]
+        ]);
 
         Flux::toast(__('app.task.notifications.created'));
         $this->dispatch('panels.workspace.dashboard.index.render');
