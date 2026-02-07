@@ -144,7 +144,7 @@ return [
         'forgot_password' => 'رمز عبور را فراموش کرده‌اید؟',
         'remember_me' => 'مرا به خاطر بسپار',
         'first_time_here' => 'حساب کاربری ندارید؟',
-        'sign_up' => 'ثبت نام رایگان',
+        'sign_up' => 'ثبت نام',
         'already_have_account' => 'قبلاً ثبت نام کرده‌اید؟',
         'login_btn' => 'ورود',
         'registration_successful' => 'ثبت نام با موفقیت انجام شد.',
