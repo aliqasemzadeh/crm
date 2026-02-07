@@ -58,7 +58,39 @@
                                         @if($task->approval_status === 'pending')
                                             <flux:badge color="yellow" size="sm">{{ __('app.pending') }}</flux:badge>
                                         @elseif($task->approval_status === 'rejected')
-                                            <flux:badge color="red" size="sm">{{ __('app.rejected') }}</flux:badge>
+                                            <flux:dropdown hover position="bottom" align="start" offset="-16" gap="10">
+                                                <flux:badge color="red" size="sm" class="cursor-help">
+                                                    {{ __('app.rejected') }}
+                                                </flux:badge>
+
+                                                <flux:popover class="max-w-xs p-4">
+                                                    <div class="space-y-2">
+                                                        <flux:heading size="sm">{{ __('app.rejection_reason') }}</flux:heading>
+                                                        <flux:text size="sm">
+                                                            {{ $task->review_note ?: __('app.no_reason_provided') }}
+                                                        </flux:text>
+                                                    </div>
+                                                </flux:popover>
+                                            </flux:dropdown>
+                                        @endif
+                                    @else
+                                        @if($task->approval_status === 'rejected')
+                                            <flux:dropdown hover position="bottom" align="start" offset="-16" gap="10">
+                                                <button  type="button">
+                                                <flux:badge color="red" size="sm" class="cursor-help">
+                                                    {{ __('app.rejected') }}
+                                                </flux:badge>
+                                                </button>
+
+                                                <flux:popover class="max-w-xs p-4">
+                                                    <div class="space-y-2">
+                                                        <flux:heading size="sm">{{ __('app.rejection_reason') }}</flux:heading>
+                                                        <flux:text size="sm">
+                                                            {{ $task->review_note ?: __('app.no_reason_provided') }}
+                                                        </flux:text>
+                                                    </div>
+                                                </flux:popover>
+                                            </flux:dropdown>
                                         @endif
                                     @endif
                                 </div>

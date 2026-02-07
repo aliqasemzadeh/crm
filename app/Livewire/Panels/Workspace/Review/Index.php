@@ -61,7 +61,7 @@ class Index extends Component
             'approved_at' => now(),
         ];
 
-        // اگر رد شد، وضعیت را از done خارج کن تا دوباره اصلاح شود
+        // اگر رد شد، وضعیت را به doing برگردان تا دوباره اصلاح شود
         if ($this->approval_status === 'rejected') {
             $updateData['status'] = 'doing';
         }

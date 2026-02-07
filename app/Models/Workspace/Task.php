@@ -51,7 +51,7 @@ class Task extends Model
             if ($task->isDirty('status')) {
                 if ($task->status === 'done') {
                     $task->done_at = now();
-                    if (in_array($task->approval_status ?? 'none', ['none', null], true)) {
+                    if (in_array($task->approval_status ?? 'none', ['none', null, 'rejected'], true)) {
                         $task->approval_status = 'pending';
                     }
                 } else {

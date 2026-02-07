@@ -943,4 +943,6 @@ return [
     ],
     'pending' => 'منتظر تایید',
     'rejected' => 'رد شده',
+    'rejection_reason' => 'دلیل رد شدن',
+    'no_reason_provided' => 'دلیلی ذکر نشده است.',
 ];
