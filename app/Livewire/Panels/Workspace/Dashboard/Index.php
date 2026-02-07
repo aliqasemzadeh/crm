@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Workspace\Dashboard;
 use App\Models\Workspace\Task;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Index extends Component
@@ -143,6 +144,7 @@ class Index extends Component
         $this->reset(['title', 'description', 'status', 'priority', 'due_at', 'editingTask']);
     }
 
+    #[On('panels.workspace.dashboard.index.render')]
     #[Layout('layouts.panels.workspace')]
     public function render()
     {
