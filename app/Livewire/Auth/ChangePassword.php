@@ -38,13 +38,13 @@ class ChangePassword extends Component
         $record = DB::table('password_reset_tokens')->where('email', $this->email)->first();
 
         if (!$record || !Hash::check($this->token, $record->token)) {
-            $this->addError('email', trans('passwords.token'));
+            $this->addError('email', trans('app.passwords_token'));
             return;
         }
 
         $user = User::where('email', $this->email)->first();
         if (!$user) {
-            $this->addError('email', trans('passwords.user'));
+            $this->addError('email', trans('app.passwords_user'));
             return;
         }
 
@@ -54,7 +54,7 @@ class ChangePassword extends Component
 
         DB::table('password_reset_tokens')->where('email', $this->email)->delete();
 
-        Flux::toast(trans('passwords.reset'));
+        Flux::toast(trans('app.passwords_reset'));
 
         return $this->redirect(route('login'), navigate: true);
     }

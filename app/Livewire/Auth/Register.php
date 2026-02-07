@@ -47,7 +47,7 @@ class Register extends Component
         Auth::login($user, true);
 
         // Optionally flash a success message
-        Flux::toast(__('Registration successful.'));
+        Flux::toast(__('app.login.registration_successful'));
 
         // Redirect to intended location or home
         return $this->redirectIntended(default: '/', navigate: true);

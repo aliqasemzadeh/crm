@@ -35,7 +35,7 @@ class Login extends Component
 
         if (! Auth::guard('web')->attempt($credentials, $this->remember)) {
             throw ValidationException::withMessages([
-                'login_id' => trans('auth.failed'),
+                'login_id' => trans('app.login.auth_failed'),
             ]);
         }
 

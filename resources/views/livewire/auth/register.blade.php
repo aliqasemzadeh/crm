@@ -1,5 +1,5 @@
 <div class="space-y-6">
-    <flux:heading class="text-center" size="xl">{{ __('Sign up for free') }}</flux:heading>
+    <flux:heading class="text-center" size="xl">{{ __('app.login.sign_up') }}</flux:heading>
 
     @if(config('main.auth.socialite'))
     <div class="space-y-4">
@@ -13,7 +13,7 @@
                 </svg>
             </x-slot>
 
-            {{ __('Continue with Google') }}
+            {{ __('app.login.continue_with_google') }}
         </flux:button>
 
         <flux:button class="w-full">
@@ -30,11 +30,11 @@
                 </svg>
             </x-slot>
 
-            {{ __('Continue with GitHub') }}
+            {{ __('app.login.continue_with_github') }}
         </flux:button>
     </div>
 
-    <flux:separator text="{{ __('or') }}" />
+    <flux:separator text="{{ __('app.login.or') }}" />
     @endif
 
 
@@ -50,6 +50,6 @@
     </form>
 
     <flux:subheading class="text-center">
-        {{ __('Already have an account?') }} <flux:link href="{{ route('login') }}" wire:navigate>{{ __('Log In') }}</flux:link>
+        {{ __('app.login.already_have_account') }} <flux:link href="{{ route('login') }}" wire:navigate>{{ __('app.login.login_btn') }}</flux:link>
     </flux:subheading>
 </div>

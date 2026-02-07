@@ -47,15 +47,15 @@
             </div>
 
             <div class="mb-6 italic font-base text-3xl xl:text-4xl">
-                Flux has enabled me to design, build, and deliver apps faster than ever before.
+                {{ __('app.auth_testimonial') }}
             </div>
 
             <div class="flex gap-4">
                 <flux:avatar src="https://fluxui.dev/img/demo/caleb.png" size="xl" />
 
                 <div class="flex flex-col justify-center font-medium">
-                    <div class="text-lg">Caleb Porzio</div>
-                    <div class="text-zinc-300">Creator of Livewire</div>
+                    <div class="text-lg">{{ __('app.auth_testimonial_name') }}</div>
+                    <div class="text-zinc-300">{{ __('app.auth_testimonial_title') }}</div>
                 </div>
             </div>
         </div>

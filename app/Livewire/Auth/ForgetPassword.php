@@ -40,7 +40,7 @@ class ForgetPassword extends Component
 
         ChangePasswordCodeJob::dispatch($this->email, $token);
 
-        Flux::toast(__('We have emailed your password reset link!'));
+        Flux::toast(__('app.login.password_reset_link_sent'));
     }
 
     #[Layout('layouts.auth')]

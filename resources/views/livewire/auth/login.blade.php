@@ -1,5 +1,5 @@
 <div class="space-y-6">
-    <flux:heading class="text-center" size="xl">{{ __('Welcome back') }}</flux:heading>
+    <flux:heading class="text-center" size="xl">{{ __('app.login.welcome_back') }}</flux:heading>
 
     @if(config('main.auth.socialite'))
         <div class="space-y-4">
@@ -13,7 +13,7 @@
                     </svg>
                 </x-slot>
 
-                {{ __('Continue with Google') }}
+                {{ __('app.login.continue_with_google') }}
             </flux:button>
 
             <flux:button class="w-full">
@@ -30,11 +30,11 @@
                     </svg>
                 </x-slot>
 
-                {{ __('Continue with GitHub') }}
+                {{ __('app.login.continue_with_github') }}
             </flux:button>
         </div>
 
-        <flux:separator text="{{ __('or') }}" />
+        <flux:separator text="{{ __('app.login.or') }}" />
     @endif
 
 
@@ -45,18 +45,18 @@
             <div class="mb-3 flex justify-between">
                 <flux:label>{{ __('app.password') }}</flux:label>
 
-                <flux:link href="{{ route('forget-password') }}" wire:navigate variant="subtle" class="text-sm">{{ __('Forgot password?') }}</flux:link>
+                <flux:link href="{{ route('forget-password') }}" wire:navigate variant="subtle" class="text-sm">{{ __('app.login.forgot_password') }}</flux:link>
             </div>
 
-            <flux:input wire:model="password" type="password" placeholder="{{ __('Your password') }}" viewable/>
+            <flux:input wire:model="password" type="password" placeholder="{{ __('app.password_placeholder') }}" viewable/>
         </flux:field>
 
-        <flux:checkbox wire:model="remember" label="{{ __('Remember me for 30 days') }}" />
+        <flux:checkbox wire:model="remember" label="{{ __('app.login.remember_me') }}" />
 
-        <flux:button type="submit" variant="primary" class="w-full">{{ __('app.login.title') }}</flux:button>
+        <flux:button type="submit" variant="primary" class="w-full">{{ __('app.login.login_btn') }}</flux:button>
     </form>
 
     <flux:subheading class="text-center">
-        {{ __('First time around here?') }} <flux:link href="{{ route('register') }}" wire:navigate>{{ __('Sign up for free') }}</flux:link>
+        {{ __('app.login.first_time_here') }} <flux:link href="{{ route('register') }}" wire:navigate>{{ __('app.login.sign_up') }}</flux:link>
     </flux:subheading>
 </div>
