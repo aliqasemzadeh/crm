@@ -113,7 +113,6 @@ return [
     'edit_warranty_description' => 'اطلاعات گارانتی را ویرایش و به‌روزرسانی کنید.',
 
     // Workspace / Tasks
-    'tasks' => [
         'board' => 'برد وظایف',
         'tasks' => 'وظایف',
         'create_task' => 'ایجاد وظیفه جدید',
@@ -121,12 +120,7 @@ return [
         'edit_task' => 'ویرایش وظیفه',
         'edit_task_description' => 'ویرایش اطلاعات وظیفه انتخابی.',
         'title' => 'عنوان',
-        'description' => 'توضیحات',
-        'status' => 'وضعیت',
         'priority' => 'اولویت',
-        'due_at' => 'تاریخ سررسید',
-        'save' => 'ذخیره',
-        'cancel' => 'انصراف',
         'statuses' => [
             'planning' => 'در حال برنامه‌ریزی',
             'doing' => 'در حال انجام',
@@ -138,8 +132,6 @@ return [
             'high' => 'زیاد',
             'urgent' => 'فوری',
         ],
-        'delete' => 'حذف',
-    ],
     'colors' => 'رنگ‌ها',
     'colors_description' => 'مدیریت و مشاهده رنگ‌ها.',
     'create_color' => 'ایجاد رنگ',

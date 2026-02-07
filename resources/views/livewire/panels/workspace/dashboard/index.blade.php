@@ -10,7 +10,7 @@
 
         <flux:kanban.column>
             <flux:kanban.column.header
-                :heading="__('app.tasks.statuses.'.$status)"
+                :heading="__('app.statuses.'.$status)"
                 :count="$this->tasks->where('status', $status)->count()"
             />
 
@@ -38,7 +38,7 @@
                                     };
                                 @endphp
                                 <flux:badge :color="$priorityColor" size="sm">
-                                    {{ __('app.tasks.priorities.'.$task->priority) }}
+                                    {{ __('app.priorities.'.$task->priority) }}
                                 </flux:badge>
                             </div>
 
@@ -75,7 +75,7 @@
                                         <flux:button variant="subtle" icon="ellipsis-vertical" size="xs" />
                                         <flux:menu>
                                             <flux:menu.item icon="pencil" wire:click="openEditModal({{ $task->id }})">
-                                                {{ __('app.tasks.edit_task') }}
+                                                {{ __('app.edit_task') }}
                                             </flux:menu.item>
                                             <flux:menu.item icon="trash" variant="danger" wire:click="deleteTask({{ $task->id }})">
                                                 {{ __('app.delete') }}
@@ -92,7 +92,7 @@
             <flux:kanban.column.footer>
                 <flux:button variant="subtle" icon="plus" size="sm" class="w-full justify-start!"
                              wire:click="openCreateModal('{{ $status }}')">
-                    {{ __('app.tasks.create_task') }}
+                    {{ __('app.create_task') }}
                 </flux:button>
             </flux:kanban.column.footer>
         </flux:kanban.column>
