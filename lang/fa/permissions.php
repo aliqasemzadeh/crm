@@ -132,6 +132,16 @@ return [
 
     'workspace' => [
         'workspace_access' => 'میزکار',
+        'workspace_dashboard_index' => 'داشبرد میزکار',
+        'workspace_dashboard_task_create' => 'ایجاد وظیفه در میزکار',
+        'workspace_dashboard_task_edit' => 'ویرایش وظیفه در میزکار',
+        'workspace_task_index' => 'لیست وظایف',
+        'workspace_task_create' => 'ایجاد وظیفه',
+        'workspace_task_edit' => 'ویرایش وظیفه',
+        'workspace_review_index' => 'بررسی وظایف',
+        'workspace_review_edit' => 'ویرایش بررسی وظایف',
+        'workspace_review_approve' => 'تایید وظیفه',
+        'workspace_review_reject' => 'رد وظیفه',
     ],
 
 
