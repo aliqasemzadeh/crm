@@ -5,7 +5,7 @@
             <flux:text class="mt-2">{{ __('app.create_task_description') }}</flux:text>
         </div>
         <!-- Modal body -->
-        <form wire:submit="save" class="space-y-6 max-w-2xl">
+        <form wire:submit="create" class="space-y-6 max-w-2xl">
             <flux:input wire:model="title" label="{{ __('app.task.title') }}" />
 
             <flux:textarea wire:model="description" label="{{ __('app.task.description') }}" />
