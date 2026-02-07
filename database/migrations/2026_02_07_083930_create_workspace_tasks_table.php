@@ -20,6 +20,7 @@ return new class extends Migration
 
             // Kanban (3 ستون)
             $table->string('status', 20)->default('planning');
+            $table->integer('order')->default(0);
             // planning | doing | done
 
             // Review / Approval

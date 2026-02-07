@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Workspace\Dashboard;
 
 use App\Models\Workspace\Task;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -10,7 +11,6 @@ class Index extends Component
 {
     public $statuses = ['planning', 'doing', 'done'];
 
-    // Modal states
     public $title;
     public $description;
     public $status = 'planning';
@@ -20,40 +20,68 @@ class Index extends Component
 
     protected $listeners = ['refreshBoard' => '$refresh'];
 
-    #[\Livewire\Attributes\Computed]
+    #[Computed]
     public function tasks()
     {
-        return Task::orderBy('order')->get();
-    }
-
-    public function sort($item, $position, $group)
-    {
-        $task = Task::findOrFail($item);
-
-        $task->update([
-            'status' => $group,
-            'order' => $position,
-        ]);
-
-        // Optional: Re-order other tasks in the same group to maintain consistency
-        $tasksInGroup = Task::where('status', $group)
-            ->where('id', '!=', $item)
+        // مهم: اول status بعد order تا نتایج مرتب باشد
+        return Task::query()
+            ->orderByRaw("FIELD(status,'planning','doing','done')")
             ->orderBy('order')
             ->get();
+    }
 
-        $order = 0;
-        foreach ($tasksInGroup as $t) {
-            if ($order == $position) {
-                $order++;
-            }
-            $t->update(['order' => $order]);
-            $order++;
+    // ✅ برای هر ستون یک handler (مقصد از روی متد مشخص می‌شود)
+    public function sortPlanning($item, $position)
+    {
+        $this->persistSort($item, $position, 'planning');
+    }
+
+    public function sortDoing($item, $position)
+    {
+        $this->persistSort($item, $position, 'doing');
+    }
+
+    public function sortDone($item, $position)
+    {
+        $this->persistSort($item, $position, 'done');
+    }
+
+    private function persistSort($item, $position, string $toStatus): void
+    {
+        $task = Task::query()->findOrFail($item);
+        $fromStatus = $task->status;
+
+        // 1) آیتم را به ستون مقصد و جایگاه جدید منتقل کن
+        $task->update([
+            'status' => $toStatus,
+            'order'  => (int) $position,
+        ]);
+
+        // 2) ری-ایندکس کردن order در ستون مقصد (بدون تداخل)
+        $this->reindexStatus($toStatus);
+
+        // 3) اگر از ستون دیگری آمده، ستون مبدا را هم ری-ایندکس کن
+        if ($fromStatus !== $toStatus) {
+            $this->reindexStatus($fromStatus);
+        }
+    }
+
+    private function reindexStatus(string $status): void
+    {
+        $tasks = Task::query()
+            ->where('status', $status)
+            ->orderBy('order')
+            ->orderBy('id')
+            ->get(['id']);
+
+        foreach ($tasks as $i => $t) {
+            Task::whereKey($t->id)->update(['order' => $i]);
         }
     }
 
     public function deleteTask($id)
     {
-        Task::find($id)->delete();
+        Task::find($id)?->delete();
     }
 
     public function openCreateModal($status = 'planning')
@@ -93,7 +121,12 @@ class Index extends Component
                 'priority' => $this->priority,
                 'due_at' => $this->due_at,
             ]);
+
+            $this->reindexStatus($this->status);
         } else {
+            $order = Task::where('status', $this->status)->max('order');
+            $order = is_null($order) ? 0 : ($order + 1);
+
             Task::create([
                 'title' => $this->title,
                 'description' => $this->description,
@@ -101,21 +134,14 @@ class Index extends Component
                 'priority' => $this->priority,
                 'due_at' => $this->due_at,
                 'created_by' => auth()->id(),
-                'order' => Task::where('status', $this->status)->count(),
+                'order' => $order,
             ]);
+
+            $this->reindexStatus($this->status);
         }
 
         $this->dispatch('modal-close', id: $this->editingTask ? 'edit-task' : 'create-task');
         $this->reset(['title', 'description', 'status', 'priority', 'due_at', 'editingTask']);
-    }
-
-    public function statusOptions()
-    {
-        return [
-            'planning' => __('app.tasks.statuses.planning'),
-            'doing' => __('app.tasks.statuses.doing'),
-            'done' => __('app.tasks.statuses.done'),
-        ];
     }
 
     #[Layout('layouts.panels.workspace')]
