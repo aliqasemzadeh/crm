@@ -5,7 +5,7 @@
 
     <flux:dropdown position="top" align="start">
         @auth
-            <flux:sidebar.profile name="{{ \Illuminate\Support\Facades\Auth::user()->name ?? \Illuminate\Support\Facades\Auth::mobile() }}" />
+            <flux:sidebar.profile name="{{ auth()->user()->name ?? __('app.no_name') }}" />
         @endauth
 
         @guest

@@ -9,6 +9,9 @@
         @can('administrator_access')
             <flux:sidebar.item icon="user-star" href="{{ route('panels.administrator.dashboard.index') }}">{{ __('app.administrator') }}</flux:sidebar.item>
         @endcan
+        @can('accounting_access')
+            <flux:sidebar.item icon="chart-no-axes-combined" href="{{ route('panels.accounting.dashboard.index') }}">{{ __('app.accounting') }}</flux:sidebar.item>
+        @endcan
     @can('service_center_access')
     <flux:sidebar.item icon="cpu" href="{{ route('panels.service-center.dashboard.index') }}">{{ __('app.service_center') }}</flux:sidebar.item>
     @endcan

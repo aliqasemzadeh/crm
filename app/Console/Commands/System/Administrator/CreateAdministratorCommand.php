@@ -4,6 +4,7 @@ namespace App\Console\Commands\System\Administrator;
 
 use App\Models\User;
 use Illuminate\Console\Command;
+use Spatie\Permission\Models\Role;
 
 class CreateAdministratorCommand extends Command
 {
@@ -29,9 +30,9 @@ class CreateAdministratorCommand extends Command
         $userId = $this->ask('UserID');
         try {
             $user = User::findOrFail($userId);
-            $user->assignRole('user');
-            $user->assignRole('administrator');
-            $user->assignRole('crm');
+            foreach (__('roles') as $role => $roleTitle) {
+                $user->assignRole($role);
+            }
             $this->info('User Created Successfully');
         } catch (\Exception $e) {
             $this->error($e->getMessage());
