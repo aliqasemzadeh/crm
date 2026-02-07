@@ -50,7 +50,7 @@ class Edit extends Component
 
         Flux::toast(__('app.task.notifications.updated'));
 
-        return $this->redirect(route('workspace.tasks.index'), navigate: true);
+        return $this->redirect(route('panels.workspace.tasks.index'), navigate: true);
     }
 
     #[Layout('layouts.panels.workspace')]

@@ -25,7 +25,6 @@ class Index extends Component
     {
         // مهم: اول status بعد order تا نتایج مرتب باشد
         return Task::query()
-            ->orderByRaw("FIELD(status,'planning','doing','done')")
             ->orderBy('order')
             ->get();
     }

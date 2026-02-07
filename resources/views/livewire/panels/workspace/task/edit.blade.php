@@ -28,7 +28,7 @@
 
             <div class="flex gap-2">
                 <flux:button type="submit" variant="primary">{{ __('app.task.save') }}</flux:button>
-                <flux:button href="{{ route('workspace.tasks.index') }}" variant="ghost" wire:navigate>{{ __('app.task.cancel') }}</flux:button>
+                <flux:button href="{{ route('panels.workspace.tasks.index') }}" variant="ghost" wire:navigate>{{ __('app.task.cancel') }}</flux:button>
             </div>
         </form>
     </flux:main>
