@@ -25,7 +25,9 @@ class Index extends Component
     public function tasks()
     {
         // مهم: اول status بعد order تا نتایج مرتب باشد
-        return Task::query()
+        return auth()
+            ->user()
+            ->tasks()
             ->orderBy('order')
             ->get();
     }

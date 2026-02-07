@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Workspace\Dashboard\Task;
 
 use App\Models\Workspace\Task;
+use Carbon\Carbon;
 use Flux\Flux;
 use Livewire\Component;
 
@@ -31,6 +32,7 @@ class Create extends Component
         $validated['created_by'] = auth()->id();
 
         $task = Task::create($validated);
+        $task->users()->syncWithoutDetaching([['role' => 'reviewer', 'assigned_at' => now(), 'assigned_by' => auth()->id()]]);
 
         Flux::toast(__('app.task.notifications.created'));
         $this->dispatch('panels.workspace.dashboard.index.render');
