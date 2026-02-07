@@ -24,7 +24,7 @@
 
     <flux:table :paginate="$this->users">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column colspan="3" class="bg-white dark:bg-zinc-900">
+            <flux:table.column colspan="4" class="bg-white dark:bg-zinc-900">
                 <div class="flex flex-col gap-1 pe-2 items-end">
                     <flux:input
                         size="sm"
@@ -35,6 +35,7 @@
             </flux:table.column>
         </flux:table.columns>
         <flux:table.columns>
+            <flux:table.column>{{ __('app.id') }}</flux:table.column>
             <flux:table.column>{{ __('app.mobile') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column sortable sorted direction="desc">{{ __('app.date') }}</flux:table.column>
@@ -42,6 +43,9 @@
         <flux:table.rows>
             @foreach ($this->users as $user)
                 <flux:table.row :key="$user->id">
+                    <flux:table.cell>
+                        {{ $user->id }}
+                    </flux:table.cell>
                     <flux:table.cell class="flex items-center gap-3">
                         {{ $user->mobile }}
                     </flux:table.cell>

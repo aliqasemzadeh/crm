@@ -46,7 +46,7 @@ class Index extends Component
                 });
             })
             ->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
-            ->paginate(5);
+            ->paginate(20);
     }
 
     public function updatingSearch(): void
