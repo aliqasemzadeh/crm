@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('repairs', function (Blueprint $table) {
+        Schema::create('service_center_repairs', function (Blueprint $table) {
             $table->id();
 
             // Admission User Detail
@@ -55,6 +55,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('repairs');
+        Schema::dropIfExists('service_center_repairs');
     }
 };

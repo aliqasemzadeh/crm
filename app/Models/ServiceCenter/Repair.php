@@ -13,6 +13,8 @@ class Repair extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'service_center_repairs';
+
     /**
      * The attributes that are mass assignable.
      *

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('repair_logs', function (Blueprint $table) {
+        Schema::create('service_center_repair_logs', function (Blueprint $table) {
             $table->id();
             $table->string('status')->default('pending');
             $table->bigInteger('repair_id');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('repair_logs');
+        Schema::dropIfExists('service_center_repair_logs');
     }
 };

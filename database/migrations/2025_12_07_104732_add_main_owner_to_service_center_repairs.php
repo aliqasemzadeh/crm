@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('repair_services', function (Blueprint $table) {
-            $table->string('service_type')->default('service')->after('description'); //service,part,custom,other
+        Schema::table('service_center_repairs', function (Blueprint $table) {
+            $table->string('owner_organization')->nullable();
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('repair_services', function (Blueprint $table) {
-            $table->dropColumn('service_type');
+        Schema::table('service_center_repairs', function (Blueprint $table) {
+            $table->dropColumn('owner_organization');
         });
     }
 };
