@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Workspace\Dashboard;
 
 use App\Models\Workspace\Task;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -22,69 +23,127 @@ class Index extends Component
     #[Computed]
     public function tasks()
     {
-        // مهم: اول status بعد order تا نتایج مرتب باشد
+        // فقط task های همین کاربر
         return auth()
             ->user()
             ->tasks()
+            ->orderByRaw("
+            CASE status
+                WHEN 'planning' THEN 1
+                WHEN 'doing' THEN 2
+                WHEN 'done' THEN 3
+                ELSE 99
+            END
+        ")
             ->orderBy('order')
+            ->orderBy('id')
             ->get();
     }
 
-    // ✅ برای هر ستون یک handler (مقصد از روی متد مشخص می‌شود)
-    public function sortPlanning($item, $position)
+    // ✅ برای هر ستون یک handler
+    public function sortPlanning($item, $position): void
     {
-        $this->persistSort($item, $position, 'planning');
+        $this->moveTask((int) $item, (int) $position, 'planning');
     }
 
-    public function sortDoing($item, $position)
+    public function sortDoing($item, $position): void
     {
-        $this->persistSort($item, $position, 'doing');
+        $this->moveTask((int) $item, (int) $position, 'doing');
     }
 
-    public function sortDone($item, $position)
+    public function sortDone($item, $position): void
     {
-        $this->persistSort($item, $position, 'done');
+        $this->moveTask((int) $item, (int) $position, 'done');
     }
 
-    private function persistSort($item, $position, string $toStatus): void
+    /**
+     * مرتب‌سازی صحیح با شیفت دادن بازه‌ها
+     * - فقط روی task های همین کاربر
+     * - بدون reindex کامل
+     */
+    private function moveTask(int $taskId, int $newPosition, string $toStatus): void
     {
-        $task = Task::query()->findOrFail($item);
-        $fromStatus = $task->status;
+        $userId = auth()->id();
 
-        // 1) آیتم را به ستون مقصد و جایگاه جدید منتقل کن
-        $task->update([
-            'status' => $toStatus,
-            'order'  => (int) $position,
-        ]);
+        DB::transaction(function () use ($taskId, $newPosition, $toStatus, $userId) {
+            // امنیت: فقط taskهایی که به این کاربر وصل‌اند قابل جابجایی باشند
+            $task = Task::query()
+                ->whereHas('users', fn ($q) => $q->where('users.id', $userId))
+                ->lockForUpdate()
+                ->findOrFail($taskId);
 
-        // 2) ری-ایندکس کردن order در ستون مقصد (بدون تداخل)
-        $this->reindexStatus($toStatus);
+            $fromStatus = $task->status;
+            $fromOrder  = (int) $task->order;
 
-        // 3) اگر از ستون دیگری آمده، ستون مبدا را هم ری-ایندکس کن
-        if ($fromStatus !== $toStatus) {
-            $this->reindexStatus($fromStatus);
-        }
+            // وقتی وارد done شد و هنوز approval ندارد => pending
+            $approvalPatch = [];
+            if ($toStatus === 'done' && in_array($task->approval_status ?? 'none', ['none', null], true)) {
+                $approvalPatch = ['approval_status' => 'pending'];
+            }
+
+            // Scopes: فقط taskهای همین کاربر در همان status
+            $scopeStatusForUser = function (string $status) use ($userId) {
+                return Task::query()
+                    ->where('status', $status)
+                    ->whereHas('users', fn ($q) => $q->where('users.id', $userId));
+            };
+
+            // داخل همان ستون
+            if ($fromStatus === $toStatus) {
+                if ($newPosition === $fromOrder) {
+                    return;
+                }
+
+                if ($newPosition > $fromOrder) {
+                    // حرکت به پایین: (fromOrder+1 .. newPosition) => order - 1
+                    $scopeStatusForUser($toStatus)
+                        ->where('order', '>', $fromOrder)
+                        ->where('order', '<=', $newPosition)
+                        ->update(['order' => DB::raw('`order` - 1')]);
+                } else {
+                    // حرکت به بالا: (newPosition .. fromOrder-1) => order + 1
+                    $scopeStatusForUser($toStatus)
+                        ->where('order', '>=', $newPosition)
+                        ->where('order', '<', $fromOrder)
+                        ->update(['order' => DB::raw('`order` + 1')]);
+                }
+
+                $task->update(array_merge([
+                    'order' => $newPosition,
+                ], $approvalPatch));
+
+                return;
+            }
+
+            // بین ستون‌ها
+            // 1) مقصد جا باز کند: order >= newPosition => +1
+            $scopeStatusForUser($toStatus)
+                ->where('order', '>=', $newPosition)
+                ->update(['order' => DB::raw('`order` + 1')]);
+
+            // 2) task منتقل شود
+            $task->update(array_merge([
+                'status' => $toStatus,
+                'order'  => $newPosition,
+            ], $approvalPatch));
+
+            // 3) مبدا جمع شود: order > fromOrder => -1
+            $scopeStatusForUser($fromStatus)
+                ->where('order', '>', $fromOrder)
+                ->update(['order' => DB::raw('`order` - 1')]);
+        });
     }
 
-    private function reindexStatus(string $status): void
+    public function deleteTask($id): void
     {
-        $tasks = Task::query()
-            ->where('status', $status)
-            ->orderBy('order')
-            ->orderBy('id')
-            ->get(['id']);
-
-        foreach ($tasks as $i => $t) {
-            Task::whereKey($t->id)->update(['order' => $i]);
-        }
+        // فقط taskهای همین کاربر
+        Task::query()
+            ->whereHas('users', fn ($q) => $q->where('users.id', auth()->id()))
+            ->whereKey($id)
+            ->first()?->delete();
     }
 
-    public function deleteTask($id)
-    {
-        Task::find($id)?->delete();
-    }
-
-    public function openCreateModal($status = 'planning')
+    public function openCreateModal($status = 'planning'): void
     {
         $this->reset(['title', 'description', 'due_at', 'editingTask']);
         $this->status = $status;
@@ -92,8 +151,14 @@ class Index extends Component
         $this->dispatch('modal-show', id: 'create-task');
     }
 
-    public function openEditModal(Task $task)
+    public function openEditModal(Task $task): void
     {
+        // امنیت: فقط taskهای این کاربر قابل ادیت
+        abort_unless(
+            $task->users()->where('users.id', auth()->id())->exists(),
+            403
+        );
+
         $this->editingTask = $task;
         $this->title = $task->title;
         $this->description = $task->description;
@@ -103,7 +168,7 @@ class Index extends Component
         $this->dispatch('modal-show', id: 'edit-task');
     }
 
-    public function saveTask()
+    public function saveTask(): void
     {
         $this->validate([
             'title' => 'required|string|max:200',
@@ -113,32 +178,74 @@ class Index extends Component
             'due_at' => 'nullable|date',
         ]);
 
-        if ($this->editingTask) {
-            $this->editingTask->update([
+        $userId = auth()->id();
+
+        DB::transaction(function () use ($userId) {
+            if ($this->editingTask) {
+                // امنیت: فقط taskهای این کاربر
+                $task = Task::query()
+                    ->whereHas('users', fn ($q) => $q->where('users.id', $userId))
+                    ->lockForUpdate()
+                    ->findOrFail($this->editingTask->id);
+
+                $oldStatus = $task->status;
+
+                $task->update([
+                    'title' => $this->title,
+                    'description' => $this->description,
+                    'status' => $this->status,
+                    'priority' => $this->priority,
+                    'due_at' => $this->due_at,
+                ]);
+
+                // اگر رفت به done و approval ندارد => pending
+                if ($task->status === 'done' && in_array($task->approval_status ?? 'none', ['none', null], true)) {
+                    $task->update(['approval_status' => 'pending']);
+                }
+
+                // اگر status تغییر کرد، به انتهای ستون مقصد ببر (تا ترتیب قاطی نشود)
+                if ($oldStatus !== $task->status) {
+                    $max = Task::query()
+                        ->where('status', $task->status)
+                        ->whereHas('users', fn ($q) => $q->where('users.id', $userId))
+                        ->max('order');
+
+                    $task->update(['order' => is_null($max) ? 0 : ($max + 1)]);
+                }
+
+                return;
+            }
+
+            $max = Task::query()
+                ->where('status', $this->status)
+                ->whereHas('users', fn ($q) => $q->where('users.id', $userId))
+                ->max('order');
+
+            $order = is_null($max) ? 0 : ($max + 1);
+
+            $approval_status = ($this->status === 'done') ? 'pending' : 'none';
+
+            $task = Task::create([
                 'title' => $this->title,
                 'description' => $this->description,
                 'status' => $this->status,
                 'priority' => $this->priority,
                 'due_at' => $this->due_at,
-            ]);
-
-            $this->reindexStatus($this->status);
-        } else {
-            $order = Task::where('status', $this->status)->max('order');
-            $order = is_null($order) ? 0 : ($order + 1);
-
-            Task::create([
-                'title' => $this->title,
-                'description' => $this->description,
-                'status' => $this->status,
-                'priority' => $this->priority,
-                'due_at' => $this->due_at,
-                'created_by' => auth()->id(),
+                'created_by' => $userId,
                 'order' => $order,
+                'approval_status' => $approval_status,
+                'source' => 'user',
             ]);
 
-            $this->reindexStatus($this->status);
-        }
+            // اگر می‌خواهی task اتومات به سازنده وصل شود:
+            $task->users()->syncWithoutDetaching([
+                $userId => [
+                    'role' => 'assignee',
+                    'assigned_at' => now(),
+                    'assigned_by' => $userId,
+                ],
+            ]);
+        });
 
         $this->dispatch('modal-close', id: $this->editingTask ? 'edit-task' : 'create-task');
         $this->reset(['title', 'description', 'status', 'priority', 'due_at', 'editingTask']);
