@@ -111,6 +111,35 @@ return [
     'create_warranty_description' => 'برای ایجاد گارانتی جدید، اطلاعات زیر را تکمیل کنید.',
     'edit_warranty' => 'ویرایش گارانتی',
     'edit_warranty_description' => 'اطلاعات گارانتی را ویرایش و به‌روزرسانی کنید.',
+
+    // Workspace / Tasks
+    'tasks' => [
+        'board' => 'برد وظایف',
+        'tasks' => 'وظایف',
+        'create_task' => 'ایجاد وظیفه جدید',
+        'create_task_description' => 'ایجاد وظیفه جدید برای برد.',
+        'edit_task' => 'ویرایش وظیفه',
+        'edit_task_description' => 'ویرایش اطلاعات وظیفه انتخابی.',
+        'title' => 'عنوان',
+        'description' => 'توضیحات',
+        'status' => 'وضعیت',
+        'priority' => 'اولویت',
+        'due_at' => 'تاریخ سررسید',
+        'save' => 'ذخیره',
+        'cancel' => 'انصراف',
+        'statuses' => [
+            'planning' => 'در حال برنامه‌ریزی',
+            'doing' => 'در حال انجام',
+            'done' => 'انجام شده',
+        ],
+        'priorities' => [
+            'low' => 'کم',
+            'medium' => 'متوسط',
+            'high' => 'زیاد',
+            'urgent' => 'فوری',
+        ],
+        'delete' => 'حذف',
+    ],
     'colors' => 'رنگ‌ها',
     'colors_description' => 'مدیریت و مشاهده رنگ‌ها.',
     'create_color' => 'ایجاد رنگ',
@@ -866,7 +895,6 @@ return [
     'change_mobile' => 'تغییر موبایل',
     'workspace' => 'میزکار',
     'no_name' => 'بدون نام',
-    'tasks' => 'تسک‌ها',
     'task' => [
         'title' => 'عنوان تسک',
         'description' => 'توضیحات',

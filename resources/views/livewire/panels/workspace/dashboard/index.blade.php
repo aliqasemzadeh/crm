@@ -1,72 +1,138 @@
 <div>
     <flux:main>
-        <div class="flex flex-col md:flex-row gap-6 justify-between md:items-center mb-6">
-            <flux:breadcrumbs>
-                <flux:breadcrumbs.item href="#" divider="slash">Acme Inc.</flux:breadcrumbs.item>
-                <flux:breadcrumbs.item href="#" divider="slash">iOS App V2</flux:breadcrumbs.item>
-            </flux:breadcrumbs>
+        <flux:kanban>
+            @foreach ($statuses as $status)
+                <flux:kanban.column>
+                    <flux:kanban.column.header :heading="__('app.tasks.statuses.'.$status)" :count="$this->tasks->where('status', $status)->count()" />
 
-            <div class="flex gap-4">
-                <flux:dropdown position="bottom" align="end">
-                    <flux:button size="sm" variant="filled" icon:trailing="chevron-down">Filters</flux:button>
-
-                    <flux:menu>
-                        <flux:menu.item>Archive</flux:menu.item>
-                        <flux:menu.item>Delete</flux:menu.item>
-                    </flux:menu>
-                </flux:dropdown>
-
-                <flux:tabs variant="segmented" size="sm" class="-my-px h-auto! max-md:hidden">
-                    <flux:tab name="board" selected>Board</flux:tab>
-                    <flux:tab name="list">List</flux:tab>
-                    <flux:tab name="timeline">Timeline</flux:tab>
-                </flux:tabs>
-
-                <flux:separator vertical class="my-2" />
-
-                <flux:avatar.group>
-                    @foreach (['Caleb Porzio', 'River Porzio', 'Knox Porzio'] as $item)
-                        <flux:avatar size="sm" tooltip name="{{ $item }}" src="https://i.pravatar.cc/100?img={{ $loop->index + 12 }}" />
-                    @endforeach
-
-                    <flux:avatar size="sm">3+</flux:avatar>
-                </flux:avatar.group>
-
-                <flux:button variant="filled" size="sm">Invite</flux:button>
-            </div>
-        </div>
-
-        <div class="overflow-x-auto -m-6 p-6">
-            <div class="flex gap-4">
-                @foreach ($this->columns as $column)
-                    <div>
-                        <div class="rounded-lg w-80 max-w-80 bg-zinc-400/5 dark:bg-zinc-900">
-                            <div class="px-4 py-4 flex justify-between items-start">
-                                <div>
-                                    <flux:heading>{{ $column['title'] }}</flux:heading>
-                                    <flux:subheading class="mb-0!">11 tasks</flux:subheading>
-                                </div>
-                                <flux:button variant="subtle" icon="ellipsis-horizontal" size="sm" />
-                            </div>
-                            <div class="flex flex-col gap-2 px-2">
-                                @foreach ($column['cards'] as $card)
-                                    <div class="bg-white rounded-lg shadow-xs border border-zinc-200 dark:border-white/10 dark:bg-zinc-800 p-3 space-y-2">
-                                        <div class="flex gap-2">
-                                            @foreach ($card['badges'] as $badge)
-                                                <flux:badge :color="$badge['color']" size="sm">{{ $badge['title'] }}</flux:badge>
-                                            @endforeach
-                                        </div>
-                                        <flux:heading>{{ $card['title'] }}</flux:heading>
+                    <flux:kanban.column.cards wire:sort="sort" wire:sort:group="{{ $status }}" :key="'col-'.$status">
+                        @foreach ($this->tasks->where('status', $status)->sortBy('order') as $task)
+                            <flux:kanban.card wire:sort:item="{{ $task->id }}" :key="'task-'.$task->id">
+                                <div class="space-y-2">
+                                    <div class="flex items-center gap-2">
+                                        @php
+                                            $priorityColor = match($task->priority) {
+                                                'low' => 'blue',
+                                                'medium' => 'yellow',
+                                                'high' => 'orange',
+                                                'urgent' => 'red',
+                                                default => 'zinc'
+                                            };
+                                        @endphp
+                                        <flux:badge :color="$priorityColor" size="sm">{{ __('app.tasks.priorities.'.$task->priority) }}</flux:badge>
                                     </div>
-                                @endforeach
-                            </div>
-                            <div class="px-2 py-2">
-                                <flux:button variant="subtle" icon="plus" size="sm" class="w-full justify-start!">New task</flux:button>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
+                                    <div class="text-sm text-zinc-600 dark:text-zinc-400">
+                                        <div class="font-medium cursor-pointer" wire:click="openEditModal({{ $task->id }})">{{ $task->title }}</div>
+                                        <div class="text-xs mt-1">{{ Str::limit($task->description, 50) }}</div>
+                                    </div>
+                                </div>
+
+                                <x-slot name="footer">
+                                    <div class="flex justify-between items-center w-full">
+                                         @if($task->due_at)
+                                            <div class="flex items-center gap-1">
+                                                <flux:icon name="calendar" variant="micro" class="text-zinc-400" />
+                                                <span class="text-xs text-zinc-500 dark:text-zinc-400">
+                                                    {{ $task->due_at->format('Y/m/d') }}
+                                                </span>
+                                            </div>
+                                         @else
+                                            <div></div>
+                                         @endif
+
+                                        <flux:dropdown>
+                                            <flux:button variant="subtle" icon="ellipsis-vertical" size="xs" />
+                                            <flux:menu>
+                                                <flux:menu.item icon="pencil" wire:click="openEditModal({{ $task->id }})">{{ __('app.tasks.edit_task') }}</flux:menu.item>
+                                                <flux:menu.item icon="trash" variant="danger" wire:click="deleteTask({{ $task->id }})">{{ __('app.delete') }}</flux:menu.item>
+                                            </flux:menu>
+                                        </flux:dropdown>
+                                    </div>
+                                </x-slot>
+                            </flux:kanban.card>
+                        @endforeach
+                    </flux:kanban.column.cards>
+                    <flux:kanban.column.footer>
+                         <flux:button variant="subtle" icon="plus" size="sm" class="w-full justify-start!" wire:click="openCreateModal('{{ $status }}')">{{ __('app.tasks.create_task') }}</flux:button>
+                    </flux:kanban.column.footer>
+                </flux:kanban.column>
+            @endforeach
+        </flux:kanban>
+
+        {{-- Create Task Modal --}}
+        <flux:modal name="create-task" variant="floating" class="md:w-lg">
+            <form wire:submit="saveTask" class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('app.tasks.create_task') }}</flux:heading>
+                    <flux:subheading>{{ __('app.tasks.create_task_description') }}</flux:subheading>
+                </div>
+
+                <flux:input wire:model="title" label="{{ __('app.tasks.title') }}" />
+
+                <flux:textarea wire:model="description" label="{{ __('app.tasks.description') }}" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <flux:select wire:model="status" label="{{ __('app.tasks.status') }}">
+                        @foreach($this->statusOptions() as $val => $label)
+                            <flux:select.option value="{{ $val }}">{{ $label }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+
+                    <flux:select wire:model="priority" label="{{ __('app.tasks.priority') }}">
+                        <flux:select.option value="low"><flux:badge color="blue" size="sm" inset="top bottom">{{ __('app.tasks.priorities.low') }}</flux:badge></flux:select.option>
+                        <flux:select.option value="medium"><flux:badge color="yellow" size="sm" inset="top bottom">{{ __('app.tasks.priorities.medium') }}</flux:badge></flux:select.option>
+                        <flux:select.option value="high"><flux:badge color="orange" size="sm" inset="top bottom">{{ __('app.tasks.priorities.high') }}</flux:badge></flux:select.option>
+                        <flux:select.option value="urgent"><flux:badge color="red" size="sm" inset="top bottom">{{ __('app.tasks.priorities.urgent') }}</flux:badge></flux:select.option>
+                    </flux:select>
+                </div>
+
+                <flux:input type="date" wire:model="due_at" label="{{ __('app.tasks.due_at') }}" />
+
+                <div class="flex items-center justify-end gap-2">
+                    <flux:modal.close>
+                        <flux:button variant="filled">{{ __('app.tasks.cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary">{{ __('app.tasks.save') }}</flux:button>
+                </div>
+            </form>
+        </flux:modal>
+
+        {{-- Edit Task Modal --}}
+        <flux:modal name="edit-task" variant="floating" class="md:w-lg">
+            <form wire:submit="saveTask" class="space-y-6">
+                <div>
+                    <flux:heading size="lg">{{ __('app.tasks.edit_task') }}</flux:heading>
+                    <flux:subheading>{{ __('app.tasks.edit_task_description') }}</flux:subheading>
+                </div>
+
+                <flux:input wire:model="title" label="{{ __('app.tasks.title') }}" />
+
+                <flux:textarea wire:model="description" label="{{ __('app.tasks.description') }}" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <flux:select wire:model="status" label="{{ __('app.tasks.status') }}">
+                        @foreach($this->statusOptions() as $val => $label)
+                            <flux:select.option value="{{ $val }}">{{ $label }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+
+                    <flux:select wire:model="priority" label="{{ __('app.tasks.priority') }}">
+                        <flux:select.option value="low"><flux:badge color="blue" size="sm" inset="top bottom">{{ __('app.tasks.priorities.low') }}</flux:badge></flux:select.option>
+                        <flux:select.option value="medium"><flux:badge color="yellow" size="sm" inset="top bottom">{{ __('app.tasks.priorities.medium') }}</flux:badge></flux:select.option>
+                        <flux:select.option value="high"><flux:badge color="orange" size="sm" inset="top bottom">{{ __('app.tasks.priorities.high') }}</flux:badge></flux:select.option>
+                        <flux:select.option value="urgent"><flux:badge color="red" size="sm" inset="top bottom">{{ __('app.tasks.priorities.urgent') }}</flux:badge></flux:select.option>
+                    </flux:select>
+                </div>
+
+                <flux:input type="date" wire:model="due_at" label="{{ __('app.tasks.due_at') }}" />
+
+                <div class="flex items-center justify-end gap-2">
+                    <flux:modal.close>
+                        <flux:button variant="filled">{{ __('app.tasks.cancel') }}</flux:button>
+                    </flux:modal.close>
+                    <flux:button type="submit" variant="primary">{{ __('app.tasks.save') }}</flux:button>
+                </div>
+            </form>
+        </flux:modal>
     </flux:main>
 </div>

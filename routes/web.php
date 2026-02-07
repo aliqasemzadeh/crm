@@ -33,9 +33,9 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/service-center/repair/index', \App\Livewire\Panels\ServiceCenter\Repair\Index::class)->name('panels.service-center.repair.index');
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
-    Route::livewire('/panels/workspace/tasks', \App\Livewire\Panels\Workspace\Task\Index::class)->name('workspace.tasks.index');
-    Route::livewire('/panels/workspace/tasks/create', \App\Livewire\Panels\Workspace\Task\Create::class)->name('workspace.tasks.create');
-    Route::livewire('/panels/workspace/tasks/{task}/edit', \App\Livewire\Panels\Workspace\Task\Edit::class)->name('workspace.tasks.edit');
+    Route::livewire('/panels/workspace/tasks', \App\Livewire\Panels\Workspace\Task\Index::class)->name('panels.workspace.tasks.index');
+    Route::livewire('/panels/workspace/tasks/create', \App\Livewire\Panels\Workspace\Task\Create::class)->name('panels.workspace.tasks.create');
+    Route::livewire('/panels/workspace/tasks/{task}/edit', \App\Livewire\Panels\Workspace\Task\Edit::class)->name('panels.workspace.tasks.edit');
 
     Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
 

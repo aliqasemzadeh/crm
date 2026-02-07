@@ -20,6 +20,7 @@ class Task extends Model
 
         // Kanban
         'status',            // planning | doing | done
+        'order',
 
         // Review / Approval
         'approval_status',   // none | pending | approved | rejected

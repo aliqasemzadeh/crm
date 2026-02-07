@@ -11,7 +11,7 @@
 
     <flux:sidebar.nav>
         <flux:sidebar.item icon="home" href="{{ route('panels.workspace.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="clipboard-document-list" href="{{ route('workspace.tasks.index') }}" wire:navigate>{{ __('app.tasks') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="clipboard-document-list" href="{{ route('panels.workspace.tasks.index') }}" wire:navigate>{{ __('app.tasks.tasks') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
