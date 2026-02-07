@@ -19,8 +19,6 @@ class Index extends Component
     public $due_at;
     public ?Task $editingTask = null;
 
-    protected $listeners = ['refreshBoard' => '$refresh'];
-
     #[Computed]
     public function tasks()
     {
