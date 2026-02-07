@@ -16,6 +16,7 @@ class Index extends Component
     public $selectedTask;
     public $review_note;
     public $approval_status;
+    public $filter = 'pending';
 
     public $sortBy = 'done_at';
     public $sortDirection = 'asc';
@@ -33,8 +34,13 @@ class Index extends Component
     #[\Livewire\Attributes\Computed]
     public function tasks()
     {
-        return Task::where('status', 'done')
-            ->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
+        $query = Task::with('users')->where('status', 'done');
+
+        if ($this->filter === 'pending') {
+            $query->where('approval_status', 'pending');
+        }
+
+        return $query->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
             ->paginate(10);
     }
 
