@@ -93,10 +93,12 @@
                 </flux:kanban.column.cards>
 
                 <flux:kanban.column.footer>
-                    <flux:button variant="subtle" icon="plus" size="sm" class="w-full justify-start!"
-                                 wire:click="openCreateModal('{{ $status }}')">
-                        {{ __('app.create_task') }}
-                    </flux:button>
+
+                    <flux:modal.trigger name="panels.workspace.dashboard.task.create.modal">
+                        <flux:button variant="subtle" icon="plus" size="sm" class="w-full justify-start!">
+                            {{ __('app.create_task') }}
+                        </flux:button>
+                    </flux:modal.trigger>
                 </flux:kanban.column.footer>
             </flux:kanban.column>
         @endforeach
