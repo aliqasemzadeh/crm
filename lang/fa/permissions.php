@@ -138,10 +138,20 @@ return [
         'workspace_task_index' => 'لیست وظایف',
         'workspace_task_create' => 'ایجاد وظیفه',
         'workspace_task_edit' => 'ویرایش وظیفه',
+        'workspace_task_delete' => 'ویرایش وظیفه',
+    ],
+
+    'workspace_review' => [
+        'workspace_access' => 'میزکار',
         'workspace_review_index' => 'بررسی وظایف',
         'workspace_review_edit' => 'ویرایش بررسی وظایف',
         'workspace_review_approve' => 'تایید وظیفه',
         'workspace_review_reject' => 'رد وظیفه',
+        'workspace_review_user_task' => 'مشاهده وظایف',
+        'workspace_review_user_task_board' => 'مشاهده برد وظایف',
+        'workspace_review_user_task_edit' => 'ویرایش بررسی وظایف',
+        'workspace_review_user_task_delete' => 'حذف بررسی وظایف',
+        'workspace_review_user_task_assign' => 'تخصیص وظیفه بررسی وظایف',
     ],
 
 

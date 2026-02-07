@@ -27,84 +27,19 @@ class CreatePermissionsCommand extends Command
      */
     public function handle()
     {
-        $user = Role::findByName('user');
-        $permissions_user = __('permissions.user');
+        foreach (__('roles') as $role => $roleTitle) {
+            $user = Role::findByName($role);
+            $permissions = __('permissions.'.$role);
 
-        foreach ($permissions_user as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
+            foreach ($permissions as $permission => $translate) {
+                Permission::firstOrCreate(
+                    ['name' => $permission]
+                );
+            }
+
+            foreach ($permissions as $permission => $translate) {
+                $user->givePermissionTo($permission);
+            }
         }
-
-        foreach ($permissions_user as $permission => $translate) {
-            $user->givePermissionTo($permission);
-        }
-
-        $administrator = Role::findByname('administrator');
-        $permissions_administrator = __('permissions.administrator');
-
-        foreach ($permissions_administrator as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
-        }
-
-        foreach ($permissions_administrator as $permission => $translate) {
-            $administrator->givePermissionTo($permission);
-        }
-
-        $crm = Role::findByName('crm');
-        $permissions_crm = __('permissions.crm');
-
-        foreach ($permissions_crm as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
-        }
-
-        foreach ($permissions_crm as $permission => $translate) {
-            $crm->givePermissionTo($permission);
-        }
-
-
-        $service_center = Role::findByName('service_center');
-        $permissions_service_center = __('permissions.service_center');
-
-        foreach ($permissions_service_center as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
-        }
-
-        foreach ($permissions_service_center as $permission => $translate) {
-            $service_center->givePermissionTo($permission);
-        }
-
-        $accounting = Role::findByName('accounting');
-        $permissions_accounting = __('permissions.accounting');
-
-        foreach ($permissions_accounting as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
-        }
-
-        foreach ($permissions_accounting as $permission => $translate) {
-            $accounting->givePermissionTo($permission);
-        }
-
-        $workspace = Role::findByName('workspace');
-        $permissions_workspace = __('permissions.workspace');
-
-        foreach ($permissions_workspace as $permission => $translate) {
-            Permission::firstOrCreate(
-                ['name' => $permission]
-            );
-        }
-
-        foreach ($permissions_workspace as $permission => $translate) {
-            $workspace->givePermissionTo($permission);
-        }
-
     }
 }
