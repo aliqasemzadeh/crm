@@ -72,6 +72,8 @@
                                                     </div>
                                                 </flux:popover>
                                             </flux:dropdown>
+                                        @elseif($task->approval_status === 'approved')
+                                            <flux:badge color="green" size="sm">{{ __('app.task.review.status_approved') }}</flux:badge>
                                         @endif
                                     @else
                                         @if($task->approval_status === 'rejected')
@@ -99,8 +101,10 @@
                                     {{-- clickable area must not start drag --}}
                                     <div wire:sort:ignore>
                                         <div
-                                            class="font-medium cursor-pointer"
-                                            wire:click="$dispatch('panels.workspace.dashboard.task.edit.open', { id: {{ $task->id }} })"
+                                            class="font-medium @if($task->approval_status !== 'approved') cursor-pointer @endif"
+                                            @if($task->approval_status !== 'approved')
+                                                wire:click="$dispatch('panels.workspace.dashboard.task.edit.open', { id: {{ $task->id }} })"
+                                            @endif
                                         >
                                             {{ $task->title }}
                                         </div>
@@ -132,14 +136,16 @@
                                         <flux:dropdown>
                                             <flux:button variant="subtle" icon="ellipsis-vertical" size="xs" />
                                             <flux:menu>
-                                                <flux:menu.item
-                                                    icon="pencil"
-                                                    wire:click="$dispatch('panels.workspace.dashboard.task.edit.assign-data', { id: {{ $task->id }} })"
-                                                >
-                                                    {{ __('app.edit_task') }}
-                                                </flux:menu.item>
+                                                @if($task->approval_status !== 'approved')
+                                                    <flux:menu.item
+                                                        icon="pencil"
+                                                        wire:click="$dispatch('panels.workspace.dashboard.task.edit.assign-data', { id: {{ $task->id }} })"
+                                                    >
+                                                        {{ __('app.edit_task') }}
+                                                    </flux:menu.item>
+                                                @endif
 
-                                                @if($task->status !== 'done')
+                                                @if($task->status !== 'done' && $task->approval_status !== 'approved')
                                                     <flux:menu.item
                                                         icon="trash"
                                                         variant="danger"

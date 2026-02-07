@@ -1,10 +1,26 @@
 <div>
     <flux:main>
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <flux:heading size="xl">{{ __('app.task.my_tasks') }}</flux:heading>
-            <flux:button href="{{ route('panels.workspace.task.create') }}" icon="plus" variant="primary" wire:navigate>
-                {{ __('app.task.create') }}
-            </flux:button>
+            <div class="flex flex-wrap items-center gap-4">
+                <flux:select wire:model.live="filter_status" placeholder="{{ __('app.task.status') }}" class="w-40" variant="subtle">
+                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                    <flux:select.option value="planning">{{ __('app.task.statuses.planning') }}</flux:select.option>
+                    <flux:select.option value="doing">{{ __('app.task.statuses.doing') }}</flux:select.option>
+                    <flux:select.option value="done">{{ __('app.task.statuses.done') }}</flux:select.option>
+                </flux:select>
+
+                <flux:select wire:model.live="filter_approval_status" placeholder="{{ __('app.task.review.approval_status') }}" class="w-40" variant="subtle">
+                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                    <flux:select.option value="pending">{{ __('app.pending') }}</flux:select.option>
+                    <flux:select.option value="approved">{{ __('app.task.review.status_approved') }}</flux:select.option>
+                    <flux:select.option value="rejected">{{ __('app.rejected') }}</flux:select.option>
+                </flux:select>
+
+                <flux:button href="{{ route('panels.workspace.task.create') }}" icon="plus" variant="primary" wire:navigate>
+                    {{ __('app.task.create') }}
+                </flux:button>
+            </div>
         </div>
 
         <div class="space-y-4">
@@ -30,7 +46,22 @@
                                 @if($task->approval_status === 'pending')
                                     <flux:badge color="yellow" size="sm">{{ __('app.pending') }}</flux:badge>
                                 @elseif($task->approval_status === 'rejected')
-                                    <flux:badge color="red" size="sm">{{ __('app.rejected') }}</flux:badge>
+                                    <flux:dropdown hover position="bottom" align="start" offset="-16" gap="10">
+                                        <flux:badge color="red" size="sm" class="cursor-help">
+                                            {{ __('app.rejected') }}
+                                        </flux:badge>
+
+                                        <flux:popover class="max-w-xs p-4">
+                                            <div class="space-y-2">
+                                                <flux:heading size="sm">{{ __('app.rejection_reason') }}</flux:heading>
+                                                <flux:text size="sm">
+                                                    {{ $task->review_note ?: __('app.no_reason_provided') }}
+                                                </flux:text>
+                                            </div>
+                                        </flux:popover>
+                                    </flux:dropdown>
+                                @elseif($task->approval_status === 'approved')
+                                    <flux:badge color="green" size="sm">{{ __('app.task.review.status_approved') }}</flux:badge>
                                 @endif
                             @endif
                         </div>
@@ -44,8 +75,10 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <flux:button href="{{ route('panels.workspace.task.edit', $task) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
-                        @if($task->status !== 'done')
+                        @if($task->approval_status !== 'approved')
+                            <flux:button href="{{ route('panels.workspace.task.edit', $task) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
+                        @endif
+                        @if($task->status !== 'done' && $task->approval_status !== 'approved')
                             <flux:modal.trigger name="delete-task-{{ $task->id }}">
                                 <flux:button icon="trash" variant="ghost" size="sm" color="red" />
                             </flux:modal.trigger>
@@ -80,6 +113,10 @@
                     </div>
                 </div>
             @endforelse
+
+            <div class="mt-4">
+                {{ $tasks->links() }}
+            </div>
         </div>
     </flux:main>
 </div>

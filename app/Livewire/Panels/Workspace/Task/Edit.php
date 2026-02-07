@@ -23,6 +23,11 @@ class Edit extends Component
             abort(403);
         }
 
+        if ($task->approval_status === 'approved') {
+            Flux::toast(__('app.task.notifications.cannot_edit_approved'), variant: 'danger');
+            return $this->redirect(route('panels.workspace.task.index'), navigate: true);
+        }
+
         $this->task = $task;
         $this->title = $task->title;
         $this->description = $task->description ?? '';
@@ -44,6 +49,11 @@ class Edit extends Component
 
     public function save()
     {
+        if ($this->task->approval_status === 'approved') {
+            Flux::toast(__('app.task.notifications.cannot_edit_approved'), variant: 'danger');
+            return $this->redirect(route('panels.workspace.task.index'), navigate: true);
+        }
+
         $validated = $this->validate();
 
         $this->task->update($validated);

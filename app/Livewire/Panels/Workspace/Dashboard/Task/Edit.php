@@ -20,8 +20,13 @@ class Edit extends Component
     #[On('panels.workspace.dashboard.task.edit.assign-data')]
     public function assignData($id)
     {
-
         $this->task = Task::findOrFail($id);
+
+        if ($this->task->approval_status === 'approved') {
+            Flux::toast(__('app.task.notifications.cannot_edit_approved'), variant: 'danger');
+            return;
+        }
+
         $this->title = $this->task->title;
         $this->description = $this->task->description ?? '';
         $this->status = $this->task->status;
@@ -44,6 +49,12 @@ class Edit extends Component
 
     public function edit()
     {
+        if ($this->task->approval_status === 'approved') {
+            Flux::toast(__('app.task.notifications.cannot_edit_approved'), variant: 'danger');
+            $this->js('$flux.modal("panels.workspace.dashboard.task.edit.modal").close()');
+            return;
+        }
+
         $validated = $this->validate();
 
         $this->task->update($validated);
