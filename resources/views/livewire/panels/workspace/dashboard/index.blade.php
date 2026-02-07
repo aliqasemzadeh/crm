@@ -31,11 +31,11 @@
                     wire:key="col-{{ $status }}"
                 >
                     @foreach ($colTasks as $task)
-                        <flux:kanban.card wire:sort:item="{{ $task->id }}" wire:key="task-{{ $task->id }}">
+                        <flux:kanban.card wire:sort:item="{{ $task->id }}" wire:sort:handle wire:key="task-{{ $task->id }}">
                             <div class="space-y-2">
                                 <div class="flex items-center gap-2">
                                     {{-- Drag handle --}}
-                                    <div wire:sort:handle class="cursor-grab">
+                                    <div class="cursor-grab">
                                         <flux:icon name="bars-3" variant="micro" class="text-zinc-400" />
                                     </div>
 
@@ -56,9 +56,9 @@
                                     {{-- Done: approval badge --}}
                                     @if($status === 'done')
                                         @if($task->approval_status === 'pending')
-                                            <flux:badge color="yellow" size="sm">Pending</flux:badge>
+                                            <flux:badge color="yellow" size="sm">{{ __('app.pending') }}</flux:badge>
                                         @elseif($task->approval_status === 'rejected')
-                                            <flux:badge color="red" size="sm">Rejected</flux:badge>
+                                            <flux:badge color="red" size="sm">{{ __('app.rejected') }}</flux:badge>
                                         @endif
                                     @endif
                                 </div>
