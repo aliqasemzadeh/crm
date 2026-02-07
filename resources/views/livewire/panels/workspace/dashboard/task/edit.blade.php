@@ -5,46 +5,32 @@
             <flux:text class="mt-2">{{ __('app.create_user_description') }}</flux:text>
         </div>
         <!-- Modal body -->
-        <form wire:submit="create" method="post" class="space-y-4">
-            <flux:field>
-                <flux:label>{{ __('app.first_name') }}</flux:label>
-                <flux:input wire:model="first_name" type="text" />
-                <flux:error name="first_name" />
-            </flux:field>
+        <form wire:submit="edit" class="space-y-6 max-w-2xl">
+            <flux:input wire:model="title" label="{{ __('app.task.title') }}" />
 
-            <flux:field>
-                <flux:label>{{ __('app.last_name') }}</flux:label>
-                <flux:input wire:model="last_name" type="text" />
-                <flux:error name="last_name" />
-            </flux:field>
+            <flux:textarea wire:model="description" label="{{ __('app.task.description') }}" />
 
-            <flux:field>
-                <flux:label>{{ __('app.mobile') }}</flux:label>
-                <flux:input wire:model="mobile" type="text" />
-                <flux:error name="mobile" />
-            </flux:field>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <flux:select wire:model="status" label="{{ __('app.task.status') }}">
+                    <flux:select.option value="planning">{{ __('app.task.statuses.planning') }}</flux:select.option>
+                    <flux:select.option value="doing">{{ __('app.task.statuses.doing') }}</flux:select.option>
+                    <flux:select.option value="done">{{ __('app.task.statuses.done') }}</flux:select.option>
+                </flux:select>
 
-            <flux:field>
-                <flux:label>{{ __('app.email') }}</flux:label>
-                <flux:input wire:model="email" type="email" />
-                <flux:error name="email" />
-            </flux:field>
+                <flux:select wire:model="priority" label="{{ __('app.task.priority') }}">
+                    <flux:select.option value="low">{{ __('app.task.priorities.low') }}</flux:select.option>
+                    <flux:select.option value="medium">{{ __('app.task.priorities.medium') }}</flux:select.option>
+                    <flux:select.option value="high">{{ __('app.task.priorities.high') }}</flux:select.option>
+                    <flux:select.option value="urgent">{{ __('app.task.priorities.urgent') }}</flux:select.option>
+                </flux:select>
+            </div>
 
-            <flux:field>
-                <flux:label>{{ __('app.password') }}</flux:label>
-                <flux:input wire:model="password" type="password" viewable />
-                <flux:error name="password" />
-            </flux:field>
+            <flux:input type="date" wire:model="due_at" label="{{ __('app.task.due_at') }}" />
 
-            <flux:field>
-                <flux:label>{{ __('app.password_confirmation') }}</flux:label>
-                <flux:input wire:model="password_confirmation" type="password" viewable />
-                <flux:error name="password_confirmation" />
-            </flux:field>
-
-            <flux:button type="submit" class="w-full" variant="primary">
-                {{ __('app.create') }}
-            </flux:button>
+            <div class="flex gap-2">
+                <flux:button type="submit" variant="primary">{{ __('app.task.save') }}</flux:button>
+                <flux:button href="{{ route('panels.workspace.tasks.index') }}" variant="ghost" wire:navigate>{{ __('app.task.cancel') }}</flux:button>
+            </div>
         </form>
     </div>
 </flux:modal>

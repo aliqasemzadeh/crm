@@ -17,7 +17,7 @@ class Edit extends Component
     public string $priority = '';
     public $due_at;
 
-    #[On('panels.workspace.dashboard.edit.assign-data')]
+    #[On('panels.workspace.dashboard.task.edit.assign-data')]
     public function assignData($id)
     {
 
@@ -28,7 +28,7 @@ class Edit extends Component
         $this->priority = $this->task->priority;
         $this->due_at = $this->task->due_at?->format('Y-m-d');
 
-        Flux::modal('panels.workspace.dashboard.edit.modal')->show();
+        Flux::modal('panels.workspace.dashboard.task.edit.modal')->show();
     }
 
     protected function rules()
@@ -42,7 +42,7 @@ class Edit extends Component
         ];
     }
 
-    public function save()
+    public function edit()
     {
         $validated = $this->validate();
 

@@ -16,11 +16,11 @@ class Create extends Component
     public string $priority = 'medium';
     public $due_at;
 
-    #[On('panels.workspace.dashboard.create.assign-data')]
+    #[On('panels.workspace.dashboard.task.create.assign-data')]
     public function assignData($status)
     {
         $this->status = $status;
-        Flux::modal('panels.workspace.dashboard.create.modal')->show();
+        Flux::modal('panels.workspace.dashboard.task.create.modal')->show();
     }
 
     protected function rules()

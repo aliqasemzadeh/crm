@@ -102,7 +102,7 @@
                                             <flux:menu>
                                                 <flux:menu.item
                                                     icon="pencil"
-                                                    wire:click="$dispatch('panels.workspace.dashboard.task.edit.open', { id: {{ $task->id }} })"
+                                                    wire:click="$dispatch('panels.workspace.dashboard.task.edit.assign-data', { id: {{ $task->id }} })"
                                                 >
                                                     {{ __('app.edit_task') }}
                                                 </flux:menu.item>
@@ -131,7 +131,7 @@
                             icon="plus"
                             size="sm"
                             class="w-full justify-start!"
-                            wire:click="$dispatch('panels.workspace.dashboard.task.create.open', { status: '{{ $status }}' })"
+                            wire:click="$dispatch('panels.workspace.dashboard.task.create.assign-data', { status: '{{ $status }}' })"
                         >
                             {{ __('app.create_task') }}
                         </flux:button>
