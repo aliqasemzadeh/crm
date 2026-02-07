@@ -75,12 +75,6 @@ class Index extends Component
             $fromStatus = $task->status;
             $fromOrder  = (int) $task->order;
 
-            // وقتی وارد done شد و هنوز approval ندارد => pending
-            $approvalPatch = [];
-            if ($toStatus === 'done' && in_array($task->approval_status ?? 'none', ['none', null], true)) {
-                $approvalPatch = ['approval_status' => 'pending'];
-            }
-
             // Scopes: فقط taskهای همین کاربر در همان status
             $scopeStatusForUser = function (string $status) use ($userId) {
                 return Task::query()
@@ -108,9 +102,9 @@ class Index extends Component
                         ->update(['order' => DB::raw('`order` + 1')]);
                 }
 
-                $task->update(array_merge([
+                $task->update([
                     'order' => $newPosition,
-                ], $approvalPatch));
+                ]);
 
                 return;
             }
@@ -122,10 +116,10 @@ class Index extends Component
                 ->update(['order' => DB::raw('`order` + 1')]);
 
             // 2) task منتقل شود
-            $task->update(array_merge([
+            $task->update([
                 'status' => $toStatus,
                 'order'  => $newPosition,
-            ], $approvalPatch));
+            ]);
 
             // 3) مبدا جمع شود: order > fromOrder => -1
             $scopeStatusForUser($fromStatus)

@@ -31,6 +31,7 @@ class Task extends Model
         // Meta
         'priority',          // low | medium | high | urgent
         'due_at',
+        'done_at',
 
         // Creator / source
         'created_by',
@@ -39,8 +40,26 @@ class Task extends Model
 
     protected $casts = [
         'due_at'      => 'datetime',
+        'done_at'     => 'datetime',
         'approved_at' => 'datetime',
     ];
+
+    /* ---------------- Booted ---------------- */
+    protected static function booted(): void
+    {
+        static::saving(function (Task $task) {
+            if ($task->isDirty('status')) {
+                if ($task->status === 'done') {
+                    $task->done_at = now();
+                    if (in_array($task->approval_status ?? 'none', ['none', null], true)) {
+                        $task->approval_status = 'pending';
+                    }
+                } else {
+                    $task->done_at = null;
+                }
+            }
+        });
+    }
 
     /* ---------------- Users ---------------- */
 

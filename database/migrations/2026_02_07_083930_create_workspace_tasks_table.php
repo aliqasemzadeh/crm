@@ -35,6 +35,7 @@ return new class extends Migration
             $table->string('priority', 20)->default('medium');
             // low | medium | high | urgent
             $table->timestamp('due_at')->nullable();
+            $table->timestamp('done_at')->nullable();
 
             // Creator / Source
             $table->foreignId('created_by')->nullable()

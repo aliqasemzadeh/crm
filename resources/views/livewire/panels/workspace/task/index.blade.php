@@ -2,7 +2,7 @@
     <flux:main>
         <div class="flex justify-between items-center mb-6">
             <flux:heading size="xl">{{ __('app.task.my_tasks') }}</flux:heading>
-            <flux:button href="{{ route('panels.workspace.tasks.create') }}" icon="plus" variant="primary" wire:navigate>
+            <flux:button href="{{ route('panels.workspace.task.create') }}" icon="plus" variant="primary" wire:navigate>
                 {{ __('app.task.create') }}
             </flux:button>
         </div>
@@ -44,7 +44,7 @@
                     </div>
 
                     <div class="flex gap-2">
-                        <flux:button href="{{ route('panels.workspace.tasks.edit', $task) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
+                        <flux:button href="{{ route('panels.workspace.task.edit', $task) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
                         @if($task->status !== 'done')
                             <flux:modal.trigger name="delete-task-{{ $task->id }}">
                                 <flux:button icon="trash" variant="ghost" size="sm" color="red" />
@@ -74,7 +74,7 @@
                     <flux:icon.clipboard-document-list class="mx-auto h-12 w-12 text-zinc-400" />
                     <flux:heading class="mt-4">{{ __('app.task.no_tasks') }}</flux:heading>
                     <div class="mt-6">
-                        <flux:button href="{{ route('panels.workspace.tasks.create') }}" icon="plus" variant="primary" wire:navigate>
+                        <flux:button href="{{ route('panels.workspace.task.create') }}" icon="plus" variant="primary" wire:navigate>
                             {{ __('app.task.create') }}
                         </flux:button>
                     </div>

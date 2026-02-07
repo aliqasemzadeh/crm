@@ -35,7 +35,7 @@ class Create extends Component
 
         Flux::toast(__('app.task.notifications.created'));
 
-        return $this->redirect(route('panels.workspace.tasks.index'), navigate: true);
+        return $this->redirect(route('panels.workspace.task.index'), navigate: true);
     }
 
     #[Layout('layouts.panels.workspace')]
