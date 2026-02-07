@@ -3,14 +3,14 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <flux:heading size="xl">{{ __('app.task.my_tasks') }}</flux:heading>
             <div class="flex flex-wrap items-center gap-4">
-                <flux:select wire:model.live="filter_status" placeholder="{{ __('app.task.status') }}" class="w-40" variant="subtle">
+                <flux:select wire:model.live="filter_status" placeholder="{{ __('app.task.status') }}" class="w-40">
                     <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
                     <flux:select.option value="planning">{{ __('app.task.statuses.planning') }}</flux:select.option>
                     <flux:select.option value="doing">{{ __('app.task.statuses.doing') }}</flux:select.option>
                     <flux:select.option value="done">{{ __('app.task.statuses.done') }}</flux:select.option>
                 </flux:select>
 
-                <flux:select wire:model.live="filter_approval_status" placeholder="{{ __('app.task.review.approval_status') }}" class="w-40" variant="subtle">
+                <flux:select wire:model.live="filter_approval_status" placeholder="{{ __('app.task.review.approval_status') }}" class="w-40">
                     <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
                     <flux:select.option value="pending">{{ __('app.pending') }}</flux:select.option>
                     <flux:select.option value="approved">{{ __('app.task.review.status_approved') }}</flux:select.option>
