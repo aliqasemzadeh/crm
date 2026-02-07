@@ -136,10 +136,11 @@ class Index extends Component
 
     public function deleteTask($id): void
     {
-        // فقط taskهای همین کاربر
+        // فقط taskهای همین کاربر که done نیستند
         Task::query()
             ->whereHas('users', fn ($q) => $q->where('users.id', auth()->id()))
             ->whereKey($id)
+            ->where('status', '!=', 'done')
             ->first()?->delete();
     }
 

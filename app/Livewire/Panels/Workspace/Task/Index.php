@@ -10,7 +10,7 @@ class Index extends Component
 {
     public function deleteTask(Task $task)
     {
-        if ($task->created_by !== auth()->id()) {
+        if ($task->created_by !== auth()->id() || $task->status === 'done') {
             return;
         }
 

@@ -107,13 +107,15 @@
                                                     {{ __('app.edit_task') }}
                                                 </flux:menu.item>
 
-                                                <flux:menu.item
-                                                    icon="trash"
-                                                    variant="danger"
-                                                    wire:click="deleteTask({{ $task->id }})"
-                                                >
-                                                    {{ __('app.delete') }}
-                                                </flux:menu.item>
+                                                @if($task->status !== 'done')
+                                                    <flux:menu.item
+                                                        icon="trash"
+                                                        variant="danger"
+                                                        wire:click="deleteTask({{ $task->id }})"
+                                                    >
+                                                        {{ __('app.delete') }}
+                                                    </flux:menu.item>
+                                                @endif
                                             </flux:menu>
                                         </flux:dropdown>
                                     </div>
