@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Workspace\Dashboard\Task;
 use App\Models\Workspace\Task;
 use Carbon\Carbon;
 use Flux\Flux;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Create extends Component
@@ -14,6 +15,13 @@ class Create extends Component
     public string $status = 'planning';
     public string $priority = 'medium';
     public $due_at;
+
+    #[On('panels.workspace.dashboard.create.assign-data')]
+    public function assignData($status)
+    {
+        $this->status = $status;
+        Flux::modal('panels.workspace.dashboard.create.modal')->show();
+    }
 
     protected function rules()
     {

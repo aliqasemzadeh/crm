@@ -122,7 +122,7 @@ class Index extends Component
     }
 
     #[Layout('layouts.panels.service-center')]
-    #[On('panel.service-center.repair.index.render')]
+    #[On('panels.service-center.repair.index.render')]
     public function render()
     {
         return view('livewire.panels.service-center.repair.index');

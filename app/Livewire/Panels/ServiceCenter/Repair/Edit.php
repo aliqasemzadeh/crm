@@ -176,7 +176,7 @@ class Edit extends Component
         }
     }
 
-    #[On('panel.service-center.repair.edit.assign-data')]
+    #[On('panels.service-center.repair.edit.assign-data')]
     public function assignData(int $id): void
     {
         $this->authorize('service_center_repair_edit');
@@ -206,7 +206,7 @@ class Edit extends Component
 
         $this->admission_description = $this->repair->admission_description;
 
-        Flux::modal('panel.service-center.repair.edit.modal')->show();
+        Flux::modal('panels.service-center.repair.edit.modal')->show();
     }
 
     public function update(): void
@@ -263,8 +263,8 @@ class Edit extends Component
 
         Flux::toast(__('app.repair_updated_message'));
 
-        $this->dispatch('panel.service-center.repair.index.render');
-        Flux::modal('panel.service-center.repair.edit.modal')->close();
+        $this->dispatch('panels.service-center.repair.index.render');
+        Flux::modal('panels.service-center.repair.edit.modal')->close();
     }
 
     public function fillDeviceType(string $device_type)

@@ -13,7 +13,7 @@ class View extends Component
 
     public int $id;
 
-    #[On('panel.service-center.repair.view.assign-data')]
+    #[On('panels.service-center.repair.view.assign-data')]
     public function assignData(int $id): void
     {
         $this->authorize('service_center_repair_view');
@@ -21,7 +21,7 @@ class View extends Component
         $this->repair = Repair::findOrFail($id);
         $this->id = $this->repair->id;
 
-        Flux::modal('panel.service-center.repair.view.modal')->show();
+        Flux::modal('panels.service-center.repair.view.modal')->show();
     }
     public function render()
     {

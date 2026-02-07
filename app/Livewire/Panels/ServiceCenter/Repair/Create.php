@@ -247,7 +247,7 @@ class Create extends Component
         Flux::toast(__('app.repair_created_message'));
 
         // Ask parent/index to refresh list if needed
-        $this->dispatch('panel.service-center.repair.index.render');
+        $this->dispatch('panels.service-center.repair.index.render');
     }
 
     public function render()

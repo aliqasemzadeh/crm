@@ -14,7 +14,7 @@ class Problem extends Component
 
     public int $id;
 
-    #[On('panel.service-center.repair.problem.assign-data')]
+    #[On('panels.service-center.repair.problem.assign-data')]
     public function assignData(int $id): void
     {
         $this->authorize('service_center_repair_view');
@@ -22,7 +22,7 @@ class Problem extends Component
         $this->repair = Repair::findOrFail($id);
         $this->id = $this->repair->id;
 
-        Flux::modal('panel.service-center.repair.problem.modal')->show();
+        Flux::modal('panels.service-center.repair.problem.modal')->show();
     }
 
     public function render(): View

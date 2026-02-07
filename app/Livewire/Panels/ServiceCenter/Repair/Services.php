@@ -20,7 +20,7 @@ class Services extends Component
     public string $service_type = '';
     public string $price = '';
 
-    #[On('panel.service-center.repair.services.assign-data')]
+    #[On('panels.service-center.repair.services.assign-data')]
     public function assignData(int $id): void
     {
         $this->authorize('service_center_repair_services');
@@ -28,7 +28,7 @@ class Services extends Component
         $this->repair = Repair::findOrFail($id);
         $this->id = $this->repair->id;
 
-        Flux::modal('panel.service-center.repair.services.modal')->show();
+        Flux::modal('panels.service-center.repair.services.modal')->show();
     }
 
     #[Computed]

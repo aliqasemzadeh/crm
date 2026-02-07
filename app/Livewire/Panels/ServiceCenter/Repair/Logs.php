@@ -20,7 +20,7 @@ class Logs extends Component
     public string $status = '';
     public string $description = '';
 
-    #[On('panel.service-center.repair.logs.assign-data')]
+    #[On('panels.service-center.repair.logs.assign-data')]
     public function assignData(int $id): void
     {
         $this->authorize('service_center_repair_logs');
@@ -28,7 +28,7 @@ class Logs extends Component
         $this->repair = Repair::findOrFail($id);
         $this->id = $this->repair->id;
 
-        Flux::modal('panel.service-center.repair.logs.modal')->show();
+        Flux::modal('panels.service-center.repair.logs.modal')->show();
     }
 
     #[Computed]
@@ -82,7 +82,7 @@ class Logs extends Component
         $this->description = '';
 
         $this->dispatch('$refresh');
-        $this->dispatch('panel.service-center.repair.index.render');
+        $this->dispatch('panels.service-center.repair.index.render');
 
         Flux::toast(variant: 'success', text: __('app.log_added'));
     }
