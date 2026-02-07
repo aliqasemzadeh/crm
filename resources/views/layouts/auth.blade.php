@@ -37,25 +37,11 @@
     </div>
 
     <div class="flex-1 p-4 max-lg:hidden">
-        <div class="text-white relative rounded-lg h-full w-full bg-zinc-900 flex flex-col items-start justify-end p-16" style="background-image: url('/img/demo/auth_aurora_2x.png'); background-size: cover">
-            <div class="flex gap-2 mb-4">
-                <flux:icon.star variant="solid" />
-                <flux:icon.star variant="solid" />
-                <flux:icon.star variant="solid" />
-                <flux:icon.star variant="solid" />
-                <flux:icon.star variant="solid" />
-            </div>
-
-            <div class="mb-6 italic font-base text-3xl xl:text-4xl">
-                {{ __('app.auth_testimonial') }}
-            </div>
-
+        <div class="text-white relative rounded-lg h-full w-full bg-zinc-900 flex flex-col items-start justify-end p-16">
             <div class="flex gap-4">
-                <flux:avatar src="https://fluxui.dev/img/demo/caleb.png" size="xl" />
-
                 <div class="flex flex-col justify-center font-medium">
-                    <div class="text-lg">{{ __('app.auth_testimonial_name') }}</div>
-                    <div class="text-zinc-300">{{ __('app.auth_testimonial_title') }}</div>
+                    <div class="text-lg">پیشرفت روزانه کوچک، در طولانی مدت منجر به نتایج خیره‌ کننده خواهد شد.</div>
+                    <div class="text-zinc-300">رابین شارما</div>
                 </div>
             </div>
         </div>
