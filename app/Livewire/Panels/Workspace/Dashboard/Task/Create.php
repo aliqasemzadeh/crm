@@ -30,13 +30,11 @@ class Create extends Component
         $validated = $this->validate();
         $validated['created_by'] = auth()->id();
 
-        Task::create($validated);
+        $task = Task::create($validated);
 
         Flux::toast(__('app.task.notifications.created'));
         $this->dispatch('panels.workspace.dashboard.index.render');
     }
-
-
 
     public function render()
     {

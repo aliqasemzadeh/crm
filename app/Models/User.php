@@ -3,11 +3,13 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Workspace\Task;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Rappasoft\LaravelAuthenticationLog\Traits\AuthenticationLoggable;
 
 class User extends Authenticatable
@@ -71,5 +73,22 @@ class User extends Authenticatable
                 return trim($first . ' ' . $last);
             },
         );
+    }
+
+    public function tasks(): BelongsToMany
+    {
+        return $this->belongsToMany(Task::class, 'task_user')
+            ->withPivot(['role', 'assigned_at', 'assigned_by'])
+            ->withTimestamps();
+    }
+
+    public function assignedTasks(): BelongsToMany
+    {
+        return $this->tasks()->wherePivot('role', 'assignee');
+    }
+
+    public function reviewTasks(): BelongsToMany
+    {
+        return $this->tasks()->wherePivot('role', 'reviewer');
     }
 }
