@@ -1,4 +1,4 @@
-<flux:modal name="panel.service-center.repair.problem.modal" class="md:w-2/3" flyout position="right">
+<flux:modal name="panels.service-center.repair.problem.modal" class="md:w-2/3" flyout position="right">
     @isset($this->repair)
         <div class="flex flex-col gap-6">
             <div class="flex items-center justify-between">

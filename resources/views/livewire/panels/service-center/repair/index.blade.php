@@ -9,7 +9,7 @@
                 <flux:subheading size="lg" class="mb-6">{{ __('app.repairs_description') }}</flux:subheading>
             </div>
             @can('service_center_repair_create')
-            <flux:modal.trigger name="panel.service-center.repair.admission.modal">
+            <flux:modal.trigger name="panels.service-center.repair.admission.modal">
                 <flux:button variant="primary">{{ __('app.admission') }}</flux:button>
             </flux:modal.trigger>
             @endcan
