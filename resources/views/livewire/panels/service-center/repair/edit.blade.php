@@ -1,4 +1,4 @@
-<flux:modal name="panel.service-center.repair.edit.modal" class="md:w-2/3" flyout position="right">
+<flux:modal name="panels.service-center.repair.edit.modal" class="md:w-2/3" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.edit_repair') }}</flux:heading>
