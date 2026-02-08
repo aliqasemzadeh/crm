@@ -23,10 +23,11 @@ class Index extends Component
     #[Computed]
     public function tasks()
     {
-        // فقط task های همین کاربر
+        // فقط task های همین کاربر که تایید نهایی نشده‌اند
         return auth()
             ->user()
             ->tasks()
+            ->where('approval_status', '!=', 'approved')
             ->orderByRaw("
             CASE status
                 WHEN 'planning' THEN 1
@@ -75,10 +76,11 @@ class Index extends Component
             $fromStatus = $task->status;
             $fromOrder  = (int) $task->order;
 
-            // Scopes: فقط taskهای همین کاربر در همان status
+            // Scopes: فقط taskهای همین کاربر در همان status که تایید نشده‌اند
             $scopeStatusForUser = function (string $status) use ($userId) {
                 return Task::query()
                     ->where('status', $status)
+                    ->where('approval_status', '!=', 'approved')
                     ->whereHas('users', fn ($q) => $q->where('users.id', $userId));
             };
 
