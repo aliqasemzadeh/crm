@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RepairLog extends Model
 {
     use SoftDeletes;
-
+    protected $table = 'service_center_repair_logs';
     protected $fillable = ['repair_id', 'technician_user_id', 'description', 'status'];
 
     public function repair(): BelongsTo
