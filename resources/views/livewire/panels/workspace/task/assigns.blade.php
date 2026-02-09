@@ -1,35 +1,68 @@
 <div>
     <flux:main>
         <div class="mb-6">
-            <flux:heading size="xl">{{ __('app.task.create') }}</flux:heading>
+            <flux:heading size="xl">{{ __('app.task.assign_users') }}: {{ $task->title }}</flux:heading>
+            <flux:subheading>{{ __('app.task.assign_users_description') }}</flux:subheading>
         </div>
 
-        <form wire:submit="save" class="space-y-6 max-w-2xl">
-            <flux:input wire:model="title" label="{{ __('app.task.title') }}" />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+                <flux:field>
+                    <flux:label>{{ __('app.search') }}</flux:label>
+                    <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('app.search_placeholder') }}" type="text" icon="magnifying-glass" />
+                </flux:field>
 
-            <flux:textarea wire:model="description" label="{{ __('app.task.description') }}" />
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <flux:select wire:model="status" label="{{ __('app.task.status') }}">
-                    <flux:select.option value="planning">{{ __('app.task.statuses.planning') }}</flux:select.option>
-                    <flux:select.option value="doing">{{ __('app.task.statuses.doing') }}</flux:select.option>
-                    <flux:select.option value="done">{{ __('app.task.statuses.done') }}</flux:select.option>
-                </flux:select>
-
-                <flux:select wire:model="priority" label="{{ __('app.task.priority') }}">
-                    <flux:select.option value="low">{{ __('app.task.priorities.low') }}</flux:select.option>
-                    <flux:select.option value="medium">{{ __('app.task.priorities.medium') }}</flux:select.option>
-                    <flux:select.option value="high">{{ __('app.task.priorities.high') }}</flux:select.option>
-                    <flux:select.option value="urgent">{{ __('app.task.priorities.urgent') }}</flux:select.option>
-                </flux:select>
+                @if(count($users) > 0)
+                    <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-200 dark:divide-zinc-700">
+                        @foreach($users as $user)
+                            <div class="p-4 flex items-center justify-between">
+                                <div>
+                                    <div class="font-medium">{{ $user->name }}</div>
+                                    <div class="text-xs text-zinc-500">{{ $user->mobile }}</div>
+                                </div>
+                                <div class="flex gap-1">
+                                    <flux:button size="xs" wire:click="assign({{ $user->id }}, 'assignee')">{{ __('app.task.assignee') }}</flux:button>
+                                    <flux:button size="xs" wire:click="assign({{ $user->id }}, 'reviewer')">{{ __('app.task.reviewer') }}</flux:button>
+                                    <flux:button size="xs" wire:click="assign({{ $user->id }}, 'watcher')">{{ __('app.task.watcher') }}</flux:button>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @elseif(strlen($search) >= 2)
+                    <div class="p-4 text-center text-zinc-500 italic">
+                        {{ __('app.no_results_found') }}
+                    </div>
+                @endif
             </div>
 
-            <flux:input type="date" wire:model="due_at" label="{{ __('app.task.due_at') }}" />
+            <div class="space-y-4">
+                <flux:heading size="lg">{{ __('app.task.review.task_users') }}</flux:heading>
 
-            <div class="flex gap-2">
-                <flux:button type="submit" variant="primary">{{ __('app.task.save') }}</flux:button>
-                <flux:button href="{{ route('panels.workspace.task.index') }}" variant="ghost" wire:navigate>{{ __('app.task.cancel') }}</flux:button>
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-200 dark:divide-zinc-700">
+                    @forelse($assignedUsers as $user)
+                        <div class="p-4 flex items-center justify-between">
+                            <div>
+                                <div class="font-medium">{{ $user->name }}</div>
+                                <div class="text-xs text-zinc-500">
+                                    <flux:badge size="sm" variant="outline" color="zinc">
+                                        {{ __('app.task.' . $user->pivot->role) }}
+                                    </flux:badge>
+                                    {{ $user->mobile }}
+                                </div>
+                            </div>
+                            <flux:button icon="trash" size="sm" variant="ghost" color="red" wire:click="delete({{ $user->id }}, '{{ $user->pivot->role }}')" wire:confirm="{{ __('app.are_you_sure') }}" />
+                        </div>
+                    @empty
+                        <div class="p-8 text-center text-zinc-500">
+                            {{ __('app.task.no_tasks') }}
+                        </div>
+                    @endforelse
+                </div>
             </div>
-        </form>
+        </div>
+
+        <div class="mt-8">
+            <flux:button href="{{ route('panels.workspace.task.index') }}" variant="ghost" wire:navigate>{{ __('app.task.cancel') }}</flux:button>
+        </div>
     </flux:main>
 </div>

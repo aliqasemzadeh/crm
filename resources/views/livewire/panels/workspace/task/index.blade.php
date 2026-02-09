@@ -75,6 +75,9 @@
                     </div>
 
                     <div class="flex gap-2">
+                        @can('workspace_review_user_task_assign')
+                            <flux:button href="{{ route('panels.workspace.task.assigns', $task) }}" icon="user-plus" variant="ghost" size="sm" wire:navigate />
+                        @endcan
                         @if($task->approval_status !== 'approved')
                             <flux:button href="{{ route('panels.workspace.task.edit', $task) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
                         @endif

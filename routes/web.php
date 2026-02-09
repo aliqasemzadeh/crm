@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/workspace/review/index', \App\Livewire\Panels\Workspace\Review\Index::class)->name('panels.workspace.review.index');
     Route::livewire('/panels/workspace/task/create', \App\Livewire\Panels\Workspace\Task\Create::class)->name('panels.workspace.task.create');
     Route::livewire('/panels/workspace/task/{task}/edit', \App\Livewire\Panels\Workspace\Task\Edit::class)->name('panels.workspace.task.edit');
+    Route::livewire('/panels/workspace/task/{task}/assigns', \App\Livewire\Panels\Workspace\Task\Assigns::class)->name('panels.workspace.task.assigns');
 
     Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
 
