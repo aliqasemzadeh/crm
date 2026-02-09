@@ -31,7 +31,7 @@ class UpdateCurrencyRateCommand extends Command
     public function handle()
     {
         try {
-            $response = Http::timeout(15)->get('http://api.tetherland.com/currencies');
+            $response = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('http://api.tetherland.com/currencies');
         } catch (\Exception $e) {
             $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
             return;
