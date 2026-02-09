@@ -19,7 +19,7 @@
 
                 <div class="flex justify-between items-center mt-auto pt-4 border-t border-zinc-100 dark:border-zinc-800">
                     <div class="flex flex-col">
-                        <span class="text-xs text-zinc-500">{{ __('app.workspace.tasks_count') }}</span>
+                        <span class="text-xs text-zinc-500">{{ __('app.workspace_review.tasks_count') }}</span>
                         <flux:badge color="zinc" size="sm">{{ $user->tasks_count }}</flux:badge>
                     </div>
                     <flux:button
@@ -27,7 +27,7 @@
                         icon-trailing="chevron-left"
                         href="{{ route('panels.workspace.review.user.board', $user) }}"
                     >
-                        {{ __('app.workspace.view_board') }}
+                        {{ __('app.workspace_review.view_board') }}
                     </flux:button>
                 </div>
             </flux:card>
