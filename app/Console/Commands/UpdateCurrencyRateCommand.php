@@ -33,20 +33,21 @@ class UpdateCurrencyRateCommand extends Command
         try {
             $response = Http::timeout(15)->get('https://api.tetherland.com/currencies');
         } catch (\Exception $e) {
-            $this->error('Connection error: ' . $e->getMessage());
+            $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
             return;
         }
 
         if ($response->failed()) {
-            $this->error('Failed to fetch currency rates from Tetherland.');
+            $this->error(__('currencies.fetch_failed'));
             return;
         }
 
         $data = $response->json();
-        $usdtPrice = $data['data']['currencies']['USDT']['price'] ?? null;
+        $usdt = $data['data']['currencies']['USDT'] ?? null;
+        $usdtPrice = isset($usdt['price']) ? $usdt['price'] * 10 : null;
 
         if (!$usdtPrice) {
-            $this->error('USDT price not found in the response.');
+            $this->error(__('currencies.price_not_found'));
             return;
         }
 
@@ -58,28 +59,45 @@ class UpdateCurrencyRateCommand extends Command
             ['rate_irr' => $usdtPrice]
         );
 
-        $this->info("USDT rate updated: {$usdtPrice} IRR");
+        $this->info(__('currencies.updated_log', ['price' => $usdtPrice]));
 
         // Notification logic
         $now = Carbon::now('Asia/Tehran');
 
         // Check if it's Friday
         if ($now->isFriday()) {
-            $this->info('Today is Friday. No notification sent.');
+            $this->info(__('currencies.friday_no_notification'));
             return;
         }
 
         // Check time between 9:00 and 18:00
         if ($now->hour >= 9 && $now->hour < 18) {
-            $diff24d = $data['data']['currencies']['USDT']['diff24d'] ?? '0';
+            $diff24d = $usdt['diff24d'] ?? '0';
+            $diff7d = $usdt['diff7d'] ?? null;
+            $diff30d = $usdt['diff30d'] ?? null;
+            $minPrice = isset($usdt['last24hMin']) ? $usdt['last24hMin'] * 10 : null;
+            $maxPrice = isset($usdt['last24hMax']) ? $usdt['last24hMax'] * 10 : null;
 
-            $message = "نرخ تتر (USDT): " . number_format($usdtPrice) . " ریال\n";
-            $message .= "تغییرات ۲۴ ساعت: " . $diff24d . "%";
+            $message = __('currencies.usdt_rate', ['price' => number_format($usdtPrice)]) . "\n";
+            $message .= __('currencies.diff_24h', ['diff' => $diff24d]) . "\n";
 
-            BaleSendMessageJob::dispatch($message);
-            $this->info('Notification dispatched to Bale.');
+            if ($diff7d) {
+                $message .= __('currencies.diff_7d', ['diff' => $diff7d]) . "\n";
+            }
+            if ($diff30d) {
+                $message .= __('currencies.diff_30d', ['diff' => $diff30d]) . "\n";
+            }
+            if ($minPrice) {
+                $message .= __('currencies.min_price', ['price' => number_format($minPrice)]) . "\n";
+            }
+            if ($maxPrice) {
+                $message .= __('currencies.max_price', ['price' => number_format($maxPrice)]) . "\n";
+            }
+
+            BaleSendMessageJob::dispatch(trim($message));
+            $this->info(__('currencies.notification_dispatched'));
         } else {
-            $this->info('Outside of notification hours (9-18) in Tehran.');
+            $this->info(__('currencies.outside_hours'));
         }
     }
 }
