@@ -129,4 +129,10 @@ class Task extends Model
     {
         return $this->status === 'done' && $this->approval_status === 'pending';
     }
+
+    public function reports()
+    {
+        return $this->hasMany(\App\Models\Workspace\TaskReport::class, 'task_id')
+            ->latest();
+    }
 }
