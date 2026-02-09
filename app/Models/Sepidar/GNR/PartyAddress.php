@@ -8,4 +8,5 @@ class PartyAddress extends Model
 {
     public $table = 'GNR.PartyAddress';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'PartyAddressId';
 }

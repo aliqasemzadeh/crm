@@ -22,12 +22,12 @@
         </flux:field>
     </div>
 
-    <livewire:panel.shop.sepidar.party.addresses/>
-    <livewire:panel.shop.sepidar.party.invoices/>
-    <livewire:panel.shop.sepidar.party.phones/>
-    <livewire:panel.shop.sepidar.grouping.item.invoice/>
-    <livewire:panel.shop.sepidar.grouping.item.receipt/>
-    <livewire:panel.shop.sepidar.invoice.view/>
+    <livewire:panels.accounting.party.addresses/>
+    <livewire:panels.accounting.party.invoices/>
+    <livewire:panels.accounting.party.phones/>
+    <livewire:panels.accounting.grouping.item.invoice/>
+    <livewire:panels.accounting.grouping.item.receipt/>
+    <livewire:panels.accounting.invoice.view/>
 
 
     <flux:table :paginate="$this->customers">
@@ -45,11 +45,11 @@
                 <flux:table.cell class="w-1 whitespace-nowrap">
                     <div class="flex items-center gap-2">
                         <flux:button size="xs" variant="primary" color="sky"
-                                     wire:click="$dispatch('panels.accounting.party.addresses.assign-data', { id: '{{ $customer->id }}' })">{{ __('app.address') }}</flux:button>
+                                     wire:click="$dispatch('panels.accounting.party.addresses.assign-data', { PartyId: '{{ $customer->PartyId }}' })">{{ __('app.address') }}</flux:button>
                         <flux:button size="xs" variant="primary" color="green"
-                                     wire:click="$dispatch('panels.accounting.party.invoices.assign-data', { id: '{{ $customer->id }}' })">{{ __('app.invoices') }}</flux:button>
+                                     wire:click="$dispatch('panels.accounting.party.invoices.assign-data', { PartyId: '{{ $customer->PartyId }}' })">{{ __('app.invoices') }}</flux:button>
                         <flux:button size="xs" variant="primary" color="red"
-                                     wire:click="$dispatch('panels.accounting.party.phones.assign-data', { id: '{{ $customer->id }}' })">{{ __('app.phones') }}</flux:button>
+                                     wire:click="$dispatch('panels.accounting.party.phones.assign-data', { PartyId: '{{ $customer->PartyId }}' })">{{ __('app.phones') }}</flux:button>
                     </div>
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">

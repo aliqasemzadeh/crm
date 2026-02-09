@@ -1,7 +1,7 @@
 <div>
-    <livewire:panel.shop.sepidar.grouping.item.invoice />
-    <livewire:panel.shop.sepidar.grouping.item.receipt />
-    <livewire:panel.shop.sepidar.invoice.view />
+    <livewire:panels.accounting.grouping.item.invoice />
+    <livewire:panels.accounting.grouping.item.receipt />
+    <livewire:panels.accounting.invoice.view />
 
     @foreach($this->groupings as $groupingItem)
         <flux:button variant="primary" wire:navigate href="{{ route('panels.accounting.grouping.index', ['groupingId' => $groupingItem->id]) }}">{{ $groupingItem->Title }}</flux:button>
@@ -9,7 +9,7 @@
         <flux:spacer  />
         <flux:spacer />
         @if(\App\Models\Sepidar\INV\Item::where('CodingGroupRef', $grouping->GroupingID)->count() > 0)
-            <livewire:panel.shop.sepidar.grouping.items :grouping-id="$grouping->GroupingID" />
+            <livewire:panels.accounting.grouping.items :grouping-id="$grouping->GroupingID" />
         @else
             @php
                 $groupings = \Illuminate\Support\Facades\Cache::remember(
@@ -41,7 +41,7 @@
                                     {{ $sub_grouping_item->Title }} - {{ $sub_grouping_item->GroupingID }}
                                 </flux:accordion.heading>
                                 <flux:accordion.content>
-                                    <livewire:panel.shop.sepidar.grouping.items
+                                    <livewire:panels.accounting.grouping.items
                                         :grouping-id="$sub_grouping_item->GroupingID"
                                     />
                                 </flux:accordion.content>
@@ -51,7 +51,7 @@
                         <flux:accordion.item>
                             <flux:accordion.heading>{{ $sub_grouping->Title }} - {{ $sub_grouping->GroupingID }}</flux:accordion.heading>
                             <flux:accordion.content>
-                                <livewire:panel.shop.sepidar.grouping.items :grouping-id="$sub_grouping->GroupingID" />
+                                <livewire:panels.accounting.grouping.items :grouping-id="$sub_grouping->GroupingID" />
                             </flux:accordion.content>
                         </flux:accordion.item>
                     @endif

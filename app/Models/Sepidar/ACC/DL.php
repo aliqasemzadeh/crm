@@ -8,4 +8,5 @@ class DL extends Model
 {
     public $table = 'ACC.DL';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'DLId';
 }

@@ -15,9 +15,9 @@ class Addresses extends Component
     public ?Party $party = null;
 
     #[On('panels.accounting.party.addresses.assign-data')]
-    public function assignData($id): void
+    public function assignData($PartyId): void
     {
-        $this->party = Party::findOrFail($id);
+        $this->party = Party::findOrFail($PartyId);
         Flux::modal('panels.accounting.party.addresses.modal')->show();
     }
 

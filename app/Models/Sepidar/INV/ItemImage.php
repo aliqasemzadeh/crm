@@ -8,4 +8,6 @@ class ItemImage extends Model
 {
     public $table = 'INV.ItemImage';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'ItemImageId';
+    
 }

@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Invoice extends Model
 {
-    public $table = 'sepidar_invoices';
+    public $table = 'SLS.Invoice';
+    public $connection = 'sqlsrv';
+    public $primaryKey = 'InvoiceId';
 
     public function items(): HasMany
     {

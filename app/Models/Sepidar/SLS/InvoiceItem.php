@@ -9,7 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class InvoiceItem extends Model
 {
-    public $table = 'sepidar_invoice_items';
+    public $table = 'SLS.InvoiceItem';
+    public $connection = 'sqlsrv';
+    public $primaryKey = 'InvoiceItemId';
+    
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(Invoice::class, 'InvoiceRef', 'InvoiceId');

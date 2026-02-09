@@ -10,6 +10,7 @@ class Item extends Model
 {
     public $table = 'INV.Item';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'ItemID';
 
     public function receipt(): BelongsTo
     {

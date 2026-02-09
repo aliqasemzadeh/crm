@@ -10,9 +10,14 @@ use Livewire\Component;
 class Index extends Component
 {
     public Grouping $grouping;
-    public function mount(int $groupingId = 1): void
+    public function mount(int $groupingId = 0): void
     {
-        $this->grouping = Grouping::where('id', $groupingId)->firstOrFail();
+        if($groupingId == 0) {
+            $this->grouping = Grouping::firstOrFail();
+        } else {
+            $this->grouping = Grouping::where('GroupingId', $groupingId)->firstOrFail();
+        }
+        
     }
 
     #[Computed(cache: true)]

@@ -8,4 +8,5 @@ class ItemStockSummary extends Model
 {
     public $table = 'INV.ItemStockSummary';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'ItemStockSummaryId';
 }

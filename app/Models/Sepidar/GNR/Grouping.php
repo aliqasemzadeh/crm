@@ -8,5 +8,6 @@ class Grouping extends Model
 {
     public $table = 'GNR.Grouping';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'GroupingID';
     public $fillable = ['GroupingID'];
 }

@@ -12,7 +12,7 @@ use Livewire\WithPagination;
 class Index extends Component
 {
     use WithPagination;
-    public string $sortBy = 'created_at';
+    public string $sortBy = 'CreationDate';
 
     public string $sortDirection = 'desc';
 

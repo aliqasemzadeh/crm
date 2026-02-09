@@ -11,6 +11,7 @@ class InventoryReceiptItem extends Model
 {
     public $table = 'INV.InventoryReceiptItem';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'InventoryReceiptItemId';
 
     public function receipt(): BelongsTo
     {

@@ -10,6 +10,7 @@ class Party extends Model
 {
     public $table = 'GNR.Party';
     public $connection = 'sqlsrv';
+    public $primaryKey = 'PartyId';
 
     public function invoices(): HasMany
     {

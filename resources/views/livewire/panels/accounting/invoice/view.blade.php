@@ -1,4 +1,4 @@
-<flux:modal name="panel.shop.sepidar.invoice.view.modal" class="md:w-1/3" flyout position="right">
+<flux:modal name="panels.accounting.invoice.view.modal" class="md:w-1/3" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.invoice_items') }}</flux:heading>
