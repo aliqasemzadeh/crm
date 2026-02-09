@@ -885,7 +885,6 @@ return [
     'change_password' => 'تغییر رمز عبور',
     'change_email' => 'تغییر ایمیل',
     'change_mobile' => 'تغییر موبایل',
-    'workspace' => 'میزکار',
     'no_name' => 'بدون نام',
     'task' => [
         'title' => 'عنوان وظیفه',
@@ -968,4 +967,19 @@ return [
     'rejection_reason_required' => 'لطفاً دلیل رد شدن را در یادداشت بررسی بنویسید.',
     'no_reason_provided' => 'دلیلی ذکر نشده است.',
     'no_results_found' => 'موردی یافت نشد.',
+    'workspace' => [
+        'tasks_count' => 'تعداد وظایف فعال',
+        'view_board' => 'مشاهده برد',
+        'review' => [
+            'users_list' => 'نظارت بر میزکار کاربران',
+            'user_board' => 'میزکار کاربر',
+            'create_task_for_user' => 'ایجاد وظیفه جدید برای کاربر',
+            'edit_task_for_user' => 'ویرایش وظیفه کاربر',
+        ],
+    ],
+    'task' => [
+        'activity' => [
+            'write_manager_note' => 'پیام یا یادداشت نظارتی خود را بنویسید...',
+        ],
+    ],
 ];
