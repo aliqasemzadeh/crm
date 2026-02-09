@@ -28,7 +28,7 @@ class CurrencyRate extends Model
     protected function casts(): array
     {
         return [
-            'rate_date' => 'date',
+            'rate_date' => 'date:Y-m-d',
         ];
     }
 }
