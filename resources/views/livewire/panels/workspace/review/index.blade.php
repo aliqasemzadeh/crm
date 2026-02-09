@@ -48,7 +48,10 @@
                         @endif
                     </flux:table.cell>
                     <flux:table.cell>
-                        <flux:button wire:click="openReviewModal({{ $task->id }})" variant="primary" color="lime" size="sm" icon="magnifying-glass">{{ __('app.task.review.review_button') }}</flux:button>
+                        <div class="flex gap-2">
+                            <flux:button wire:click="$dispatch('panels.workspace.review.task.activity.assign-data', { id: {{ $task->id }} })" variant="subtle" size="sm" icon="chat-bubble-left-right">{{ __('app.task.activity.modal_title') }}</flux:button>
+                            <flux:button wire:click="openReviewModal({{ $task->id }})" variant="primary" color="lime" size="sm" icon="magnifying-glass">{{ __('app.task.review.review_button') }}</flux:button>
+                        </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforeach

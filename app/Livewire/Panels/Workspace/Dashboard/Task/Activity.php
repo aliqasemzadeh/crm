@@ -30,6 +30,11 @@ class Activity extends Component
 
     public function send()
     {
+        if ($this->task->status === 'done' && $this->task->approval_status === 'approved') {
+            Flux::toast(__('app.task.activity.cannot_add_to_approved_task'), variant: 'danger');
+            return;
+        }
+
         $this->validate([
             'body' => 'required|string|min:2',
             'files.*' => 'nullable|file|max:10240', // 10MB
