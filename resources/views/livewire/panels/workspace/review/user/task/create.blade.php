@@ -1,7 +1,7 @@
 <flux:modal name="review-user-task-create-modal" class="md:w-[600px] space-y-6">
     <div>
         <flux:heading size="lg">{{ __('app.create_task') }}</flux:heading>
-        <flux:subheading>{{ __('app.workspace.review.create_task_for_user') }} {{ $user->name }}</flux:subheading>
+        <flux:subheading>{{ __('app.workspace_review.create_task_for_user') }} {{ $user->name }}</flux:subheading>
     </div>
 
     <form wire:submit="create" class="space-y-6">

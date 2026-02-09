@@ -3,7 +3,7 @@
         <div class="flex items-center gap-4">
             <flux:button variant="subtle" icon="chevron-right" href="{{ route('panels.workspace.review.user.index') }}" />
             <div>
-                <flux:heading size="xl">{{ __('app.workspace.review.user_board') }}: {{ $user->name }}</flux:heading>
+                <flux:heading size="xl">{{ __('app.workspace_review.user_board') }}: {{ $user->name }}</flux:heading>
                 <flux:subheading size="sm">{{ $user->email }}</flux:subheading>
             </div>
         </div>

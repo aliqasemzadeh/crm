@@ -971,11 +971,9 @@ return [
     'workspace_review' => [
         'tasks_count' => 'تعداد وظایف فعال',
         'view_board' => 'مشاهده برد',
-        'review' => [
             'users_list' => 'نظارت بر میزکار کاربران',
             'user_board' => 'میزکار کاربر',
             'create_task_for_user' => 'ایجاد وظیفه جدید برای کاربر',
-            'edit_task_for_user' => 'ویرایش وظیفه کاربر',
-        ],
+            'edit_task_for_user' => 'ویرایش وظیفه کاربر'
     ],
 ];

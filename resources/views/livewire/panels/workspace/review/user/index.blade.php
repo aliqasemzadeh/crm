@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <div class="flex justify-between items-center">
-        <flux:heading size="xl">{{ __('app.workspace.review.users_list') }}</flux:heading>
+        <flux:heading size="xl">{{ __('app.workspace_review.users_list') }}</flux:heading>
         <div class="w-1/3">
             <flux:input wire:model.live="search" icon="magnifying-glass" placeholder="{{ __('app.search') }}..." />
         </div>

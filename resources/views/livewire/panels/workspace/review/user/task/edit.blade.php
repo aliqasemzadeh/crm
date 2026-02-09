@@ -1,7 +1,7 @@
 <flux:modal name="review-user-task-edit-modal" class="md:w-[600px] space-y-6">
     <div>
         <flux:heading size="lg">{{ __('app.edit_task') }}</flux:heading>
-        <flux:subheading>{{ __('app.workspace.review.edit_task_for_user') }} {{ $user->name }}</flux:subheading>
+        <flux:subheading>{{ __('app.workspace_review.edit_task_for_user') }} {{ $user->name }}</flux:subheading>
     </div>
 
     @if($task)
