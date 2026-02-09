@@ -38,10 +38,8 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/workspace/task/create', \App\Livewire\Panels\Workspace\Task\Create::class)->name('panels.workspace.task.create');
     Route::livewire('/panels/workspace/task/{task}/edit', \App\Livewire\Panels\Workspace\Task\Edit::class)->name('panels.workspace.task.edit');
     Route::livewire('/panels/workspace/task/{task}/assigns', \App\Livewire\Panels\Workspace\Task\Assigns::class)->name('panels.workspace.task.assigns');
-    Route::prefix('/panels/workspace/review/user')->name('panels.workspace.review.user.')->group(function () {
-        Route::livewire('/index', \App\Livewire\Panels\Workspace\Review\User\Index::class)->name('index');
-        Route::livewire('/{user}/board', \App\Livewire\Panels\Workspace\Review\User\Board::class)->name('board');
-    });
+    Route::livewire('/panels/workspace/review/user/index', \App\Livewire\Panels\Workspace\Review\User\Index::class)->name('panels.workspace.review.user.index');
+    Route::livewire('/panels/workspace/review/user/{user}/board', \App\Livewire\Panels\Workspace\Review\User\Board::class)->name('panels.workspace.review.user.board');
 
     Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
 
