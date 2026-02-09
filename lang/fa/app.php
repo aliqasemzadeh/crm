@@ -978,9 +978,4 @@ return [
             'edit_task_for_user' => 'ویرایش وظیفه کاربر',
         ],
     ],
-    'task' => [
-        'activity' => [
-            'write_manager_note' => 'پیام یا یادداشت نظارتی خود را بنویسید...',
-        ],
-    ],
 ];
