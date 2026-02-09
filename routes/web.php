@@ -44,7 +44,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
     Route::livewire('/panels/accounting/bank/index', \App\Livewire\Panels\Accounting\Bank\Index::class)->name('panels.accounting.bank.index');
     Route::livewire('/panels/accounting/invoice/index', \App\Livewire\Panels\Accounting\Invoice\Index::class)->name('panels.accounting.invoice.index');
-    Route::livewire('/panels/accounting/grouping/index', \App\Livewire\Panels\Accounting\Grouping\Index::class)->name('panels.accounting.grouping.index');
+    Route::livewire('/panels/accounting/grouping/index/{groupingId?}', \App\Livewire\Panels\Accounting\Grouping\Index::class)->name('panels.accounting.grouping.index');
     Route::livewire('/panels/accounting/party/index', \App\Livewire\Panels\Accounting\Party\Index::class)->name('panels.accounting.party.index');
 
     Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');

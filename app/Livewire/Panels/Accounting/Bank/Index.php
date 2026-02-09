@@ -11,6 +11,7 @@ class Index extends Component
 {
     public $totalBalance = 0;
 
+    #[Layout('layouts.panels.accounting')]
     public function render()
     {
         $bankAccounts = BankAccountBalance::all();

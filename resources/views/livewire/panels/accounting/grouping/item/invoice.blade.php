@@ -17,7 +17,7 @@
                 @foreach($this->sales as $sale)
                     <flux:table.row>
                         <flux:table.cell>
-                            <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { id: '{{ $sale->invoice->id }}' })">{{ __('app.view') }}</flux:button>
+                            <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { id: '{{ $sale->invoice->InvoiceId }}' })">{{ __('app.view') }}</flux:button>
                         </flux:table.cell>
                         <flux:table.cell>
                             {{ $sale->invoice->CustomerRealName }}

@@ -65,7 +65,3 @@
             @endforeach
         </flux:table.rows>
     </flux:table>
-
-    <flux:card>
-    </flux:card>
-</div>

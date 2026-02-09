@@ -21,9 +21,9 @@
         </flux:field>
     </div>
 
-    <livewire:panel.shop.sepidar.grouping.item.invoice />
-    <livewire:panel.shop.sepidar.grouping.item.receipt />
-    <livewire:panel.shop.sepidar.invoice.view />
+    <livewire:panels.accounting.grouping.item.invoice />
+    <livewire:panels.accounting.grouping.item.receipt />
+    <livewire:panels.accounting.invoice.view />
 
 
     <flux:table :paginate="$this->invoices">
@@ -41,7 +41,7 @@
             <flux:table.row :key="$invoice->id">
                 <flux:table.cell class="w-1 whitespace-nowrap">
                     <div class="flex items-center gap-2">
-                        <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { id: '{{ $invoice->id }}' })">{{ __('app.view') }}</flux:button>
+                        <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { id: '{{ $invoice->InvoiceId }}' })">{{ __('app.view') }}</flux:button>
                     </div>
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
