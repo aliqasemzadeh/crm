@@ -8,7 +8,12 @@ class TaskFile extends Model
 {
     protected $table = 'workspace_task_files';
 
-    protected $fillable = ['task_id','user_id','disk','path','original_name','mime','size'];
+    protected $fillable = ['task_id', 'task_report_id', 'user_id', 'disk', 'path', 'original_name', 'mime', 'size'];
+
+    public function report()
+    {
+        return $this->belongsTo(TaskReport::class, 'task_report_id');
+    }
 
     public function task()
     {

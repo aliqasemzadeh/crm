@@ -9,12 +9,17 @@ class TaskReport extends Model
     protected $table = 'workspace_task_reports';
 
     protected $fillable = [
-        'task_id', 'user_id', 'type', 'body', 'spent_minutes', 'meta'
+        'task_id', 'task_report_id', 'user_id', 'type', 'body', 'spent_minutes', 'meta'
     ];
 
     protected $casts = [
         'meta' => 'array',
     ];
+
+    public function files()
+    {
+        return $this->hasMany(TaskFile::class, 'task_report_id');
+    }
 
     public function task()
     {
