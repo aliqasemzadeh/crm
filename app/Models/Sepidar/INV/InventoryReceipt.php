@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class InventoryReceipt extends Model
 {
-    public $table = 'sepidar_inventory_receipts';
+    public $table = 'INV.InventoryReceipt';
+    public $connection = 'sqlsrv';
+
     public function dl(): BelongsTo
     {
         return $this->belongsTo(DL::class, 'DelivererDLRef', 'DLId');

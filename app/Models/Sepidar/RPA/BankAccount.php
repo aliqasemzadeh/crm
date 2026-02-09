@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class BankAccount extends Model
 {
-    public $table = 'sepidar_bank_accounts';
+    public $table = 'RPA.BankAccount';
+    public $connection = 'sqlsrv';
 
     public function bankBranch(): BelongsTo
     {

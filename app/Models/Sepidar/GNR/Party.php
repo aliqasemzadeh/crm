@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Party extends Model
 {
-    public $table = 'sepidar_parties';
+    public $table = 'GNR.Party';
+    public $connection = 'sqlsrv';
 
     public function invoices(): HasMany
     {

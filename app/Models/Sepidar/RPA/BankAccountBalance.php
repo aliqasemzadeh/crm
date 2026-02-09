@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BankAccountBalance extends Model
 {
-    public $table = 'sepidar_bank_account_balances';
+    public $table = 'RPA.BankAccountBalance';
+    public $connection = 'sqlsrv';
+    
     public function bankAccount(): BelongsTo
     {
         return $this->belongsTo(BankAccount::class, 'BankAccountRef', 'BankAccountId');

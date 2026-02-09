@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class PartyPhone extends Model
 {
-    public $table = 'sepidar_party_phones';
+    public $table = 'GNR.PartyPhone';
+    public $connection = 'sqlsrv';
 }

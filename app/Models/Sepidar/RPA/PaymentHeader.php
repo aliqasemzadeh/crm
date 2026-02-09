@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class PaymentHeader extends Model
 {
-    public $table = 'sepidar_payment_headers';
+    public $table = 'RPA.PaymentHeader';
+    public $connection = 'sqlsrv';
 }

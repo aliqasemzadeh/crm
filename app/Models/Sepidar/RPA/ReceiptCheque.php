@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class ReceiptCheque extends Model
 {
-    //
+    public $table = 'RPA.ReceiptCheque';
+    public $connection = 'sqlsrv';
 }

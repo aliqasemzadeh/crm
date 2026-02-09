@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Item extends Model
 {
-    public $table = 'sepidar_items';
+    public $table = 'INV.Item';
+    public $connection = 'sqlsrv';
 
     public function receipt(): BelongsTo
     {

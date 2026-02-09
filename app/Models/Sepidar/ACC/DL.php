@@ -6,5 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class DL extends Model
 {
-    public $table = 'sepidar_dls';
+    public $table = 'ACC.DL';
+    public $connection = 'sqlsrv';
 }
