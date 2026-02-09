@@ -58,6 +58,8 @@ return [
     'new_password' => 'رمز عبور جدید',
     'password_confirmation' => 'تکرار رمز عبور',
     'password_updated_successfully' => 'رمز عبور با موفقیت تغییر یافت.',
+    'email_updated_successfully' => 'ایمیل با موفقیت تغییر یافت.',
+    'mobile_updated_successfully' => 'شماره موبایل با موفقیت تغییر یافت.',
     'register' => 'ثبت نام',
     'login_id' => 'ایمیل یا شماره موبایل',
 
