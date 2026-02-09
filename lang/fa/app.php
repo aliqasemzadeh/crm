@@ -963,11 +963,12 @@ return [
     ],
     'pending' => 'منتظر تایید',
     'rejected' => 'رد شده',
+    'workspace' => 'میزکار',
     'rejection_reason' => 'دلیل رد شدن',
     'rejection_reason_required' => 'لطفاً دلیل رد شدن را در یادداشت بررسی بنویسید.',
     'no_reason_provided' => 'دلیلی ذکر نشده است.',
     'no_results_found' => 'موردی یافت نشد.',
-    'workspace' => [
+    'workspace_review' => [
         'tasks_count' => 'تعداد وظایف فعال',
         'view_board' => 'مشاهده برد',
         'review' => [
