@@ -1,6 +1,7 @@
 <div>
     <livewire:panels.workspace.dashboard.task.create />
     <livewire:panels.workspace.dashboard.task.edit />
+    <livewire:panels.workspace.dashboard.task.activity />
 
     @php
         // یکبار خواندن برای جلوگیری از N+1 و تکرار filter
@@ -102,9 +103,7 @@
                                     <div wire:sort:ignore>
                                         <div
                                             class="font-medium @if($task->approval_status !== 'approved') cursor-pointer @endif"
-                                            @if($task->approval_status !== 'approved')
-                                                wire:click="$dispatch('panels.workspace.dashboard.task.edit.open', { id: {{ $task->id }} })"
-                                            @endif
+                                            wire:click="$dispatch('panels.workspace.dashboard.task.activity.assign-data', { id: {{ $task->id }} })"
                                         >
                                             {{ $task->title }}
                                         </div>
@@ -144,6 +143,13 @@
                                                         {{ __('app.edit_task') }}
                                                     </flux:menu.item>
                                                 @endif
+
+                                                <flux:menu.item
+                                                    icon="chat-bubble-left-right"
+                                                    wire:click="$dispatch('panels.workspace.dashboard.task.activity.assign-data', { id: {{ $task->id }} })"
+                                                >
+                                                    {{ __('app.task.activity.modal_title') }}
+                                                </flux:menu.item>
 
                                                 @if($task->status !== 'done' && $task->approval_status !== 'approved')
                                                     <flux:menu.item

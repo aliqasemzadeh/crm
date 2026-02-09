@@ -18,10 +18,6 @@ return new class extends Migration
                 ->constrained('workspace_tasks')
                 ->cascadeOnDelete();
 
-            $table->foreignId('task_report_id')
-                ->constrained('workspace_task_reports')
-                ->cascadeOnDelete();
-
             $table->foreignId('user_id')
                 ->nullable()
                 ->constrained('users')

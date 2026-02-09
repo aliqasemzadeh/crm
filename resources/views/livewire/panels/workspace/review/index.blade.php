@@ -1,4 +1,5 @@
 <div class="space-y-6">
+    <livewire:panels.workspace.review.task.activity />
     <div class="flex items-center justify-between">
         <flux:heading size="xl">{{ __('app.task.review.list_title') }}</flux:heading>
 
@@ -21,7 +22,11 @@
         <flux:table.rows>
             @foreach ($this->tasks as $task)
                 <flux:table.row :key="$task->id">
-                    <flux:table.cell class="font-medium">{{ $task->title }}</flux:table.cell>
+                    <flux:table.cell class="font-medium">
+                        <span class="cursor-pointer hover:underline" wire:click="$dispatch('panels.workspace.review.task.activity.assign-data', { id: {{ $task->id }} })">
+                            {{ $task->title }}
+                        </span>
+                    </flux:table.cell>
                     <flux:table.cell>
                         <flux:avatar.group>
                             @foreach($task->users as $user)
