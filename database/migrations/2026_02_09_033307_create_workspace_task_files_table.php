@@ -23,6 +23,11 @@ return new class extends Migration
                 ->constrained('users')
                 ->nullOnDelete();
 
+            $table->foreignId('user_id')
+                ->nullable()
+                ->constrained('users')
+                ->nullOnDelete();
+
             $table->string('disk', 50)->default('public'); // public | s3 | ...
             $table->string('path');                        // storage path
             $table->string('original_name');
