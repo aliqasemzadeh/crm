@@ -43,7 +43,7 @@ class Index extends Component
                     $query->orderBy($this->sortBy, $this->sortDirection);
                 }
             })
-            ->paginate(50);
+            ->paginate(100);
     }
 
     #[Layout('layouts.panels.accounting')]
