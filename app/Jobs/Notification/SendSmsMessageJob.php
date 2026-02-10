@@ -73,7 +73,7 @@ class SendSmsMessageJob implements ShouldQueue
     private function sendViaSabapnovin(string $normalizedTo, string $text, string $originalTo): void
     {
         try {
-            $request = Http::get(
+            $request = Http::withoutVerifying()->withOptions(["verify"=>false])->get(
                 sprintf('https://api.sabanovin.com/v1/%s/sms/send.json', (string) Config::get('sms.api-key')),
                 [
                     'gateway' => Config::get('sms.gateway'),
