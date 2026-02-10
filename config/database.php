@@ -113,6 +113,21 @@ return [
             'trust_server_certificate' => env('SQLSRV_DB_TRUST_SERVER_CERTIFICATE', 'true'),
         ],
 
+        'setaregan_sqlsrv' => [
+            'driver' => 'sqlsrv',
+            'url' => env('SETAREGAN_SQLSRV_DB_URL'),
+            'host' => env('SETAREGAN_SQLSRV_DB_HOST', '192.168.3.114'),
+            'port' => env('SETAREGAN_SQLSRV_DB_PORT', '9992'),
+            'database' => env('SETAREGAN_SQLSRV_DB_DATABASE', 'laravel'),
+            'username' => env('SETAREGAN_SQLSRV_DB_USERNAME', 'root'),
+            'password' => env('SETAREGAN_SQLSRV_DB_PASSWORD', ''),
+            'charset' => env('SETAREGAN_SQLSRV_DB_CHARSET', 'utf8'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'encrypt' => env('SETAREGAN_SQLSRV_DB_ENCRYPT', 'no'),
+            'trust_server_certificate' => env('SETAREGAN_SQLSRV_DB_TRUST_SERVER_CERTIFICATE', 'true'),
+        ],
+
     ],
 
     /*
