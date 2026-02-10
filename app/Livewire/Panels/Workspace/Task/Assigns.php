@@ -28,6 +28,10 @@ class Assigns extends Component
             ]
         ]);
 
+        $user = User::findOrFail($userId);
+
+        \App\Jobs\Notification\SendSmsMessageJob::dispatch($user->mobile, "فعالیت:" . $this->task->title . " در میزکار شما قرارگرفت.");
+
         Flux::toast(
             text: __('app.task.notifications.assigned'),
             variant: 'success',
