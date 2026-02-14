@@ -14,14 +14,17 @@ class PaymentHeader extends Model
     {
         static::deleted(function ($paymentHeader) {
             Index::clearCache();
+            \App\Livewire\Panels\Accounting\Dashboard\Index::clearCache();
         });
 
         static::created(function ($paymentHeader) {
             Index::clearCache();
+            \App\Livewire\Panels\Accounting\Dashboard\Index::clearCache();
         });
 
         static::updated(function ($paymentHeader) {
             Index::clearCache();
+            \App\Livewire\Panels\Accounting\Dashboard\Index::clearCache();
         });
     }
 }

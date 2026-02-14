@@ -847,6 +847,7 @@ return [
     'total_annual_expenses' => 'جمع کل هزینه‌های سال',
     'total_annual_invoices' => 'جمع کل فاکتورهای سال',
     'total_annual_receipts' => 'جمع کل دریافتی‌های سال',
+    'receipts_vs_expenses' => 'مقایسه دریافتی‌ها و هزینه‌ها',
     'rial' => 'ریال',
     'jalali_months' => [
         1 => 'فروردین',

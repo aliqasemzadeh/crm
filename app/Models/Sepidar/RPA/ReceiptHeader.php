@@ -14,14 +14,17 @@ class ReceiptHeader extends Model
     {
         static::deleted(function ($receiptHeader) {
             \App\Livewire\Panels\Accounting\ReceiptHeader\Index::clearCache();
+            \App\Livewire\Panels\Accounting\Dashboard\Index::clearCache();
         });
 
         static::created(function ($receiptHeader) {
             \App\Livewire\Panels\Accounting\ReceiptHeader\Index::clearCache();
+            \App\Livewire\Panels\Accounting\Dashboard\Index::clearCache();
         });
 
         static::updated(function ($receiptHeader) {
             \App\Livewire\Panels\Accounting\ReceiptHeader\Index::clearCache();
+            \App\Livewire\Panels\Accounting\Dashboard\Index::clearCache();
         });
     }
 }
