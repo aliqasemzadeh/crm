@@ -16,6 +16,7 @@
         <flux:sidebar.item icon="home" href="{{ route('panels.accounting.grouping.index') }}" wire:navigate>{{ __('app.inventory') }}</flux:sidebar.item>
         <flux:sidebar.item icon="home" href="{{ route('panels.accounting.party.index') }}" wire:navigate>{{ __('app.customer') }}</flux:sidebar.item>
         <flux:sidebar.item icon="home" href="{{ route('panels.accounting.payment-header.index') }}" wire:navigate>{{ __('app.expenses') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.receipt-header.index') }}" wire:navigate>{{ __('app.receipts') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />

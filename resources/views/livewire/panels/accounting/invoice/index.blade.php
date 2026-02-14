@@ -15,9 +15,19 @@
     </div>
 
     <div class="space-y-6 mb-10">
+        @php
+            $monthly = $this->invoiceStats['monthly'];
+            $maxAmount = max($monthly);
+        @endphp
         <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            @foreach($this->invoiceStats['monthly'] as $monthNumber => $amount)
-                <flux:card class="flex flex-col items-center justify-center p-6">
+            @foreach($monthly as $monthNumber => $amount)
+                @php
+                    $colorClass = '';
+                    if ($amount > 0 && $amount == $maxAmount) {
+                        $colorClass = 'border-green-500 bg-green-50/50 dark:bg-green-900/20';
+                    }
+                @endphp
+                <flux:card class="flex flex-col items-center justify-center p-6 border-t-4 {{ $colorClass }}">
                     <flux:heading size="lg" class="mb-2">
                         {{ __('app.jalali_months.' . $monthNumber) }}
                     </flux:heading>
@@ -43,6 +53,29 @@
             <flux:label>{{ __('app.search') }}</flux:label>
             <flux:input wire:model.live.debounce.500ms="search" type="text" placeholder="{{ __('app.search_in_invoices') }}" />
         </flux:field>
+    </div>
+
+    <div class="mb-10">
+        <flux:heading size="lg" class="mb-4">۵۰ فاکتور آخر</flux:heading>
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column>{{ __('app.number') }}</flux:table.column>
+                <flux:table.column>{{ __('app.name') }}</flux:table.column>
+                <flux:table.column>{{ __('app.price') }}</flux:table.column>
+                <flux:table.column>{{ __('app.date') }}</flux:table.column>
+            </flux:table.columns>
+
+            @foreach ($this->recentInvoices as $invoice)
+                <flux:table.row :key="$invoice->InvoiceId">
+                    <flux:table.cell>{{ $invoice->Number }}</flux:table.cell>
+                    <flux:table.cell>{{ $invoice->CustomerRealName }}</flux:table.cell>
+                    <flux:table.cell>{{ number_format($invoice->Price) }} {{ __('app.rial') }}</flux:table.cell>
+                    <flux:table.cell>
+                        {{ $invoice->Date ? \Morilog\Jalali\Jalalian::fromDateTime($invoice->Date)->format('%Y-%m-%d') : '-' }}
+                    </flux:table.cell>
+                </flux:table.row>
+            @endforeach
+        </flux:table>
     </div>
 
     <livewire:panels.accounting.grouping.item.invoice />

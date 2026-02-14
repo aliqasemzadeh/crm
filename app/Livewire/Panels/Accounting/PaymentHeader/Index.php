@@ -50,4 +50,12 @@ class Index extends Component
             'expenses' => $this->expenses
         ]);
     }
+
+    public function getRecentExpensesProperty()
+    {
+        return PaymentHeader::orderBy('Date', 'desc')
+            ->orderBy('PaymentHeaderId', 'desc')
+            ->take(50)
+            ->get();
+    }
 }
