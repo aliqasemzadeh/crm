@@ -68,6 +68,7 @@ class Index extends Component
     public function invoices()
     {
         return Invoice::query()
+            ->with(['creator'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('CustomerRealName', 'like', '%' . $this->search . '%')

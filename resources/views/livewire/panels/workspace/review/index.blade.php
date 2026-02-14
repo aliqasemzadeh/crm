@@ -44,7 +44,7 @@
                         @elseif($task->approval_status === 'pending')
                             <flux:badge variant="pill" color="yellow" size="sm">{{ __('app.task.review.status_pending') }}</flux:badge>
                         @else
-                            <flux:badge variant="pill" color="zinc" size="sm">{{ __('app.task.review.status_unknown') }}</flux:badge>
+                            <flux:badge variant="pill" size="sm">{{ __('app.task.review.status_unknown') }}</flux:badge>
                         @endif
                     </flux:table.cell>
                     <flux:table.cell>

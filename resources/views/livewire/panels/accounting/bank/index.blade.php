@@ -50,12 +50,13 @@
         <flux:table.columns>
             <flux:table.column>{{ __('app.logo') }}</flux:table.column>
             <flux:table.column>{{ __('app.bank_name') }}</flux:table.column>
+            <flux:table.column>{{ __('app.creator') }}</flux:table.column>
             <flux:table.column>{{ __('app.bank_balance') }}</flux:table.column>
             @can('administrator_access')
                 <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
                 <flux:table.column>{{ __('app.bank_balance') }} ({{ __('app.usdt') }})</flux:table.column>
             @endcan
-            <flux:table.column>{{ __('app.date') }}</flux:table.column>
+            <flux:table.column>{{ __('app.last_modification_balance') }}</flux:table.column>
             <flux:table.column>{{ __('app.options') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
@@ -91,6 +92,9 @@
                     <flux:table.cell class="flex flex-col">
                         <flux:text class="font-medium text-zinc-800 dark:text-white">{{ $bankTitle }}</flux:text>
                         <flux:text size="sm" variant="subtle">{{ $bankAccount?->AccountNo }}</flux:text>
+                    </flux:table.cell>
+                    <flux:table.cell>
+                        {{ $bankAccount?->creator?->Name ?? '-' }}
                     </flux:table.cell>
                     <flux:table.cell>
                         {{ number_format($bankBalanceRial, 0) }} {{ __('app.rial') }}

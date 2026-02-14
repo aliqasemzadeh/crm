@@ -9,6 +9,40 @@
             <flux:heading size="lg">{{ __('app.invoice_items') }}</flux:heading>
             <flux:text class="mt-2">{{ __('app.invoice_items_description') }}</flux:text>
         </div>
+
+        @if(isset($invoice))
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700">
+                <div class="flex flex-col">
+                    <flux:text size="sm">{{ __('app.number') }}</flux:text>
+                    <flux:heading size="sm">{{ $invoice->Number }}</flux:heading>
+                </div>
+                <div class="flex flex-col">
+                    <flux:text size="sm">{{ __('app.category') }}</flux:text>
+                    <flux:heading size="sm">
+                        @if($invoice->SaleTypeRef == 1)
+                            رسمی
+                        @else
+                            غیر رسمی
+                        @endif
+                    </flux:heading>
+                </div>
+                <div class="flex flex-col">
+                    <flux:text size="sm">{{ __('app.creator') }}</flux:text>
+                    <flux:heading size="sm">{{ $invoice->creator?->Name ?? '-' }}</flux:heading>
+                </div>
+                <div class="flex flex-col">
+                    <flux:text size="sm">آخرین تاریخ ویرایش</flux:text>
+                    <flux:heading size="sm">
+                        {{ $invoice->LastModificationDate ? \Morilog\Jalali\Jalalian::fromDateTime($invoice->LastModificationDate)->format('%Y-%m-%d %H:i') : '-' }}
+                    </flux:heading>
+                </div>
+                <div class="flex flex-col">
+                    <flux:text size="sm">آخرین ویرایش کننده</flux:text>
+                    <flux:heading size="sm">{{ $invoice->modifier?->Name ?? '-' }}</flux:heading>
+                </div>
+            </div>
+        @endif
+
         <flux:table>
             <flux:table.columns class="bg-white dark:bg-zinc-900">
                 <flux:table.column>{{ __('app.name') }}</flux:table.column>

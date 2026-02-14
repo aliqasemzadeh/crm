@@ -14,7 +14,7 @@ class View extends Component
     #[On('panels.accounting.invoice.view.assign-data')]
     public function assignData($id): void
     {
-        $this->invoice = Invoice::with(['items', 'items.item'])->findOrFail($id);
+        $this->invoice = Invoice::with(['items', 'items.item', 'creator', 'modifier'])->findOrFail($id);
         Flux::modal('panels.accounting.invoice.view.modal')->show();
     }
     public function render()

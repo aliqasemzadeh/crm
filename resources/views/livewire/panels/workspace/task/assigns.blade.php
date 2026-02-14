@@ -44,7 +44,7 @@
                             <div>
                                 <div class="font-medium">{{ $user->name }}</div>
                                 <div class="text-xs text-zinc-500">
-                                    <flux:badge size="sm" variant="outline" color="zinc">
+                                    <flux:badge size="sm" variant="outline">
                                         {{ __('app.task.' . $user->pivot->role) }}
                                     </flux:badge>
                                     {{ $user->mobile }}

@@ -14,7 +14,6 @@
                 <flux:button
                     size="xs"
                     variant="outline"
-                    color="zinc"
                     onclick="window.print()"
                 >
                     {{ __('app.print') }}

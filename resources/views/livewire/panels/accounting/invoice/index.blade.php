@@ -58,6 +58,7 @@
             <flux:table.column class="w-1 whitespace-nowrap">{{ __('app.options') }}</flux:table.column>
             <flux:table.column>{{ __('app.number') }}</flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'CustomerRealName'" :direction="$sortDirection" wire:click="sort('CustomerRealName')">{{ __('app.name') }}</flux:table.column>
+            <flux:table.column>{{ __('app.creator') }}</flux:table.column>
             <flux:table.column>{{ __('app.category') }}</flux:table.column>
             <flux:table.column>{{ __('app.price') }}</flux:table.column>
             @can('administrator_access')
@@ -82,6 +83,9 @@
                     <div class="flex flex-row items-center gap-2">
                         {{ $invoice->CustomerRealName }}
                     </div>
+                </flux:table.cell>
+                <flux:table.cell class="whitespace-nowrap">
+                    {{ $invoice->creator?->Name ?? '-' }}
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
                     @if($invoice->SaleTypeRef == 1)
