@@ -2,7 +2,6 @@
 
 namespace App\Console\Commands\Sepidar;
 
-use App\Jobs\Sepidar\CheckInvoiceCommand;
 use App\Jobs\Sepidar\CheckInvoiceJob;
 use App\Models\LastRecordCheck;
 use App\Models\Sepidar\SLS\Invoice;
