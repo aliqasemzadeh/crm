@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Accounting\Bank;
 use App\Models\Sepidar\RPA\BankAccountBalance;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 class Index extends Component
