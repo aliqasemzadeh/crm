@@ -1,7 +1,7 @@
 <flux:modal name="panels.accounting.party.phones.modal" class="md:w-1/3" flyout position="right">
     <div class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('app.phones') }}:  {{ $part->Name ?? "" }} {{ $part->LastName ?? "" }}</flux:heading>
+            <flux:heading size="lg">{{ __('app.phones') }}:  {{ $party->Name ?? "" }} {{ $party->LastName ?? "" }}</flux:heading>
             <flux:text class="mt-2">{{ __('app.phones_description') }}</flux:text>
         </div>
         <flux:table>

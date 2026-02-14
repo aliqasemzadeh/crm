@@ -73,7 +73,7 @@
             <flux:table.row :key="$invoice->id">
                 <flux:table.cell class="w-1 whitespace-nowrap">
                     <div class="flex items-center gap-2">
-                        <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { id: '{{ $invoice->InvoiceId }}' })">{{ __('app.view') }}</flux:button>
+                        <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $invoice->InvoiceId }}' })">{{ __('app.view') }}</flux:button>
                     </div>
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">

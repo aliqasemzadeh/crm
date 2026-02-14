@@ -4,6 +4,7 @@ namespace App\Models\Sepidar\SLS;
 
 use App\Livewire\Panels\Accounting\Invoice\Index;
 use App\Models\Sepidar\FMK\User;
+use App\Models\Sepidar\GNR\Party;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -27,6 +28,11 @@ class Invoice extends Model
         static::updated(function ($invoice) {
             Index::clearCache();
         });
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Party::class, 'CustomerPartyRef', 'PartyId');
     }
 
     public function items(): HasMany

@@ -15,22 +15,16 @@ class Phones extends Component
     public ?Party $party = null;
 
     #[On('panels.accounting.party.phones.assign-data')]
-    public function assignData($id): void
+    public function assignData($PartyId): void
     {
-        $this->party = Party::findOrFail($id);
+        $this->party = Party::findOrFail($PartyId);
         Flux::modal('panels.accounting.party.phones.modal')->show();
     }
 
     #[Computed]
     public function phones()
     {
-        if (!$this->party) {
-            return collect();
-        }
-
-        return PartyPhone::query()
-            ->where('PartyRef', $this->party->PartyId)
-            ->get();
+        return $this->party?->phones ?? collect();
     }
 
     public function render()

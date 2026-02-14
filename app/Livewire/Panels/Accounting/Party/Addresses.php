@@ -24,13 +24,7 @@ class Addresses extends Component
     #[Computed]
     public function addresses()
     {
-        if (!$this->party) {
-            return collect();
-        }
-
-        return PartyAddress::query()
-            ->where('PartyRef', $this->party->PartyId)
-            ->get();
+        return $this->party?->addresses ?? collect();
     }
 
     public function render()

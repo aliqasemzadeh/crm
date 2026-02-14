@@ -14,22 +14,16 @@ class Invoices extends Component
     public ?Party $party = null;
 
     #[On('panels.accounting.party.invoices.assign-data')]
-    public function assignData($id): void
+    public function assignData($PartyId): void
     {
-        $this->party = Party::findOrFail($id);
+        $this->party = Party::findOrFail($PartyId);
         Flux::modal('panels.accounting.party.invoices.modal')->show();
     }
 
     #[Computed]
     public function invoices()
     {
-        if (!$this->party) {
-            return collect();
-        }
-
-        return Invoice::query()
-            ->where('CustomerPartyRef', $this->party->PartyId)
-            ->get();
+        return $this->party?->invoices ?? collect();
     }
 
     public function render()

@@ -1,7 +1,7 @@
 <flux:modal name="panels.accounting.party.invoices.modal" class="md:w-1/3" flyout position="right">
     <div class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('app.invoices') }}:  {{ $part->Name ?? "" }} {{ $part->LastName ?? "" }}</flux:heading>
+            <flux:heading size="lg">{{ __('app.invoices') }}:  {{ $party->Name ?? "" }} {{ $party->LastName ?? "" }}</flux:heading>
             <flux:text class="mt-2">{{ __('app.invoices_description') }}</flux:text>
         </div>
         <flux:table>
@@ -17,7 +17,7 @@
                 @foreach($this->invoices as $invoice)
                     <flux:table.row>
                         <flux:table.cell>
-                            <flux:button size="xs" icon="eye" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { id: '{{ $invoice->id }}' })">{{ __('app.view') }}</flux:button>
+                            <flux:button size="xs" icon="eye" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $invoice->InvoiceId }}' })">{{ __('app.view') }}</flux:button>
                         </flux:table.cell>
 
                         <flux:table.cell>
