@@ -14,4 +14,9 @@ class BankAccount extends Model
     {
         return $this->belongsTo(BankBranch::class, 'BankBranchRef', 'BankBranchId');
     }
+
+    public function balances(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(BankAccountBalance::class, 'BankAccountRef', 'BankAccountId');
+    }
 }

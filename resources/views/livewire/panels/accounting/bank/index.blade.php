@@ -20,9 +20,19 @@
         <flux:separator variant="subtle" />
     </div>
 
-    <div class="mb-6">
-        <flux:text>{{ __('app.total_balance') }}</flux:text>
-        <flux:heading size="xl" class="mb-1">{{ number_format($this->totalBalance, 0) }} {{ __('app.toman') }}</flux:heading>
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <flux:card>
+            <flux:text>{{ __('app.total_balance') }}</flux:text>
+            <flux:heading size="xl" class="mb-1">{{ number_format($this->totalBalance / 10, 0) }} {{ __('app.toman') }}</flux:heading>
+        </flux:card>
+        <flux:card>
+            <flux:text>{{ __('app.usdt_rate') }}</flux:text>
+            <flux:heading size="xl" class="mb-1">{{ number_format($this->usdtRate, 0) }} {{ __('app.rial') }}</flux:heading>
+        </flux:card>
+        <flux:card>
+            <flux:text>{{ __('app.total_usdt_balance') }}</flux:text>
+            <flux:heading size="xl" class="mb-1">{{ number_format($this->totalUSDTBalance, 2) }} {{ __('app.usdt') }}</flux:heading>
+        </flux:card>
     </div>
 
     <flux:table>
@@ -49,29 +59,52 @@
             <flux:table.column>{{ __('app.options') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
-            @foreach ($bankAccounts as $bank)
-                <flux:table.row :key="$bank['BankAccountId']">
+            @php
+                $bankTranslations = __('banks');
+            @endphp
+            @foreach ($bankAccounts as $balance)
+                @php
+                    $bankAccount = $balance->bankAccount;
+                    $bank = $bankAccount?->bankBranch?->bank;
+                    $bankTitle = $bank?->Title;
+
+                    $bankKey = null;
+                    if ($bankTitle) {
+                        foreach ($bankTranslations as $key => $value) {
+                            if ($value === $bankTitle) {
+                                $bankKey = $key;
+                                break;
+                            }
+                        }
+                    }
+
+                    $logoUrl = $bankKey ? asset("images/banks/{$bankKey}.png") : null;
+                    $bankBalanceToman = $balance->Balance / 10;
+                    $usdtBalance = $this->usdtRate > 0 ? $bankBalanceToman / ($this->usdtRate / 10) : 0;
+                @endphp
+                <flux:table.row :key="$balance->BankAccountBalanceId">
                     <flux:table.cell>
+                        @if($logoUrl)
+                            <img src="{{ $logoUrl }}" alt="{{ $bankTitle }}" class="w-8 h-8 object-contain">
+                        @endif
                     </flux:table.cell>
-                    <flux:table.cell class="flex items-center gap-3">
-                        {{ $bank['Owner'] }}
+                    <flux:table.cell class="flex flex-col">
+                        <flux:text class="font-medium text-zinc-800 dark:text-white">{{ $bankTitle }}</flux:text>
+                        <flux:text size="sm" variant="subtle">{{ $bankAccount?->AccountNo }}</flux:text>
                     </flux:table.cell>
                     <flux:table.cell>
-                        {{ number_format($bank['Balance'], 0) }} {{ __('app.toman') }}
+                        {{ number_format($bankBalanceToman, 0) }} {{ __('app.toman') }}
                     </flux:table.cell>
                     @can('administrator_access')
-                        @php
-                            $rate = \App\Models\CurrencyRate::getRate($bank['LastModificationDate']);
-                        @endphp
                         <flux:table.cell>
-                            {{ $rate ? number_format($rate) : '-' }}
+                            {{ number_format($this->usdtRate, 0) }}
                         </flux:table.cell>
                         <flux:table.cell>
-                            {{ $rate ? number_format($bank['Balance'] / ($rate / 10), 2) : '-' }}
+                            {{ number_format($usdtBalance, 2) }} {{ __('app.usdt') }}
                         </flux:table.cell>
                     @endcan
                     <flux:table.cell class="whitespace-nowrap">
-                        {{ \Morilog\Jalali\Jalalian::fromDateTime($bank['LastModificationDate'])->format('%Y-%m-%d %H:%M') }}
+                        {{ $bankAccount?->LastModificationDate ? \Morilog\Jalali\Jalalian::fromDateTime($bankAccount->LastModificationDate)->format('%Y-%m-%d %H:%M') : '-' }}
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">
 
@@ -80,3 +113,4 @@
             @endforeach
         </flux:table.rows>
     </flux:table>
+</div>
