@@ -2,6 +2,7 @@
     <livewire:panels.accounting.grouping.item.invoice />
     <livewire:panels.accounting.grouping.item.receipt />
     <livewire:panels.accounting.invoice.view />
+    <livewire:panels.accounting.inventory-receipt.view />
 
     @foreach($this->groupings as $groupingItem)
         <flux:button variant="primary" wire:navigate href="{{ route('panels.accounting.grouping.index', ['groupingId' => $groupingItem->GroupingID]) }}">{{ $groupingItem->Title }}</flux:button>

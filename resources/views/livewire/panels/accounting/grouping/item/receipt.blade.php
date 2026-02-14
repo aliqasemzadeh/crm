@@ -6,16 +6,19 @@
         </div>
         <flux:table>
             <flux:table.columns class="bg-white dark:bg-zinc-900">
+                <flux:table.column></flux:table.column>
                 <flux:table.column>{{ __('app.customer') }}</flux:table.column>
                 <flux:table.column>{{ __('app.fee') }}</flux:table.column>
                 <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
                 <flux:table.column>{{ __('app.date') }}</flux:table.column>
-                <flux:table.column></flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
                 @foreach($this->buys as $buy)
                     <flux:table.row>
+                        <flux:table.cell>
+                            <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.inventory-receipt.view.assign-data', { id: '{{ $buy->receipt->InventoryReceiptID }}' })">{{ __('app.view') }}</flux:button>
+                        </flux:table.cell>
                         <flux:table.cell>
                             {{ $buy->receipt->dl->Title ?? $buy->receipt->DelivererDLRef ?? "" }}
                         </flux:table.cell>
@@ -36,9 +39,6 @@
                             @else
                                 -
                             @endif
-                        </flux:table.cell>
-                        <flux:table.cell>
-                            <flux:button icon="eye" variant="ghost" size="sm" wire:click="$dispatchTo('panels.accounting.inventory-receipt.view', 'panels.accounting.inventory-receipt.view.assign-data', { id: {{ $buy->InventoryReceiptRef }} })" />
                         </flux:table.cell>
                     </flux:table.row>
                 @endforeach
