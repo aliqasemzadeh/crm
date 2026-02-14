@@ -64,11 +64,15 @@ class Index extends Component
             $uncashedReceiptsSum = ReceiptCheque::where('Date', '>', $today)->sum('Amount');
             $uncashedPaymentsSum = PaymentCheque::where('Date', '>', $today)->sum('Amount');
 
+            $totalReceipts = array_sum($monthlyReceipts);
+            $totalExpenses = array_sum($monthlyExpenses);
+
             return [
                 'monthlyExpenses' => $monthlyExpenses,
                 'monthlyReceipts' => $monthlyReceipts,
-                'totalExpenses' => array_sum($monthlyExpenses),
-                'totalReceipts' => array_sum($monthlyReceipts),
+                'totalExpenses' => $totalExpenses,
+                'totalReceipts' => $totalReceipts,
+                'receiptsPaymentsDiff' => $totalReceipts - $totalExpenses,
                 'chartData' => $chartData,
                 'uncashedReceiptsSum' => $uncashedReceiptsSum,
                 'uncashedPaymentsSum' => $uncashedPaymentsSum,

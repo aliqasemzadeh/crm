@@ -36,7 +36,7 @@ class Index extends Component
 
         return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef) {
             $receipts = InventoryReceipt::where('FiscalYearRef', $fiscalYearRef)
-                ->select('Price', 'Date')
+                ->select('TotalPrice', 'Date')
                 ->get();
 
             $monthlyStats = array_fill(1, 12, 0);
@@ -45,7 +45,7 @@ class Index extends Component
                 if ($receipt->Date) {
                     $jalaliDate = Jalalian::fromDateTime($receipt->Date);
                     $month = $jalaliDate->getMonth();
-                    $monthlyStats[$month] += $receipt->Price;
+                    $monthlyStats[$month] += $receipt->TotalPrice;
                 }
             }
 
@@ -79,17 +79,6 @@ class Index extends Component
             })
             ->paginate(100);
     }
-
-    #[Computed]
-    public function recentReceipts()
-    {
-        return InventoryReceipt::with('dl')
-            ->orderBy('Date', 'desc')
-            ->orderBy('InventoryReceiptID', 'desc')
-            ->take(50)
-            ->get();
-    }
-
     #[Layout('layouts.panels.accounting')]
     public function render()
     {

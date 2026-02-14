@@ -66,4 +66,9 @@ class InventoryReceipt extends Model
                     'InventoryReceiptID'
                 )->orderByDesc('Fee'); // برای رفع تساوی
     }
+
+    public function getPriceAttribute()
+    {
+        return $this->TotalPrice;
+    }
 }

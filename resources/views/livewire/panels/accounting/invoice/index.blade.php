@@ -48,44 +48,6 @@
         </flux:card>
     </div>
 
-    <div class="mb-6">
-        <flux:field>
-            <flux:label>{{ __('app.search') }}</flux:label>
-            <flux:input wire:model.live.debounce.500ms="search" type="text" placeholder="{{ __('app.search_in_invoices') }}" />
-        </flux:field>
-    </div>
-
-    <div class="mb-10">
-        <flux:heading size="lg" class="mb-4">۵۰ فاکتور آخر</flux:heading>
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>{{ __('app.number') }}</flux:table.column>
-                <flux:table.column>{{ __('app.name') }}</flux:table.column>
-                <flux:table.column>{{ __('app.price') }}</flux:table.column>
-                @can('administrator_access')
-                    <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
-                @endcan
-                <flux:table.column>{{ __('app.date') }}</flux:table.column>
-            </flux:table.columns>
-
-            @foreach ($this->recentInvoices as $invoice)
-                <flux:table.row :key="$invoice->InvoiceId">
-                    <flux:table.cell>{{ $invoice->Number }}</flux:table.cell>
-                    <flux:table.cell>{{ $invoice->CustomerRealName }}</flux:table.cell>
-                    <flux:table.cell>{{ number_format($invoice->Price) }} {{ __('app.rial') }}</flux:table.cell>
-                    @can('administrator_access')
-                        <flux:table.cell>
-                            {{ number_format(\App\Models\CurrencyRate::getRate($invoice->Date)) }}
-                        </flux:table.cell>
-                    @endcan
-                    <flux:table.cell>
-                        {{ $invoice->Date ? \Morilog\Jalali\Jalalian::fromDateTime($invoice->Date)->format('%Y-%m-%d') : '-' }}
-                    </flux:table.cell>
-                </flux:table.row>
-            @endforeach
-        </flux:table>
-    </div>
-
     <livewire:panels.accounting.grouping.item.invoice />
     <livewire:panels.accounting.grouping.item.receipt />
     <livewire:panels.accounting.invoice.view />

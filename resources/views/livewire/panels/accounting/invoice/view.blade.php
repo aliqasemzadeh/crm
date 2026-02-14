@@ -1,3 +1,8 @@
+@php
+    $profit = 0;
+    $profitUsdt = 0;
+    $totalSellUsdt = 0;
+@endphp
 <flux:modal name="panels.accounting.invoice.view.modal" class="md:w-1/3" flyout position="right">
     <div class="space-y-6">
         <div>
@@ -20,11 +25,7 @@
                 @endcan
             </flux:table.columns>
             @if(isset($invoice))
-
                 @php
-                    $profit = 0;
-                    $profitUsdt = 0;
-                    $totalSellUsdt = 0;
                     $invoiceRate = \App\Models\CurrencyRate::getRate($invoice->Date) / 10;
                 @endphp
 
@@ -100,6 +101,7 @@
                     </flux:table.row>
                 @endforeach
             </flux:table.rows>
+
                 @endif
         </flux:table>
         @can('administrator_access')

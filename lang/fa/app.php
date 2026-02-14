@@ -1028,4 +1028,5 @@ return [
     'total_sell_usdt' => 'جمع فروش (دلار)',
     'usdt' => 'دلار',
     'total_profit' => 'سود نهایی (ریال)',
+    'receipts_and_payments_diff' => 'اختلاف دریافتی و پرداختی',
 ];

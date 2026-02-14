@@ -48,44 +48,6 @@
         </flux:card>
     </div>
 
-    <div class="mb-6">
-        <flux:field>
-            <flux:label>{{ __('app.search') }}</flux:label>
-            <flux:input wire:model.live.debounce.500ms="search" type="text" placeholder="{{ __('app.search_in_inventory_receipts') }}" />
-        </flux:field>
-    </div>
-
-    <div class="mb-10">
-        <flux:heading size="lg" class="mb-4">۵۰ رسید آخر</flux:heading>
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>{{ __('app.number') }}</flux:table.column>
-                <flux:table.column>{{ __('app.name') }}</flux:table.column>
-                <flux:table.column>{{ __('app.price') }}</flux:table.column>
-                @can('administrator_access')
-                    <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
-                @endcan
-                <flux:table.column>{{ __('app.date') }}</flux:table.column>
-            </flux:table.columns>
-
-            @foreach ($this->recentReceipts as $receipt)
-                <flux:table.row :key="$receipt->InventoryReceiptID">
-                    <flux:table.cell>{{ $receipt->Number }}</flux:table.cell>
-                    <flux:table.cell>{{ $receipt->dl->Title ?? $receipt->DelivererDLRef }}</flux:table.cell>
-                    <flux:table.cell>{{ number_format($receipt->Price) }} {{ __('app.rial') }}</flux:table.cell>
-                    @can('administrator_access')
-                        <flux:table.cell>
-                            {{ number_format(\App\Models\CurrencyRate::getRate($receipt->Date)) }}
-                        </flux:table.cell>
-                    @endcan
-                    <flux:table.cell>
-                        {{ $receipt->Date ? \Morilog\Jalali\Jalalian::fromDateTime($receipt->Date)->format('%Y-%m-%d') : '-' }}
-                    </flux:table.cell>
-                </flux:table.row>
-            @endforeach
-        </flux:table>
-    </div>
-
     <livewire:panels.accounting.inventory-receipt.view />
 
     <flux:table :paginate="$this->receipts">
@@ -114,7 +76,7 @@
                     {{ $receipt->dl->Title ?? $receipt->DelivererDLRef }}
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
-                    {{ number_format($receipt->Price) }}
+                    {{ number_format($receipt->TotalPrice) }}
                 </flux:table.cell>
                 @can('administrator_access')
                     <flux:table.cell class="whitespace-nowrap">

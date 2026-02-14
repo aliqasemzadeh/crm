@@ -40,8 +40,8 @@ class ImportNobitexYear extends Command
 
         $this->info("Gregorian range: {$startGregorian->toDateString()} → {$endGregorian->toDateString()}");
 
-        $response = Http::timeout(60)->get(
-            'https://apiv2.nobitex.ir/market/udf/history',
+        $response = Http::withoutVerifying()->timeout(60)->get(
+            'http://apiv2.nobitex.ir/market/udf/history',
             [
                 'symbol' => 'USDTIRT',
                 'resolution' => 'D',

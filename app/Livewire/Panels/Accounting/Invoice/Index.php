@@ -82,15 +82,6 @@ class Index extends Component
             ->paginate(100);
     }
 
-    #[Computed]
-    public function recentInvoices()
-    {
-        return Invoice::orderBy('Date', 'desc')
-            ->orderBy('InvoiceId', 'desc')
-            ->take(50)
-            ->get();
-    }
-
     #[Layout('layouts.panels.accounting')]
     public function render()
     {

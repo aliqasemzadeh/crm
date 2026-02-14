@@ -3,12 +3,12 @@
         <flux:heading size="xl">{{ __('app.dashboard') }}</flux:heading>
     </flux:header>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <flux:card class="border-t-4 border-green-500">
             <div class="flex justify-between items-center">
                 <flux:heading size="lg">{{ __('app.total_annual_receipts') }}</flux:heading>
                 <flux:text size="2xl" class="font-black text-green-600 dark:text-green-400">
-                    {{ number_format($this->stats['totalReceipts']) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    {{ number_format($this->stats['totalReceipts'] ?? 0) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
                 </flux:text>
             </div>
         </flux:card>
@@ -17,7 +17,16 @@
             <div class="flex justify-between items-center">
                 <flux:heading size="lg">{{ __('app.total_annual_expenses') }}</flux:heading>
                 <flux:text size="2xl" class="font-black text-red-600 dark:text-red-400">
-                    {{ number_format($this->stats['totalExpenses']) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    {{ number_format($this->stats['totalExpenses'] ?? 0) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                </flux:text>
+            </div>
+        </flux:card>
+
+        <flux:card class="border-t-4 border-purple-500">
+            <div class="flex justify-between items-center">
+                <flux:heading size="lg">{{ __('app.receipts_and_payments_diff') }}</flux:heading>
+                <flux:text size="2xl" class="font-black {{ ($this->stats['receiptsPaymentsDiff'] ?? 0) >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
+                    {{ number_format($this->stats['receiptsPaymentsDiff'] ?? 0) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
                 </flux:text>
             </div>
         </flux:card>
@@ -28,7 +37,7 @@
             <div class="flex justify-between items-center">
                 <flux:heading size="lg">{{ __('app.total_uncashed_amount') }} ({{ __('app.receipt_cheques') }})</flux:heading>
                 <flux:text size="2xl" class="font-black text-sky-600 dark:text-sky-400">
-                    {{ number_format($this->stats['uncashedReceiptsSum']) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    {{ number_format($this->stats['uncashedReceiptsSum'] ?? 0) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
                 </flux:text>
             </div>
         </flux:card>
@@ -37,7 +46,7 @@
             <div class="flex justify-between items-center">
                 <flux:heading size="lg">{{ __('app.total_uncashed_amount') }} ({{ __('app.payment_cheques') }})</flux:heading>
                 <flux:text size="2xl" class="font-black text-orange-600 dark:text-orange-400">
-                    {{ number_format($this->stats['uncashedPaymentsSum']) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    {{ number_format($this->stats['uncashedPaymentsSum'] ?? 0) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
                 </flux:text>
             </div>
         </flux:card>
@@ -46,7 +55,7 @@
     <flux:card>
         <flux:heading size="lg" class="mb-6">{{ __('app.receipts_vs_expenses') }}</flux:heading>
 
-        <flux:chart :data="$this->stats['chartData']" class="h-80">
+        <flux:chart :data="$this->stats['chartData'] ?? []" class="h-80">
             <flux:chart.viewport class="min-h-[20rem]">
                 <flux:chart.svg>
                     <flux:chart.line field="receipts" class="text-green-500" curve="none" />
