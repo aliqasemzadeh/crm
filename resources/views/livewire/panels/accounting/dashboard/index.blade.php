@@ -23,6 +23,26 @@
         </flux:card>
     </div>
 
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <flux:card class="border-t-4 border-sky-500">
+            <div class="flex justify-between items-center">
+                <flux:heading size="lg">{{ __('app.total_uncashed_amount') }} ({{ __('app.receipt_cheques') }})</flux:heading>
+                <flux:text size="2xl" class="font-black text-sky-600 dark:text-sky-400">
+                    {{ number_format($this->stats['uncashedReceiptsSum']) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                </flux:text>
+            </div>
+        </flux:card>
+
+        <flux:card class="border-t-4 border-orange-500">
+            <div class="flex justify-between items-center">
+                <flux:heading size="lg">{{ __('app.total_uncashed_amount') }} ({{ __('app.payment_cheques') }})</flux:heading>
+                <flux:text size="2xl" class="font-black text-orange-600 dark:text-orange-400">
+                    {{ number_format($this->stats['uncashedPaymentsSum']) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                </flux:text>
+            </div>
+        </flux:card>
+    </div>
+
     <flux:card>
         <flux:heading size="lg" class="mb-6">{{ __('app.receipts_vs_expenses') }}</flux:heading>
 

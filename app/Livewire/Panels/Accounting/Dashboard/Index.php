@@ -4,6 +4,8 @@ namespace App\Livewire\Panels\Accounting\Dashboard;
 
 use App\Models\Sepidar\RPA\PaymentHeader;
 use App\Models\Sepidar\RPA\ReceiptHeader;
+use App\Models\Sepidar\RPA\ReceiptCheque;
+use App\Models\Sepidar\RPA\PaymentCheque;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -57,12 +59,19 @@ class Index extends Component
                 ];
             }
 
+            // Uncashed Cheques
+            $today = now()->startOfDay();
+            $uncashedReceiptsSum = ReceiptCheque::where('Date', '>', $today)->sum('Amount');
+            $uncashedPaymentsSum = PaymentCheque::where('Date', '>', $today)->sum('Amount');
+
             return [
                 'monthlyExpenses' => $monthlyExpenses,
                 'monthlyReceipts' => $monthlyReceipts,
                 'totalExpenses' => array_sum($monthlyExpenses),
                 'totalReceipts' => array_sum($monthlyReceipts),
                 'chartData' => $chartData,
+                'uncashedReceiptsSum' => $uncashedReceiptsSum,
+                'uncashedPaymentsSum' => $uncashedPaymentsSum,
             ];
         });
     }

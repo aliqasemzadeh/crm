@@ -18,6 +18,8 @@
         <flux:sidebar.item icon="home" href="{{ route('panels.accounting.party.index') }}" wire:navigate>{{ __('app.customer') }}</flux:sidebar.item>
         <flux:sidebar.item icon="home" href="{{ route('panels.accounting.payment-header.index') }}" wire:navigate>{{ __('app.expenses') }}</flux:sidebar.item>
         <flux:sidebar.item icon="home" href="{{ route('panels.accounting.receipt-header.index') }}" wire:navigate>{{ __('app.receipts') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.receipt-cheque.index') }}" wire:navigate>{{ __('app.receipt_cheques') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.payment-cheque.index') }}" wire:navigate>{{ __('app.payment_cheques') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
