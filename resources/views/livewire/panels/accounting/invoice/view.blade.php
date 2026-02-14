@@ -73,9 +73,6 @@
                             ->whereHas('receipt', function ($q) use ($cutoff) {
                                 $q->where('Date', '<=', $cutoff);
                             })
-                            ->with(['receipt' => function ($q) use ($cutoff) {
-                                $q->where('Date', '<=', $cutoff);
-                            }])
                             ->orderByDesc('Fee')
                             ->first();
                     @endphp

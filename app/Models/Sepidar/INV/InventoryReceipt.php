@@ -4,6 +4,7 @@ namespace App\Models\Sepidar\INV;
 
 use App\Livewire\Panels\Accounting\InventoryReceipt\Index;
 use App\Models\Sepidar\ACC\DL;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -17,6 +18,10 @@ class InventoryReceipt extends Model
 
     protected static function booted()
     {
+        static::addGlobalScope('notReturn', function (Builder $builder) {
+            $builder->where('IsReturn', 0);
+        });
+
         static::deleted(function ($receipt) {
             Index::clearCache();
         });
@@ -70,5 +75,19 @@ class InventoryReceipt extends Model
     public function getPriceAttribute()
     {
         return $this->TotalPrice;
+    }
+
+    public function getWeightedAveragePriceAttribute()
+    {
+        $totalQuantity = $this->items->sum('Quantity');
+        if ($totalQuantity == 0) {
+            return 0;
+        }
+
+        $totalValue = $this->items->sum(function ($item) {
+            return $item->Quantity * $item->Fee;
+        });
+
+        return $totalValue / $totalQuantity;
     }
 }

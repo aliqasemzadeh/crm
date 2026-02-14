@@ -1034,4 +1034,5 @@ return [
     'creator' => 'ایجاد کننده',
     'last_modification_balance' => 'آخرین ویرایش مانده',
     'receipts_and_payments_diff' => 'اختلاف دریافتی و پرداختی',
+    'invoices_description' => 'مشاده فاکتورها.',
 ];
