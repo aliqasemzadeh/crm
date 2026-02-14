@@ -4,6 +4,7 @@ namespace App\Livewire\Panels\Accounting\PaymentHeader;
 
 use App\Models\Sepidar\RPA\PaymentHeader;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
 
@@ -42,6 +43,7 @@ class Index extends Component
         Cache::forget("expenses_fiscal_year_{$fiscalYearRef}");
     }
 
+    #[Layout('layouts.panels.accounting')]
     public function render()
     {
         return view('livewire.panels.accounting.payment-header.index', [
