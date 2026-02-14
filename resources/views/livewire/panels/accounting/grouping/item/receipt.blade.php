@@ -11,6 +11,7 @@
                 <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
                 <flux:table.column>{{ __('app.date') }}</flux:table.column>
+                <flux:table.column></flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
                 @foreach($this->buys as $buy)
@@ -30,7 +31,14 @@
                         </flux:table.cell>
 
                         <flux:table.cell>
-                            {{ \Morilog\Jalali\Jalalian::fromDateTime($buy->receipt->CreationDate) }}
+                            @if($buy->receipt)
+                                {{ \Morilog\Jalali\Jalalian::fromDateTime($buy->receipt->Date) }}
+                            @else
+                                -
+                            @endif
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            <flux:button icon="eye" variant="ghost" size="sm" wire:click="$dispatchTo('panels.accounting.inventory-receipt.view', 'panels.accounting.inventory-receipt.view.assign-data', { id: {{ $buy->InventoryReceiptRef }} })" />
                         </flux:table.cell>
                     </flux:table.row>
                 @endforeach
