@@ -51,6 +51,7 @@
     <livewire:panels.accounting.grouping.item.invoice />
     <livewire:panels.accounting.grouping.item.receipt />
     <livewire:panels.accounting.invoice.view />
+    <livewire:panels.accounting.inventory-receipt.view />
 
 
     <flux:table :paginate="$this->invoices">

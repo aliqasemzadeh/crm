@@ -17,7 +17,7 @@
                 @foreach($this->buys as $buy)
                     <flux:table.row>
                         <flux:table.cell>
-                            <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.inventory-receipt.view.assign-data', { id: '{{ $buy->receipt->InventoryReceiptID }}' })">{{ __('app.view') }}</flux:button>
+                            <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.inventory-receipt.view.assign-data', { id: '{{ $buy->receipt?->InventoryReceiptID ?? 0 }}' })">{{ __('app.view') }}</flux:button>
                         </flux:table.cell>
                         <flux:table.cell>
                             {{ $buy->receipt->dl->Title ?? $buy->receipt->DelivererDLRef ?? "" }}
