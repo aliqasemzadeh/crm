@@ -36,9 +36,7 @@ class Index extends Component
         $this->usdtRate = \App\Models\CurrencyRate::getRate(now());
 
         if ($this->usdtRate > 0) {
-            // Sepidar balances are usually in Rial, but the prompt says USDT rate is needed.
-            // Usually we convert Rial to Toman (divide by 10) then to USDT.
-            $this->totalUSDTBalance = $this->totalBalance / ($this->usdtRate / 10);
+            $this->totalUSDTBalance = $this->totalBalance / $this->usdtRate;
         }
 
         return view('livewire.panels.accounting.bank.index', compact('bankAccounts'));

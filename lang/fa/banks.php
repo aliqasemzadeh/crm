@@ -1,6 +1,6 @@
 <?php
 return [
-    'melli' => 'ملّی ایران',
+    'melli' => 'ملي',
     'eghtesad_novin' => 'اقتصاد نوین',
     'gharzolhasaneh_mehr' => 'قرض‌الحسنه مهر ایران',
     'sepah' => 'سپه',
@@ -10,12 +10,12 @@ return [
     'karafarin' => 'کارآفرین',
     'keshavarzi' => 'کشاورزی',
     'saman' => 'سامان',
-    'maskan' => 'مسکن',
+    'maskan' => 'مسكن',
     'sina' => 'سینا',
     'tosee_saderat' => 'توسعه صادرات ایران',
     'khaleej_fars' => 'خاور میانه',
     'tosee_tavon' => 'توسعه تعاون',
-    'shahr' => 'شهر',
+    'shahr' => 'بانك شهر',
     'post_bank' => 'پست بانک ایران',
     'day' => 'دی',
     'saderat' => 'صادرات',

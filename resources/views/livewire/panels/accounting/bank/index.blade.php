@@ -23,7 +23,7 @@
     <div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
         <flux:card>
             <flux:text>{{ __('app.total_balance') }}</flux:text>
-            <flux:heading size="xl" class="mb-1">{{ number_format($this->totalBalance / 10, 0) }} {{ __('app.toman') }}</flux:heading>
+            <flux:heading size="xl" class="mb-1">{{ number_format($this->totalBalance, 0) }} {{ __('app.rial') }}</flux:heading>
         </flux:card>
         <flux:card>
             <flux:text>{{ __('app.usdt_rate') }}</flux:text>
@@ -78,9 +78,9 @@
                         }
                     }
 
-                    $logoUrl = $bankKey ? asset("images/banks/{$bankKey}.png") : null;
-                    $bankBalanceToman = $balance->Balance / 10;
-                    $usdtBalance = $this->usdtRate > 0 ? $bankBalanceToman / ($this->usdtRate / 10) : 0;
+                    $logoUrl = $bankKey ? asset("images/banks/{$bankKey}.svg") : null;
+                    $bankBalanceRial = $balance->Balance;
+                    $usdtBalance = $this->usdtRate > 0 ? $bankBalanceRial / $this->usdtRate : 0;
                 @endphp
                 <flux:table.row :key="$balance->BankAccountBalanceId">
                     <flux:table.cell>
@@ -93,7 +93,7 @@
                         <flux:text size="sm" variant="subtle">{{ $bankAccount?->AccountNo }}</flux:text>
                     </flux:table.cell>
                     <flux:table.cell>
-                        {{ number_format($bankBalanceToman, 0) }} {{ __('app.toman') }}
+                        {{ number_format($bankBalanceRial, 0) }} {{ __('app.rial') }}
                     </flux:table.cell>
                     @can('administrator_access')
                         <flux:table.cell>

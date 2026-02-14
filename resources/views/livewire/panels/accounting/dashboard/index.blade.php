@@ -55,7 +55,7 @@
     <flux:card>
         <flux:heading size="lg" class="mb-6">{{ __('app.receipts_vs_expenses') }}</flux:heading>
 
-        <flux:chart :data="$this->stats['chartData'] ?? []" class="h-80">
+        <flux:chart :value="$this->stats['chartData'] ?? []" class="h-80">
             <flux:chart.viewport class="min-h-[20rem]">
                 <flux:chart.svg>
                     <flux:chart.line field="receipts" class="text-green-500" curve="none" />
