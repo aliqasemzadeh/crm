@@ -15,7 +15,7 @@ class AlertOnNewInvoiceCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'sepidar:alert-on-new-invoice-command';
+    protected $signature = 'app:sepidar:alert-on-new-invoice-command';
 
     /**
      * The console command description.
