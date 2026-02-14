@@ -845,6 +845,7 @@ return [
     'shipping_cost' => 'هزینه ارسال',
     'expenses' => 'هزینه‌ها',
     'total_annual_expenses' => 'جمع کل هزینه‌های سال',
+    'total_annual_invoices' => 'جمع کل فاکتورهای سال',
     'rial' => 'ریال',
     'jalali_months' => [
         1 => 'فروردین',

@@ -4,10 +4,12 @@ namespace App\Livewire\Panels\Accounting\Invoice;
 
 use App\Models\Sepidar\GNR\Grouping;
 use App\Models\Sepidar\SLS\Invoice;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Morilog\Jalali\Jalalian;
 
 class Index extends Component
 {
@@ -26,6 +28,40 @@ class Index extends Component
             $this->sortBy = $column;
             $this->sortDirection = 'asc';
         }
+    }
+
+    #[Computed]
+    public function invoiceStats()
+    {
+        $fiscalYearRef = config('sepidar.FiscalYearRef');
+        $cacheKey = "invoice_stats_fiscal_year_{$fiscalYearRef}";
+
+        return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef) {
+            $invoices = Invoice::where('FiscalYearRef', $fiscalYearRef)
+                ->select('Price', 'Date')
+                ->get();
+
+            $monthlyStats = array_fill(1, 12, 0);
+
+            foreach ($invoices as $invoice) {
+                if ($invoice->Date) {
+                    $jalaliDate = Jalalian::fromDateTime($invoice->Date);
+                    $month = $jalaliDate->getMonth();
+                    $monthlyStats[$month] += $invoice->Price;
+                }
+            }
+
+            return [
+                'monthly' => $monthlyStats,
+                'total' => array_sum($monthlyStats)
+            ];
+        });
+    }
+
+    public static function clearCache()
+    {
+        $fiscalYearRef = config('sepidar.FiscalYearRef');
+        Cache::forget("invoice_stats_fiscal_year_{$fiscalYearRef}");
     }
 
     #[Computed]

@@ -14,6 +14,30 @@
         <flux:separator variant="subtle" />
     </div>
 
+    <div class="space-y-6 mb-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            @foreach($this->invoiceStats['monthly'] as $monthNumber => $amount)
+                <flux:card class="flex flex-col items-center justify-center p-6">
+                    <flux:heading size="lg" class="mb-2">
+                        {{ __('app.jalali_months.' . $monthNumber) }}
+                    </flux:heading>
+                    <flux:text size="xl" class="font-bold text-zinc-800 dark:text-zinc-100">
+                        {{ number_format($amount) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') ?? 'ریال' }}</span>
+                    </flux:text>
+                </flux:card>
+            @endforeach
+        </div>
+
+        <flux:card class="bg-zinc-50 dark:bg-zinc-900 border-t-4 border-zinc-500">
+            <div class="flex justify-between items-center">
+                <flux:heading size="lg">{{ __('app.total_annual_invoices') }}</flux:heading>
+                <flux:text size="2xl" class="font-black text-zinc-900 dark:text-white">
+                    {{ number_format($this->invoiceStats['total']) }} <span class="text-lg font-bold">{{ __('app.rial') ?? 'ریال' }}</span>
+                </flux:text>
+            </div>
+        </flux:card>
+    </div>
+
     <div class="mb-6">
         <flux:field>
             <flux:label>{{ __('app.search') }}</flux:label>
