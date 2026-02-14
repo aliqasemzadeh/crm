@@ -9,9 +9,18 @@
                 <flux:table.column>{{ __('app.name') }}</flux:table.column>
                 <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
                 <flux:table.column>{{ __('app.fee') }}</flux:table.column>
+                @can('administrator_access')
+                    <flux:table.column>{{ __('app.fee') }} (تتر)</flux:table.column>
+                @endcan
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
+                @can('administrator_access')
+                    <flux:table.column>{{ __('app.price') }} (تتر)</flux:table.column>
+                @endcan
             </flux:table.columns>
             @if(isset($receipt))
+                @php
+                    $rate = \App\Models\CurrencyRate::getRate($receipt->Date) / 10;
+                @endphp
                 <flux:table.rows>
                     @foreach($receipt->items as $item)
                         <flux:table.row>
@@ -27,9 +36,21 @@
                                 {{ number_format($item->Fee) }}
                             </flux:table.cell>
 
+                            @can('administrator_access')
+                                <flux:table.cell>
+                                    {{ $rate > 0 ? number_format($item->Fee / $rate, 2) : '-' }}
+                                </flux:table.cell>
+                            @endcan
+
                             <flux:table.cell>
                                 {{ number_format($item->Price) }}
                             </flux:table.cell>
+
+                            @can('administrator_access')
+                                <flux:table.cell>
+                                    {{ $rate > 0 ? number_format($item->Price / $rate, 2) : '-' }}
+                                </flux:table.cell>
+                            @endcan
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>

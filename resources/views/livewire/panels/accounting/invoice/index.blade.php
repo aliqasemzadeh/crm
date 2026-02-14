@@ -61,6 +61,7 @@
             <flux:table.column>{{ __('app.category') }}</flux:table.column>
             <flux:table.column>{{ __('app.price') }}</flux:table.column>
             @can('administrator_access')
+                <flux:table.column>{{ __('app.price') }} (تتر)</flux:table.column>
                 <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
             @endcan
             <flux:table.column sortable :sorted="$sortBy === 'Date'" :direction="$sortDirection" wire:click="sort('Date')">{{ __('app.date') }}</flux:table.column>
@@ -93,8 +94,14 @@
                     {{ number_format($invoice->Price) }}
                 </flux:table.cell>
                 @can('administrator_access')
+                    @php
+                        $rate = \App\Models\CurrencyRate::getRate($invoice->Date);
+                    @endphp
                     <flux:table.cell class="whitespace-nowrap">
-                        {{ number_format(\App\Models\CurrencyRate::getRate($invoice->Date)) }}
+                        {{ $rate > 0 ? number_format($invoice->Price / ($rate / 10), 2) : '-' }}
+                    </flux:table.cell>
+                    <flux:table.cell class="whitespace-nowrap">
+                        {{ number_format($rate) }}
                     </flux:table.cell>
                 @endcan
                 <flux:table.cell class="whitespace-nowrap">
