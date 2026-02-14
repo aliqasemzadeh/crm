@@ -2,6 +2,7 @@
 
 namespace App\Models\Sepidar\INV;
 
+use App\Livewire\Panels\Accounting\InventoryReceipt\Index;
 use App\Models\Sepidar\ACC\DL;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +13,22 @@ class InventoryReceipt extends Model
 {
     public $table = 'INV.InventoryReceipt';
     public $connection = 'sqlsrv';
-    public $primaryKey = 'DLId';
+    public $primaryKey = 'InventoryReceiptID';
+
+    protected static function booted()
+    {
+        static::deleted(function ($receipt) {
+            Index::clearCache();
+        });
+
+        static::created(function ($receipt) {
+            Index::clearCache();
+        });
+
+        static::updated(function ($receipt) {
+            Index::clearCache();
+        });
+    }
 
     public function dl(): BelongsTo
     {
