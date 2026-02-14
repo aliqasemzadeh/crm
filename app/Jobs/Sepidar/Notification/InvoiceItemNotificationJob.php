@@ -3,19 +3,21 @@
 namespace App\Jobs\Sepidar\Notification;
 
 use App\Models\Sepidar\SLS\InvoiceItem;
+use App\Models\Sepidar\INV\Item;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
 class InvoiceItemNotificationJob implements ShouldQueue
 {
     use Queueable;
+    public Item $item;
 
     /**
      * Create a new job instance.
      */
-    public function __construct(public InvoiceItem $invoiceItem)
+    public function __construct(public int $itemId)
     {
-        //
+        $this->item = Item::findOrFail($itemId);
     }
 
     /**
@@ -23,9 +25,8 @@ class InvoiceItemNotificationJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $title = $this->invoiceItem->item?->Title ?? '---';
+        $title = $this->item->Title ?? $this->item->Title ??  $this->item->Code  ?? '---';
         $message = __('app.invoice_item_zero_stock', ['title' => $title]);
-
         \App\Jobs\Notification\BaleSendMessageJob::dispatch($message);
     }
 }

@@ -32,7 +32,7 @@ class CheckInvoiceJob implements ShouldQueue
                 ->first();
             if ($lastStockSummary) {
                 if ($lastStockSummary->Quantity == 0) {
-                    InvoiceItemNotificationJob::dispatch($item);
+                    InvoiceItemNotificationJob::dispatch($item->ItemRef);
                 }
             }
         }

@@ -30,7 +30,7 @@ class AlertOnNewInvoiceCommand extends Command
     {
         $lastRecord = LastRecordCheck::firstOrCreate(['model' => 'Models\Sepidar\SLS\Invoice']);
         $invoices = Invoice::query()
-            ->where('id', '>', $lastRecord->last_record_id)
+            ->where('InvoiceId', '>', $lastRecord->last_record_id)
             ->orderBy('InvoiceId', 'desc')
             ->get();
         foreach ($invoices as $invoice) {
