@@ -62,6 +62,9 @@
                 <flux:table.column>{{ __('app.number') }}</flux:table.column>
                 <flux:table.column>{{ __('app.name') }}</flux:table.column>
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
+                @can('administrator_access')
+                    <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
+                @endcan
                 <flux:table.column>{{ __('app.date') }}</flux:table.column>
             </flux:table.columns>
 
@@ -70,6 +73,11 @@
                     <flux:table.cell>{{ $receipt->Number }}</flux:table.cell>
                     <flux:table.cell>{{ $receipt->dl->Title ?? $receipt->DelivererDLRef }}</flux:table.cell>
                     <flux:table.cell>{{ number_format($receipt->Price) }} {{ __('app.rial') }}</flux:table.cell>
+                    @can('administrator_access')
+                        <flux:table.cell>
+                            {{ number_format(\App\Models\CurrencyRate::getRate($receipt->Date)) }}
+                        </flux:table.cell>
+                    @endcan
                     <flux:table.cell>
                         {{ $receipt->Date ? \Morilog\Jalali\Jalalian::fromDateTime($receipt->Date)->format('%Y-%m-%d') : '-' }}
                     </flux:table.cell>
@@ -86,6 +94,9 @@
             <flux:table.column>{{ __('app.number') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.price') }}</flux:table.column>
+            @can('administrator_access')
+                <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
+            @endcan
             <flux:table.column sortable :sorted="$sortBy === 'Date'" :direction="$sortDirection" wire:click="sort('Date')">{{ __('app.date') }}</flux:table.column>
         </flux:table.columns>
 
@@ -105,6 +116,11 @@
                 <flux:table.cell class="whitespace-nowrap">
                     {{ number_format($receipt->Price) }}
                 </flux:table.cell>
+                @can('administrator_access')
+                    <flux:table.cell class="whitespace-nowrap">
+                        {{ number_format(\App\Models\CurrencyRate::getRate($receipt->Date)) }}
+                    </flux:table.cell>
+                @endcan
                 <flux:table.cell class="whitespace-nowrap">
                     {{ $receipt->Date ? \Morilog\Jalali\Jalalian::fromDateTime($receipt->Date)->format('%Y-%m-%d') : '-' }}
                 </flux:table.cell>

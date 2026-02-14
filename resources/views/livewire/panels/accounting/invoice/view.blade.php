@@ -13,13 +13,19 @@
                 <flux:table.column>{{ __('app.last_buy_fee') }}</flux:table.column>
                 <flux:table.column>{{ __('app.last_buy_price') }}</flux:table.column>
                 @can('administrator_access')
-                <flux:table.column>{{ __('app.profit') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.buy_price_usdt') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.sell_price_usdt') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.profit') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.profit_usdt') }}</flux:table.column>
                 @endcan
             </flux:table.columns>
             @if(isset($invoice))
 
                 @php
                     $profit = 0;
+                    $profitUsdt = 0;
+                    $totalSellUsdt = 0;
+                    $invoiceRate = \App\Models\CurrencyRate::getRate($invoice->Date) / 10;
                 @endphp
 
             <flux:table.rows>
@@ -67,12 +73,29 @@
                         </flux:table.cell>
 
                         @can('administrator_access')
-                        <flux:table.cell>
-                            {{ number_format($item->NetPrice - $maxFeeItem?->Fee * $item->Quantity) }}
                             @php
-                                $profit += $item->NetPrice - $maxFeeItem?->Fee * $item->Quantity;
+                                $buyRate = \App\Models\CurrencyRate::getRate($maxFeeItem?->receipt?->Date) / 10;
+                                $buyPriceUsdt = $buyRate > 0 ? ($maxFeeItem?->Fee * $item->Quantity) / $buyRate : 0;
+                                $sellPriceUsdt = $invoiceRate > 0 ? $item->NetPrice / $invoiceRate : 0;
+                                $itemProfit = $item->NetPrice - $maxFeeItem?->Fee * $item->Quantity;
+                                $itemProfitUsdt = $sellPriceUsdt - $buyPriceUsdt;
+
+                                $profit += $itemProfit;
+                                $profitUsdt += $itemProfitUsdt;
+                                $totalSellUsdt += $sellPriceUsdt;
                             @endphp
-                        </flux:table.cell>
+                            <flux:table.cell>
+                                {{ number_format($buyPriceUsdt, 2) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ number_format($sellPriceUsdt, 2) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ number_format($itemProfit) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ number_format($itemProfitUsdt, 2) }}
+                            </flux:table.cell>
                         @endcan
                     </flux:table.row>
                 @endforeach
@@ -80,8 +103,11 @@
                 @endif
         </flux:table>
         @can('administrator_access')
-        سود نهایی:
-        {{ number_format($profit ?? 0) }}
+            <div class="flex flex-col gap-2">
+                <flux:heading size="lg">{{ __('app.total_profit_usdt') }}: {{ number_format($profitUsdt, 2) }} {{ __('app.usdt') }}</flux:heading>
+                <flux:heading size="lg">{{ __('app.total_sell_usdt') }}: {{ number_format($totalSellUsdt, 2) }} {{ __('app.usdt') }}</flux:heading>
+                <flux:heading size="lg">{{ __('app.total_profit') }}: {{ number_format($profit ?? 0) }} {{ __('app.rial') }}</flux:heading>
+            </div>
         @endcan
     </div>
 </flux:modal>

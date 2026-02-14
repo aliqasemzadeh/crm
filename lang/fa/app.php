@@ -1020,4 +1020,12 @@ return [
             'create_task_for_user' => 'ایجاد وظیفه جدید برای کاربر',
             'edit_task_for_user' => 'ویرایش وظیفه کاربر'
     ],
+    'usdt_rate' => 'نرخ تتر',
+    'buy_price_usdt' => 'قیمت خرید (دلار)',
+    'sell_price_usdt' => 'قیمت فروش (دلار)',
+    'profit_usdt' => 'سود (دلار)',
+    'total_profit_usdt' => 'سود نهایی (دلار)',
+    'total_sell_usdt' => 'جمع فروش (دلار)',
+    'usdt' => 'دلار',
+    'total_profit' => 'سود نهایی (ریال)',
 ];

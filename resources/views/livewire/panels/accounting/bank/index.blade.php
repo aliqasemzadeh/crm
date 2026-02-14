@@ -41,6 +41,10 @@
             <flux:table.column>{{ __('app.logo') }}</flux:table.column>
             <flux:table.column>{{ __('app.bank_name') }}</flux:table.column>
             <flux:table.column>{{ __('app.bank_balance') }}</flux:table.column>
+            @can('administrator_access')
+                <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
+                <flux:table.column>{{ __('app.bank_balance') }} ({{ __('app.usdt') }})</flux:table.column>
+            @endcan
             <flux:table.column>{{ __('app.date') }}</flux:table.column>
             <flux:table.column>{{ __('app.options') }}</flux:table.column>
         </flux:table.columns>
@@ -55,6 +59,17 @@
                     <flux:table.cell>
                         {{ number_format($bank['Balance'], 0) }} {{ __('app.toman') }}
                     </flux:table.cell>
+                    @can('administrator_access')
+                        @php
+                            $rate = \App\Models\CurrencyRate::getRate($bank['LastModificationDate']);
+                        @endphp
+                        <flux:table.cell>
+                            {{ $rate ? number_format($rate) : '-' }}
+                        </flux:table.cell>
+                        <flux:table.cell>
+                            {{ $rate ? number_format($bank['Balance'] / ($rate / 10), 2) : '-' }}
+                        </flux:table.cell>
+                    @endcan
                     <flux:table.cell class="whitespace-nowrap">
                         {{ \Morilog\Jalali\Jalalian::fromDateTime($bank['LastModificationDate'])->format('%Y-%m-%d %H:%M') }}
                     </flux:table.cell>
