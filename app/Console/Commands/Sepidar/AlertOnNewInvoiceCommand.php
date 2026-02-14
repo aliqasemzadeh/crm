@@ -31,12 +31,12 @@ class AlertOnNewInvoiceCommand extends Command
         $lastRecord = LastRecordCheck::firstOrCreate(['model' => 'Models\Sepidar\SLS\Invoice']);
         $invoices = Invoice::query()
             ->where('InvoiceId', '>', $lastRecord->last_record_id)
-            ->orderBy('InvoiceId', 'desc')
+            ->orderBy('InvoiceId', 'asc')
             ->get();
         foreach ($invoices as $invoice) {
             CheckInvoiceJob::dispatch($invoice->InvoiceId);
         }
-        if ($invoices->isNotEmpty()) {
+        if ($invoices->last()?->InvoiceId) {
             $lastRecord->last_record_id = $invoices->last()->InvoiceId;
             $lastRecord->save();
         }
