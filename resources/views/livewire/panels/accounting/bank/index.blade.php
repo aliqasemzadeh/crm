@@ -63,9 +63,8 @@
             @php
                 $bankTranslations = __('banks');
             @endphp
-            @foreach ($bankAccounts as $balance)
+            @foreach ($bankAccounts as $bankAccount)
                 @php
-                    $bankAccount = $balance->bankAccount;
                     $bank = $bankAccount?->bankBranch?->bank;
                     $bankTitle = $bank?->Title;
 
@@ -80,10 +79,10 @@
                     }
 
                     $logoUrl = $bankKey ? asset("images/banks/{$bankKey}.svg") : null;
-                    $bankBalanceRial = $balance->Balance;
+                    $bankBalanceRial = $bankAccount->Balance;
                     $usdtBalance = $this->usdtRate > 0 ? $bankBalanceRial / $this->usdtRate : 0;
                 @endphp
-                <flux:table.row :key="$balance->BankAccountBalanceId">
+                <flux:table.row :key="$bankAccount->BankAccountId">
                     <flux:table.cell>
                         @if($logoUrl)
                             <img src="{{ $logoUrl }}" alt="{{ $bankTitle }}" class="w-8 h-8 object-contain">

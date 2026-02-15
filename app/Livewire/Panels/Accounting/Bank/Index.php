@@ -20,14 +20,11 @@ class Index extends Component
     {
         $fiscalYearRef = config('sepidar.FiscalYearRef');
 
-        $bankAccounts = BankAccountBalance::with(['bankAccount.bankBranch.bank', 'bankAccount.creator'])
-            ->where('FiscalYearRef', $fiscalYearRef)
+        $bankAccounts = \App\Models\Sepidar\RPA\BankAccount::with(['bankBranch.bank', 'creator'])
             ->when($this->search, function ($query) {
-                $query->whereHas('bankAccount.bankBranch.bank', function ($q) {
+                $query->whereHas('bankBranch.bank', function ($q) {
                     $q->where('Title', 'like', '%' . $this->search . '%');
-                })->orWhereHas('bankAccount', function ($q) {
-                    $q->where('AccountNo', 'like', '%' . $this->search . '%');
-                });
+                })->orWhere('AccountNo', 'like', '%' . $this->search . '%');
             })
             ->get();
 
