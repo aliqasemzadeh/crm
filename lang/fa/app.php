@@ -1037,5 +1037,6 @@ return [
     'receipts_and_payments_diff' => 'اختلاف دریافتی و پرداختی',
     'invoices_description' => 'مشاده فاکتورها.',
     'project_updated' => 'پروژه با موفقیت به روز رسانی شد.',
-    'update_project' => 'بروز رسانی پروژه'
+    'update_project' => 'بروز رسانی پروژه',
+
 ];
