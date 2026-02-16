@@ -149,10 +149,10 @@ return [
         'accounting_receipt_cheque_delete' => 'حذف چک دریافتی',
         'accounting_receipt_cheque_import' => 'وارد کردن چک‌های دریافتی',
 
-        'accounting_item_index' => 'فهرست آیتم‌ها',
-        'accounting_item_create' => 'ایجاد آیتم',
-        'accounting_item_edit' => 'ویرایش آیتم',
-        'accounting_item_delete' => 'حذف آیتم',
+        'accounting_item_index' => 'فهرست کالا',
+        'accounting_item_create' => 'ایجاد کالا',
+        'accounting_item_edit' => 'ویرایش کالا',
+        'accounting_item_delete' => 'حذف کالا',
 
         'accounting_invoice_index' => 'فهرست فاکتورها',
         'accounting_invoice_create' => 'ایجاد فاکتور',
