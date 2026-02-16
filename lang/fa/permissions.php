@@ -116,24 +116,6 @@ return [
         'accounting_payment_header_edit' => 'ویرایش حساب بانکی',
         'accounting_payment_header_delete' => 'حذف حساب بانکی',
 
-        'accounting_bank_remittance_index' => 'فهرست حواله‌ها',
-        'accounting_bank_remittance_create' => 'ایجاد حواله',
-        'accounting_bank_remittance_edit' => 'ویرایش حواله',
-        'accounting_bank_remittance_delete' => 'حذف حواله',
-        'accounting_bank_remittance_check' => 'بررسی حواله',
-        'accounting_bank_remittance_request' => 'درخواست حواله',
-        'accounting_bank_remittance_transfer' => 'پرداخت حواله',
-
-        'accounting_bank_transaction_index' => 'فهرست تراکنش‌ها',
-        'accounting_bank_transaction_create' => 'ایجاد تراکنش',
-        'accounting_bank_transaction_edit' => 'ویرایش تراکنش',
-        'accounting_bank_transaction_delete' => 'حذف تراکنش',
-
-        'accounting_remittance_index' => 'فهرست تراکنش‌ها',
-        'accounting_remittance_create' => 'ایجاد تراکنش',
-        'accounting_remittance_edit' => 'ویرایش تراکنش',
-        'accounting_remittance_delete' => 'حذف تراکنش',
-
         'accounting_cheque_index' => 'فهرست تراکنش‌ها',
         'accounting_cheque_create' => 'ایجاد تراکنش',
         'accounting_cheque_edit' => 'ویرایش تراکنش',
