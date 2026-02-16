@@ -1,90 +1,27 @@
 <div class="max-w-4xl mx-auto p-6 space-y-6">
+    @foreach($announcements as $announcement)
+        @php
+            $isRead = $announcement->users->where('id', auth()->id())->first()?->pivot?->viewed_at;
+        @endphp
+        <flux:callout :icon="$announcement->icon ?: 'megaphone'"
+                      :color="$announcement->color ?: 'zinc'"
+                      @class(['mb-4', 'opacity-50 grayscale-[0.5]' => $isRead])>
+            <flux:callout.heading>{{ $announcement->title }}</flux:callout.heading>
+            <flux:callout.text>{!! $announcement->content !!}</flux:callout.text>
 
-    <flux:card>
-        <flux:heading size="lg">
-            Sepidar Device Integration
-        </flux:heading>
+            <x-slot name="actions">
+                @if($announcement->link)
+                    <flux:button :href="$announcement->link" variant="ghost">
+                        {{ __('app.read_more') }}
+                    </flux:button>
+                @endif
 
-        <flux:subheading>
-            Register device and fetch Items using secure encryption
-        </flux:subheading>
-    </flux:card>
-
-    {{-- Step 1 --}}
-    <flux:card>
-        <div class="flex items-center justify-between">
-            <div>
-                <flux:heading size="md">Step 1 · Register Device</flux:heading>
-                <flux:text class="text-sm text-gray-500">
-                    Registers device and retrieves RSA public key
-                </flux:text>
-            </div>
-
-            <flux:button
-                wire:click="registerDevice"
-                variant="primary"
-                icon="key"
-            >
-                Register Device
-            </flux:button>
-        </div>
-
-        @if($deviceTitle)
-            <flux:separator class="my-4" />
-
-            <flux:badge color="green">
-                Device Registered
-            </flux:badge>
-
-            <flux:input
-                label="Device Title"
-                value="{{ $deviceTitle }}"
-                readonly
-            />
-
-            <flux:textarea
-                label="Public Key (XML)"
-                rows="6"
-                readonly
-            >
-{{ $publicKeyXml }}
-            </flux:textarea>
-        @endif
-    </flux:card>
-
-    {{-- Step 2 --}}
-    <flux:card>
-        <div class="flex items-center justify-between">
-            <div>
-                <flux:heading size="md">Step 2 · Get Items</flux:heading>
-                <flux:text class="text-sm text-gray-500">
-                    Calls Items API using encrypted headers
-                </flux:text>
-            </div>
-
-            <flux:button
-                wire:click="getItems"
-                icon="list-bullet"
-                :disabled="!$publicKeyXml"
-            >
-                Get Items
-            </flux:button>
-        </div>
-
-        @if($itemsResponse)
-            <flux:separator class="my-4" />
-
-            <flux:badge color="blue">
-                Items Response
-            </flux:badge>
-
-            <flux:textarea
-                rows="10"
-                readonly
-            >
-{{ $itemsResponse }}
-            </flux:textarea>
-        @endif
-    </flux:card>
-
+                @if(!$isRead)
+                    <flux:button wire:click="markAsRead({{ $announcement->id }})" variant="ghost">
+                        {{ __('app.mark_as_read') }}
+                    </flux:button>
+                @endif
+            </x-slot>
+        </flux:callout>
+    @endforeach
 </div>
