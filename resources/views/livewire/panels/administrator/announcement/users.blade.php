@@ -1,4 +1,4 @@
-<flux:modal name="panels.administrator.announcement.users.modal" class="md:min-w-[600px]">
+<flux:modal name="panels.administrator.announcement.users.modal" flyout class="md:min-w-[600px]">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.viewed_users') }}</flux:heading>
