@@ -45,7 +45,7 @@
             <flux:table.column>{{ __('app.bank_name') }}</flux:table.column>
             <flux:table.column>{{ __('app.creator') }}</flux:table.column>
             <flux:table.column>{{ __('app.bank_balance') }}</flux:table.column>
-            @can('administrator_access')
+            @can('accounting_profit_index')
                 <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
                 <flux:table.column>{{ __('app.bank_balance') }} ({{ __('app.usdt') }})</flux:table.column>
             @endcan
@@ -89,7 +89,7 @@
                     <flux:table.cell>
                         {{ number_format($bankBalanceRial, 0) }} {{ __('app.rial') }}
                     </flux:table.cell>
-                    @can('administrator_access')
+                    @can('accounting_profit_index')
                         <flux:table.cell>
                             {{ number_format($this->usdtRate, 0) }}
                         </flux:table.cell>
