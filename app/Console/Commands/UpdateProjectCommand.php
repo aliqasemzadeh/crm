@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
-use Symfony\Component\Process\Process;
+use Illuminate\Support\Facades\Process;
 
 class UpdateProjectCommand extends Command
 {
@@ -28,10 +28,9 @@ class UpdateProjectCommand extends Command
     public function handle()
     {
 
-        $process = new Process(['git pull']);
-
-        $process->run();
-
+        $result = Process::run('git pull');
+        
+        echo $result->output();
         Artisan::call("migrate");
     }
 }
