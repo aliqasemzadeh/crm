@@ -61,6 +61,9 @@ return [
     'inactive' => 'غیرفعال',
     'viewed_users' => 'کاربران مشاهده کننده',
     'no_announcements_found' => 'هیچ اطلاعیه‌ای یافت نشد.',
+    'read_more' => 'مطالعه بیشتر',
+    'mark_as_read' => 'مطالعه کردم',
+    'announcement_marked_as_read' => 'اطلاعیه به عنوان خوانده شده علامت‌گذاری شد.',
 
     // Tables / Common labels
     'date' => 'تاریخ',
