@@ -19,7 +19,7 @@ class Create extends Component
 
     public function create()
     {
-        // $this->authorize('administrator_announcement_create');
+        $this->authorize('administrator_announcement_create');
 
         $validated = $this->validate([
             'title' => ['required', 'string', 'max:255'],

@@ -56,13 +56,14 @@ class Index extends Component
     {
         $this->authorize('administrator_announcement_delete');
         Announcement::findOrFail($id)->delete();
+        $this->dispatch('panels.administrator.announcement.index.render');
     }
 
     #[Layout('layouts.panels.administrator')]
     #[On('panels.administrator.announcement.index.render')]
     public function render()
     {
-        // $this->authorize('administrator_announcement_index');
+        $this->authorize('administrator_announcement_index');
 
         return view('livewire.panels.administrator.announcement.index');
     }

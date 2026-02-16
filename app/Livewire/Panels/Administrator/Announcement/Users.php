@@ -28,7 +28,7 @@ class Users extends Component
     public function viewedUsers()
     {
         if (! isset($this->announcement)) {
-            return collect();
+            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
         }
 
         return $this->announcement->users()

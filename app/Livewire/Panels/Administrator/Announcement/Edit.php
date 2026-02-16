@@ -40,7 +40,7 @@ class Edit extends Component
 
     public function edit(): void
     {
-        // $this->authorize('administrator_announcement_edit');
+        $this->authorize('administrator_announcement_edit');
 
         if (! isset($this->announcement)) {
             return;
