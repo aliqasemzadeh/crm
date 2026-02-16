@@ -29,11 +29,6 @@ class UpdateProjectCommand extends Command
     public function handle()
     {
 
-            $process = Process::start('git pull');
-            
-            $process->waitUntil(function (string $type, string $output) {
-                return $output === 'Ready...';
-            });
-        
+            $process = Process::forever()->run('git pull');
     }
 }
