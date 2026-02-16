@@ -6,9 +6,6 @@ return [
         'user_dashboard' => 'داشبورد کاربر',
         'user_settings' => 'تنظیمات کاربر',
         'user_support' => 'پشتیبانی کاربر',
-
-
-    
         'user_support_ticket_index' => 'فهرست تیکت‌های پشتیبانی کاربر',
         'user_support_ticket_create' => 'ایجاد تیکت پشتیبانی کاربر',
     ],
