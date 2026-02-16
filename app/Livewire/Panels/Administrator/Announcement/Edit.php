@@ -59,7 +59,6 @@ class Edit extends Component
         ]);
 
         $this->announcement->update($validated);
-        BaleSendMessageJob::dispatch(__('app.announcement_bale_message') . PHP_EOL . $this->title);
 
         $this->dispatch('panels.administrator.announcement.index.render');
         Flux::modal('panels.administrator.announcement.edit.modal')->close();
