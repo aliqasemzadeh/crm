@@ -1,4 +1,4 @@
-<flux:modal name="panels.administrator.announcement.create.modal" flyout position="left" class="md:min-w-[600px]">
+<flux:modal name="panels.administrator.announcement.create.modal" flyout class="md:min-w-[600px]">
     <form wire:submit="create" class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.create_announcement') }}</flux:heading>
