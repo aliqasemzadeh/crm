@@ -6,4 +6,3 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('app:update-currency-rate')->hourly();
 Schedule::command('app:sepidar:alert-on-new-invoice-command')->everyFiveMinutes();
-Schedule::command('app:update-project-command')->everyFiveMinutes();
