@@ -9,7 +9,7 @@ return [
         'user_support_ticket_index' => 'فهرست تیکت‌های پشتیبانی کاربر',
         'user_support_ticket_create' => 'ایجاد تیکت پشتیبانی کاربر',
 
-    
+
     ],
 
     'administrator' => [
@@ -102,37 +102,63 @@ return [
     ],
 
     'accounting' => [
-        'accounting_access' => 'دسترسی حساب داری',
+        'accounting_access' => 'دسترسی حسابداری',
+
+        'accounting_dashboard_index' => 'داشبورد حسابداری',
+
         'accounting_bank_index' => 'فهرست حساب‌های بانکی',
         'accounting_bank_create' => 'ایجاد حساب بانکی',
         'accounting_bank_edit' => 'ویرایش حساب بانکی',
         'accounting_bank_delete' => 'حذف حساب بانکی',
 
-        'accounting_payment_header_index' => 'فهرست حساب‌های بانکی',
-        'accounting_payment_header_create' => 'ایجاد حساب بانکی',
-        'accounting_payment_header_edit' => 'ویرایش حساب بانکی',
-        'accounting_payment_header_delete' => 'حذف حساب بانکی',
+        'accounting_payment_header_index' => 'فهرست پرداخت‌ها',
+        'accounting_payment_header_create' => 'ایجاد پرداخت',
+        'accounting_payment_header_edit' => 'ویرایش پرداخت',
+        'accounting_payment_header_delete' => 'حذف پرداخت',
 
-        'accounting_payment_header_index' => 'فهرست حساب‌های بانکی',
-        'accounting_payment_header_create' => 'ایجاد حساب بانکی',
-        'accounting_payment_header_edit' => 'ویرایش حساب بانکی',
-        'accounting_payment_header_delete' => 'حذف حساب بانکی',
+        'accounting_receipt_header_index' => 'فهرست دریافت‌ها',
+        'accounting_receipt_header_create' => 'ایجاد دریافت',
+        'accounting_receipt_header_edit' => 'ویرایش دریافت',
+        'accounting_receipt_header_delete' => 'حذف دریافت',
 
-        'accounting_cheque_index' => 'فهرست تراکنش‌ها',
-        'accounting_cheque_create' => 'ایجاد تراکنش',
-        'accounting_cheque_edit' => 'ویرایش تراکنش',
-        'accounting_cheque_delete' => 'حذف تراکنش',
-        'accounting_cheque_import' => 'حذف تراکنش',
+        'accounting_grouping_index' => 'فهرست گروه‌بندی‌ها',
+        'accounting_grouping_create' => 'ایجاد گروه‌بندی',
+        'accounting_grouping_edit' => 'ویرایش گروه‌بندی',
+        'accounting_grouping_delete' => 'حذف گروه‌بندی',
 
-        'accounting_item_index' => 'فهرست حساب‌های بانکی',
-        'accounting_item_create' => 'ایجاد حساب بانکی',
-        'accounting_item_edit' => 'ویرایش حساب بانکی',
-        'accounting_item_delete' => 'حذف حساب بانکی',
+        'accounting_inventory_receipt_index' => 'فهرست رسیدهای انبار',
+        'accounting_inventory_receipt_create' => 'ایجاد رسید انبار',
+        'accounting_inventory_receipt_edit' => 'ویرایش رسید انبار',
+        'accounting_inventory_receipt_delete' => 'حذف رسید انبار',
 
-        'accounting_invoice_index' => 'فهرست حساب‌های بانکی',
-        'accounting_invoice_create' => 'ایجاد حساب بانکی',
-        'accounting_invoice_edit' => 'ویرایش حساب بانکی',
-        'accounting_invoice_delete' => 'حذف حساب بانکی',
+        'accounting_payment_cheque_index' => 'فهرست چک‌های پرداختی',
+        'accounting_payment_cheque_create' => 'ایجاد چک پرداختی',
+        'accounting_payment_cheque_edit' => 'ویرایش چک پرداختی',
+        'accounting_payment_cheque_delete' => 'حذف چک پرداختی',
+        'accounting_payment_cheque_import' => 'وارد کردن چک‌های پرداختی',
+
+        'accounting_receipt_cheque_index' => 'فهرست چک‌های دریافتی',
+        'accounting_receipt_cheque_create' => 'ایجاد چک دریافتی',
+        'accounting_receipt_cheque_edit' => 'ویرایش چک دریافتی',
+        'accounting_receipt_cheque_delete' => 'حذف چک دریافتی',
+        'accounting_receipt_cheque_import' => 'وارد کردن چک‌های دریافتی',
+
+        'accounting_item_index' => 'فهرست آیتم‌ها',
+        'accounting_item_create' => 'ایجاد آیتم',
+        'accounting_item_edit' => 'ویرایش آیتم',
+        'accounting_item_delete' => 'حذف آیتم',
+
+        'accounting_invoice_index' => 'فهرست فاکتورها',
+        'accounting_invoice_create' => 'ایجاد فاکتور',
+        'accounting_invoice_edit' => 'ویرایش فاکتور',
+        'accounting_invoice_delete' => 'حذف فاکتور',
+
+        'accounting_party_index' => 'فهرست طرف حساب‌ها',
+        'accounting_party_create' => 'ایجاد طرف حساب',
+        'accounting_party_edit' => 'ویرایش طرف حساب',
+        'accounting_party_phone' => 'تلفن طرف حساب',
+        'accounting_party_address' => 'آدرس طرف حساب',
+        'accounting_party_delete' => 'حذف طرف حساب',
     ],
 
     'workspace' => [
