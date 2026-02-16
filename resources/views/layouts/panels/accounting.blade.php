@@ -10,16 +10,16 @@
     <flux:sidebar.search placeholder="{{ __('app.search_placeholder') }}" />
 
     <flux:sidebar.nav>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.bank.index') }}" wire:navigate>{{ __('app.banks') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.invoice.index') }}" wire:navigate>{{ __('app.invoices') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.inventory-receipt.index') }}" wire:navigate>{{ __('app.inventory_receipts') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.grouping.index') }}" wire:navigate>{{ __('app.inventory') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.party.index') }}" wire:navigate>{{ __('app.customer') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.payment-header.index') }}" wire:navigate>{{ __('app.expenses') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.receipt-header.index') }}" wire:navigate>{{ __('app.receipts') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.receipt-cheque.index') }}" wire:navigate>{{ __('app.receipt_cheques') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="home" href="{{ route('panels.accounting.payment-cheque.index') }}" wire:navigate>{{ __('app.payment_cheques') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="layout-dashboard" href="{{ route('panels.accounting.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="university" href="{{ route('panels.accounting.bank.index') }}" wire:navigate>{{ __('app.banks') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="file-text" href="{{ route('panels.accounting.invoice.index') }}" wire:navigate>{{ __('app.invoices') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="clipboard-list" href="{{ route('panels.accounting.inventory-receipt.index') }}" wire:navigate>{{ __('app.inventory_receipts') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="boxes" href="{{ route('panels.accounting.grouping.index') }}" wire:navigate>{{ __('app.inventory') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="users" href="{{ route('panels.accounting.party.index') }}" wire:navigate>{{ __('app.customers') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="credit-card" href="{{ route('panels.accounting.payment-header.index') }}" wire:navigate>{{ __('app.expenses') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="receipt" href="{{ route('panels.accounting.receipt-header.index') }}" wire:navigate>{{ __('app.receipts') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="wallet" href="{{ route('panels.accounting.receipt-cheque.index') }}" wire:navigate>{{ __('app.receipt_cheques') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="wallet" href="{{ route('panels.accounting.payment-cheque.index') }}" wire:navigate>{{ __('app.payment_cheques') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
