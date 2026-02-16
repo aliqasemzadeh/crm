@@ -91,4 +91,11 @@ class User extends Authenticatable
     {
         return $this->tasks()->wherePivot('role', 'reviewer');
     }
+
+    public function announcements(): BelongsToMany
+    {
+        return $this->belongsToMany(Announcement::class)
+            ->withPivot('viewed_at')
+            ->withTimestamps();
+    }
 }
