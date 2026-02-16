@@ -13,6 +13,7 @@
                 <flux:table.column sortable :sorted="$sortBy === 'Title'" :direction="$sortDirection" wire:click="sort('Title')">{{ __('app.title') }}</flux:table.column>
                 <flux:table.column>{{ __('app.grouping') }}</flux:table.column>
                 <flux:table.column>{{ __('app.stock') }}</flux:table.column>
+                <flux:table.column sortable :sorted="$sortBy === 'CreationDate'" :direction="$sortDirection" wire:click="sort('CreationDate')">{{ __('app.created_at') }}</flux:table.column>
                 <flux:table.column>{{ __('app.creator') }}</flux:table.column>
                 <flux:table.column></flux:table.column>
             </flux:table.columns>
@@ -43,6 +44,8 @@
                                 0
                             @endif
                         </flux:table.cell>
+
+                        <flux:table.cell class="whitespace-nowrap">{{ $item->CreationDate }}</flux:table.cell>
 
                         <flux:table.cell>{{ $item->creator->Name ?? $item->creator->UserName ?? '-' }}</flux:table.cell>
 
