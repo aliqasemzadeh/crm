@@ -126,6 +126,11 @@ return [
         'accounting_item_create' => 'ایجاد حساب بانکی',
         'accounting_item_edit' => 'ویرایش حساب بانکی',
         'accounting_item_delete' => 'حذف حساب بانکی',
+
+        'accounting_invoice_index' => 'فهرست حساب‌های بانکی',
+        'accounting_invoice_create' => 'ایجاد حساب بانکی',
+        'accounting_invoice_edit' => 'ویرایش حساب بانکی',
+        'accounting_invoice_delete' => 'حذف حساب بانکی',
     ],
 
     'workspace' => [
