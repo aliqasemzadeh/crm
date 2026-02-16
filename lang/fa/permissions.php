@@ -121,6 +121,11 @@ return [
         'accounting_cheque_edit' => 'ویرایش تراکنش',
         'accounting_cheque_delete' => 'حذف تراکنش',
         'accounting_cheque_import' => 'حذف تراکنش',
+
+        'accounting_item_index' => 'فهرست حساب‌های بانکی',
+        'accounting_item_create' => 'ایجاد حساب بانکی',
+        'accounting_item_edit' => 'ویرایش حساب بانکی',
+        'accounting_item_delete' => 'حذف حساب بانکی',
     ],
 
     'workspace' => [
