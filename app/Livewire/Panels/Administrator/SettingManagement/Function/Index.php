@@ -22,6 +22,13 @@ class Index extends Component
         Flux::toast(__('app.cache_cleared'));
     }
 
+    
+    public function updateProject()
+    {
+        Artisan::call('app:update-project-command');
+        Flux::toast(__('app.project_updated'));
+    }
+
     #[Layout('layouts.panels.administrator')]
     public function render()
     {
