@@ -9,6 +9,9 @@ class Announcement extends Model
     protected $fillable = [
         'title',
         'content',
+        'icon',
+        'color',
+        'link',
         'starts_at',
         'ends_at',
         'is_active',
