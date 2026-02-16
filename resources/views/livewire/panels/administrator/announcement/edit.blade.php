@@ -1,4 +1,4 @@
-<flux:modal name="panels.administrator.announcement.edit.modal" class="md:min-w-[600px]">
+<flux:modal name="panels.administrator.announcement.edit.modal" flyout position="left" class="md:min-w-[600px]">
     <form wire:submit="edit" class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.edit_announcement') }}</flux:heading>
