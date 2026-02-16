@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Administrator\Announcement;
 
 use App\Models\Announcement;
+use App\Jobs\Notification\BaleSendMessageJob;
 use Flux\Flux;
 use Livewire\Component;
 
@@ -33,6 +34,8 @@ class Create extends Component
         ]);
 
         Announcement::create($validated);
+
+        BaleSendMessageJob::dispatch(__('app.announcement_bale_message'));
 
         $this->reset(['title', 'content', 'icon', 'color', 'link', 'starts_at', 'ends_at', 'is_active']);
         $this->color = 'zinc';

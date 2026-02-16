@@ -37,8 +37,8 @@
             <flux:table.column>{{ __('app.id') }}</flux:table.column>
             <flux:table.column>{{ __('app.title') }}</flux:table.column>
             <flux:table.column>{{ __('app.is_active') }}</flux:table.column>
-            <flux:table.column>{{ __('app.starts_at') }}</flux:table.column>
-            <flux:table.column>{{ __('app.ends_at') }}</flux:table.column>
+            <flux:table.column>{{ __('app.link') }}</flux:table.column>
+            <flux:table.column>{{ __('app.date') }}</flux:table.column>
             <flux:table.column>{{ __('app.options') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
@@ -63,10 +63,23 @@
                         @endif
                     </flux:table.cell>
                     <flux:table.cell>
-                        {{ $announcement->starts_at?->format('Y/m/d H:i') ?: '-' }}
+                        @if($announcement->link)
+                            <flux:button icon="link" variant="ghost" size="xs" href="{{ $announcement->link }}" target="_blank" />
+                        @else
+                            -
+                        @endif
                     </flux:table.cell>
                     <flux:table.cell>
-                        {{ $announcement->ends_at?->format('Y/m/d H:i') ?: '-' }}
+                        <div class="flex flex-col text-xs text-zinc-500">
+                            <div class="flex items-center gap-1">
+                                <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ __('app.starts_at') }}:</span>
+                                <span>{{ $announcement->starts_at?->format('Y/m/d H:i') ?: '-' }}</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="font-medium text-zinc-700 dark:text-zinc-300">{{ __('app.ends_at') }}:</span>
+                                <span>{{ $announcement->ends_at?->format('Y/m/d H:i') ?: '-' }}</span>
+                            </div>
+                        </div>
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">
                         @can('administrator_announcement_edit')

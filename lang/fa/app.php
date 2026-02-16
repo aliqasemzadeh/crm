@@ -1058,4 +1058,5 @@ return [
     'project_updated' => 'پروژه با موفقیت به روز رسانی شد.',
     'update_project' => 'بروز رسانی پروژه',
 
+    'announcement_bale_message' => 'لطفا نسبت به مطالعه اقدام فرمایید',
 ];
