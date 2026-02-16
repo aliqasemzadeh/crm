@@ -83,6 +83,7 @@ return [
 
     'crm' => [
         'crm_access' => 'دسترسی CRM',
+        'crm_access_dashboard_index' => 'داشبرد CRM',
     ],
 
     'service_center' => [
