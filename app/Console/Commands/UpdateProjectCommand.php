@@ -30,5 +30,6 @@ class UpdateProjectCommand extends Command
     {
 
             $process = Process::forever()->run('git pull');
+            Artisan::call("migrate");
     }
 }
