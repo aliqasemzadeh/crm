@@ -28,7 +28,7 @@ class UpdateProjectCommand extends Command
     public function handle()
     {
 
-        $result = Process::timeout(120)->run('git pull');
+        $result = Process::forever()->run('git pull');
         
         echo $result->output();
         Artisan::call("migrate");
