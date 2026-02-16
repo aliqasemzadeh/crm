@@ -28,6 +28,11 @@ class UpdateProjectCommand extends Command
     public function handle()
     {
 
-        Artisan::command('git', ['pull']);
+        $output = null;
+        $retval = null;
+        exec('git pull', $output, $retval);
+        echo "Returned with status $retval and output:\n";
+        print_r($output);
+        Artisan::call("migrate");
     }
 }
