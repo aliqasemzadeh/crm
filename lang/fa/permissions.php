@@ -36,6 +36,13 @@ return [
         'administrator_user_management_permission_edit' => 'ویرایش مجوز',
         'administrator_user_management_permission_delete' => 'حذف مجوز',
 
+        'administrator_announcement_management' => 'مدیریت اطلاعیه‌ها',
+        'administrator_announcement_index' => 'فهرست اطلاعیه‌ها',
+        'administrator_announcement_create' => 'ایجاد اطلاعیه',
+        'administrator_announcement_edit' => 'ویرایش اطلاعیه',
+        'administrator_announcement_delete' => 'حذف اطلاعیه',
+        'administrator_announcement_users' => 'مشاهده بینندگان اطلاعیه',
+
         'administrator_content_management' => 'مدیریت محتوا',
 
         'administrator_content_category_index' => 'فهرست دسته‌بندی‌های محتوا',

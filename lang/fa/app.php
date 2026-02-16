@@ -43,6 +43,25 @@ return [
     'catalog' => 'کاتالوگ',
     'configuration' => 'پیکربندی',
 
+    'announcements' => 'اطلاعیه‌ها',
+    'announcements_description' => 'مدیریت و مشاهده اطلاعیه‌های سیستم.',
+    'create_announcement' => 'ایجاد اطلاعیه',
+    'create_announcement_description' => 'برای ایجاد اطلاعیه جدید، اطلاعات زیر را تکمیل کنید.',
+    'edit_announcement' => 'ویرایش اطلاعیه',
+    'edit_announcement_description' => 'اطلاعات اطلاعیه را ویرایش و به‌روزرسانی کنید.',
+    'title' => 'عنوان',
+    'content' => 'متن',
+    'icon' => 'آیکون',
+    'color' => 'رنگ',
+    'link' => 'لینک',
+    'starts_at' => 'تاریخ شروع',
+    'ends_at' => 'تاریخ پایان',
+    'is_active' => 'وضعیت فعال بودن',
+    'active' => 'فعال',
+    'inactive' => 'غیرفعال',
+    'viewed_users' => 'کاربران مشاهده کننده',
+    'no_announcements_found' => 'هیچ اطلاعیه‌ای یافت نشد.',
+
     // Tables / Common labels
     'date' => 'تاریخ',
 
