@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Administrator\SettingManagement\Function;
 
+use App\Jobs\UpdateProjectJob;
 use Flux\Flux;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Attributes\Layout;
@@ -22,10 +23,10 @@ class Index extends Component
         Flux::toast(__('app.cache_cleared'));
     }
 
-    
+
     public function updateProject()
     {
-        Artisan::call('app:update-project-command');
+        UpdateProjectJob::dispatch();
         Flux::toast(__('app.project_updated'));
     }
 
