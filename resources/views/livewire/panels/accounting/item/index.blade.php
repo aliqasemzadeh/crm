@@ -45,7 +45,7 @@
                             @endif
                         </flux:table.cell>
 
-                        <flux:table.cell class="whitespace-nowrap">{{ $item->CreationDate }}</flux:table.cell>
+                        <flux:table.cell class="whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromDateTime($item->CreationDate)->format('%Y-%m-%d') }}</flux:table.cell>
 
                         <flux:table.cell>{{ $item->creator->Name ?? $item->creator->UserName ?? '-' }}</flux:table.cell>
 
