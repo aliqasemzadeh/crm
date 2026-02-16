@@ -35,7 +35,7 @@ class Create extends Component
 
         Announcement::create($validated);
 
-        BaleSendMessageJob::dispatch(__('app.announcement_bale_message'));
+        BaleSendMessageJob::dispatch(__('app.announcement_bale_message') . PHP_EOL . $this->title);
 
         $this->reset(['title', 'content', 'icon', 'color', 'link', 'starts_at', 'ends_at', 'is_active']);
         $this->color = 'zinc';

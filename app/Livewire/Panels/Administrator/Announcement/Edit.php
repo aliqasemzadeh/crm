@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Administrator\Announcement;
 
+use App\Jobs\Notification\BaleSendMessageJob;
 use App\Models\Announcement;
 use Flux\Flux;
 use Livewire\Attributes\On;
@@ -58,6 +59,7 @@ class Edit extends Component
         ]);
 
         $this->announcement->update($validated);
+        BaleSendMessageJob::dispatch(__('app.announcement_bale_message') . PHP_EOL . $this->title);
 
         $this->dispatch('panels.administrator.announcement.index.render');
         Flux::modal('panels.administrator.announcement.edit.modal')->close();
