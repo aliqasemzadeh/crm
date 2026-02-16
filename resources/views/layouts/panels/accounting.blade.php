@@ -50,6 +50,14 @@
         </flux:sidebar.item>
         @endcan
 
+        @can('accounting_item_index')
+            <flux:sidebar.item icon="package"
+                               href="{{ route('panels.accounting.item.index') }}"
+                               wire:navigate>
+                {{ __('app.items') }}
+            </flux:sidebar.item>
+        @endcan
+
         @can('accounting_party_index')
         <flux:sidebar.item icon="users"
                            href="{{ route('panels.accounting.party.index') }}"
