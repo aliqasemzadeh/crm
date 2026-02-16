@@ -111,6 +111,11 @@ return [
         'accounting_payment_header_edit' => 'ویرایش حساب بانکی',
         'accounting_payment_header_delete' => 'حذف حساب بانکی',
 
+        'accounting_payment_header_index' => 'فهرست حساب‌های بانکی',
+        'accounting_payment_header_create' => 'ایجاد حساب بانکی',
+        'accounting_payment_header_edit' => 'ویرایش حساب بانکی',
+        'accounting_payment_header_delete' => 'حذف حساب بانکی',
+
         'accounting_bank_remittance_index' => 'فهرست حواله‌ها',
         'accounting_bank_remittance_create' => 'ایجاد حواله',
         'accounting_bank_remittance_edit' => 'ویرایش حواله',
