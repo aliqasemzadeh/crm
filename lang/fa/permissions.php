@@ -159,6 +159,9 @@ return [
         'accounting_party_phone' => 'تلفن طرف حساب',
         'accounting_party_address' => 'آدرس طرف حساب',
         'accounting_party_delete' => 'حذف طرف حساب',
+
+
+        'accounting_profit_index' => 'مشاهده سود',
     ],
 
     'workspace' => [

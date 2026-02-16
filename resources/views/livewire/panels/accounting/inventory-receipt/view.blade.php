@@ -27,11 +27,11 @@
                 <flux:table.column>{{ __('app.name') }}</flux:table.column>
                 <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
                 <flux:table.column>{{ __('app.fee') }}</flux:table.column>
-                @can('administrator_access')
+                @can('accounting_profit_index')
                     <flux:table.column>{{ __('app.fee') }} (تتر)</flux:table.column>
                 @endcan
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
-                @can('administrator_access')
+                @can('accounting_profit_index')
                     <flux:table.column>{{ __('app.price') }} (تتر)</flux:table.column>
                 @endcan
             </flux:table.columns>
@@ -54,7 +54,7 @@
                                 {{ number_format($item->Fee) }}
                             </flux:table.cell>
 
-                            @can('administrator_access')
+                            @can('accounting_profit_index')
                                 <flux:table.cell>
                                     {{ $rate > 0 ? number_format($item->Fee / $rate, 2) : '-' }}
                                 </flux:table.cell>
@@ -64,7 +64,7 @@
                                 {{ number_format($item->Price) }}
                             </flux:table.cell>
 
-                            @can('administrator_access')
+                            @can('accounting_profit_index')
                                 <flux:table.cell>
                                     {{ $rate > 0 ? number_format($item->Price / $rate, 2) : '-' }}
                                 </flux:table.cell>

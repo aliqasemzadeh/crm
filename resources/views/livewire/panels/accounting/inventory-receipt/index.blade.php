@@ -56,7 +56,7 @@
             <flux:table.column>{{ __('app.number') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.price') }}</flux:table.column>
-            @can('administrator_access')
+            @can('accounting_profit_index')
                 <flux:table.column>{{ __('app.price') }} (تتر)</flux:table.column>
                 <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
             @endcan
@@ -79,7 +79,7 @@
                 <flux:table.cell class="whitespace-nowrap">
                     {{ number_format($receipt->TotalPrice) }}
                 </flux:table.cell>
-                @can('administrator_access')
+                @can('accounting_profit_index')
                     @php
                         $rate = \App\Models\CurrencyRate::getRate($receipt->Date);
                     @endphp

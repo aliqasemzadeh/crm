@@ -51,7 +51,7 @@
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
                 <flux:table.column>{{ __('app.last_buy_fee') }}</flux:table.column>
                 <flux:table.column>{{ __('app.last_buy_price') }}</flux:table.column>
-                @can('administrator_access')
+                @can('accounting_profit_index')
                     <flux:table.column>{{ __('app.buy_price_usdt') }}</flux:table.column>
                     <flux:table.column>{{ __('app.sell_price_usdt') }}</flux:table.column>
                     <flux:table.column>{{ __('app.profit') }}</flux:table.column>
@@ -104,7 +104,7 @@
                             {{ number_format($maxFeeItem?->Fee * $item->Quantity) }}
                         </flux:table.cell>
 
-                        @can('administrator_access')
+                        @can('accounting_profit_index')
                             @php
                                 $buyRate = \App\Models\CurrencyRate::getRate($maxFeeItem?->receipt?->Date) / 10;
                                 $buyPriceUsdt = $buyRate > 0 ? ($maxFeeItem?->Fee * $item->Quantity) / $buyRate : 0;
@@ -135,7 +135,7 @@
 
                 @endif
         </flux:table>
-        @can('administrator_access')
+        @can('accounting_profit_index')
             <div class="flex flex-col gap-2">
                 <flux:heading size="lg">{{ __('app.total_profit_usdt') }}: {{ number_format($profitUsdt, 2) }} {{ __('app.usdt') }}</flux:heading>
                 <flux:heading size="lg">{{ __('app.total_sell_usdt') }}: {{ number_format($totalSellUsdt, 2) }} {{ __('app.usdt') }}</flux:heading>
