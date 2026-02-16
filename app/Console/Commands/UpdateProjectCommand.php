@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Process;
+use Illuminate\Process\Pipe;
 
 class UpdateProjectCommand extends Command
 {
@@ -28,9 +29,11 @@ class UpdateProjectCommand extends Command
     public function handle()
     {
 
-        $result = Process::forever()->run('git pull');
+            $process = Process::start('git pull');
+            
+            $process->waitUntil(function (string $type, string $output) {
+                return $output === 'Ready...';
+            });
         
-        echo $result->output();
-        Artisan::call("migrate");
     }
 }
