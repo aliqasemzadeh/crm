@@ -73,8 +73,7 @@ return [
 
     'invoice_sms_message' => '[:website_title]
 فاکتور خرید شما به شماره :number ثبت شد، با تشکر از خرید شما
-مشاهده فاکتور: :link
-لغو11',
+مشاهده فاکتور: :link',
     'send_invoice_to_customer' => 'ارسال اطلاعات فاکتور به مشتری',
     'send_invoice_to_customer_confirm' => 'آیا از ارسال پیامک به مشتری اطمینان دارید؟',
     'invoice_sms_sent' => 'پیامک حاوی لینک فاکتور ارسال شد.',
