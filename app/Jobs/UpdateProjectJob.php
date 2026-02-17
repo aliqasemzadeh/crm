@@ -34,8 +34,16 @@ class UpdateProjectJob implements ShouldQueue
             Log::error("Git pull failed:\n" . $process->errorOutput());
         }
 
-        Log::info("Running migrations...");
+        Log::info("migrate...");
         Artisan::call("migrate");
-        Log::info("Migration output:\n" . Artisan::output());
+        Log::info("migrate:\n" . Artisan::output());
+
+        Log::info("route:clear...");
+        Artisan::call("route:clear");
+        Log::info("route:clear:\n" . Artisan::output());
+
+        Log::info("queue:restart...");
+        Artisan::call("queue:restart");
+        Log::info("queue:restart:\n" . Artisan::output());
     }
 }
