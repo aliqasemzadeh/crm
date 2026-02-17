@@ -30,7 +30,7 @@ class SendSmsOnInvoiceJob implements ShouldQueue
             return;
         }
 
-        $link = URL::signedRoute('invoice.view', ['invoiceId' => $this->invoice->InvoiceId]);
+        $link = URL::signedRoute('panels.customer.invoice.view', ['invoiceId' => $this->invoice->InvoiceId]);
 
         $message = __('app.invoice_sms_message', [
             'website_title' => __('app.website_title'),

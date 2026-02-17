@@ -59,5 +59,5 @@ Route::middleware(['auth'])->group( function () {
 });
 
 Route::get('/invoice/{invoiceId}/view', \App\Livewire\Panels\Customer\Invoice\View::class)
-    ->name('invoice.view')
+    ->name('panels.customer.invoice.view')
     ->middleware('signed');
