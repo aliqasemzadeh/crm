@@ -25,6 +25,8 @@ class CheckInvoiceJob implements ShouldQueue
      */
     public function handle(): void
     {
+        \App\Jobs\Sepidar\Notification\Invoice\SendSmsOnInvoiceJob::dispatch($this->invoiceId);
+
         foreach ($this->invoice->items as $item) {
             $lastStockSummary = \App\Models\Sepidar\INV\ItemStockSummary::query()
                 ->where('ItemRef', $item->ItemRef)
