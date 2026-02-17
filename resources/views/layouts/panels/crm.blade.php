@@ -10,12 +10,11 @@
     <flux:sidebar.search placeholder="Search..." />
 
     <flux:sidebar.nav>
-        <flux:sidebar.item icon="home" href="#" current>{{ __('app.dashboard') }}</flux:sidebar.item>
+
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
 
-    @include('partials.panels')
 
     @include('partials.user-dropdown')
     @include('partials.theme-icon')
