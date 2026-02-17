@@ -41,9 +41,5 @@ class UpdateProjectJob implements ShouldQueue
         Log::info("route:clear...");
         Artisan::call("route:clear");
         Log::info("route:clear:\n" . Artisan::output());
-
-        Log::info("queue:restart...");
-        Artisan::call("queue:restart");
-        Log::info("queue:restart:\n" . Artisan::output());
     }
 }
