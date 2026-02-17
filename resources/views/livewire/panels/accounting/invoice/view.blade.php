@@ -43,6 +43,13 @@
             </div>
         @endif
 
+        <div class="flex justify-end">
+            <flux:button size="sm" variant="primary" color="sky"
+                         x-on:click.prevent="if (confirm('{{ __('app.send_invoice_to_customer_confirm') }}')) { $wire.sendToCustomer() }">
+                {{ __('app.send_invoice_to_customer') }}
+            </flux:button>
+        </div>
+
         <flux:table>
             <flux:table.columns class="bg-white dark:bg-zinc-900">
                 <flux:table.column>{{ __('app.name') }}</flux:table.column>
