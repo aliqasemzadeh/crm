@@ -35,6 +35,7 @@ class AlertOnNewInvoiceCommand extends Command
             ->get();
         foreach ($invoices as $invoice) {
             CheckInvoiceJob::dispatch($invoice->InvoiceId);
+
         }
         if ($invoices->last()?->InvoiceId) {
             $lastRecord->last_record_id = $invoices->last()->InvoiceId;
