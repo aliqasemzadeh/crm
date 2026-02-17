@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'website_title' => 'ستارگان رز جنوب',
     'name' => 'نام',
     'direction' => 'rtl',
 
@@ -61,6 +62,18 @@ return [
     'inactive' => 'غیرفعال',
     'viewed_users' => 'کاربران مشاهده کننده',
     'no_announcements_found' => 'هیچ اطلاعیه‌ای یافت نشد.',
+
+    'invoice_details' => 'جزئیات فاکتور',
+    'invoice_number' => 'شماره فاکتور',
+    'customer' => 'مشتری',
+    'total_price' => 'مبلغ کل',
+    'item_name' => 'نام کالا',
+    'total' => 'جمع کل',
+    'rial' => 'ریال',
+
+    'invoice_sms_message' => '[:website_title]
+فاکتور خرید شما به شماره :number ثبت شد، با تشکر از خرید شما
+مشاهده فاکتور: :link',
     'read_more' => 'مطالعه بیشتر',
     'mark_as_read' => 'مطالعه کردم',
     'announcement_marked_as_read' => 'اطلاعیه به عنوان خوانده شده علامت‌گذاری شد.',

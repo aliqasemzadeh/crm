@@ -57,3 +57,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');
 
 });
+
+Route::get('/invoice/{invoiceId}/view', \App\Livewire\Panels\Customer\Invoice\View::class)
+    ->name('invoice.view')
+    ->middleware('signed');
