@@ -119,16 +119,22 @@
 
                             <x-slot name="footer">
                                 <div class="flex justify-between items-center w-full">
-                                    @if($task->due_at)
-                                        <div class="flex items-center gap-1">
-                                            <flux:icon name="calendar" variant="micro" class="text-zinc-400" />
-                                            <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                {{ $task->due_at->format('Y/m/d') }}
-                                            </span>
-                                        </div>
-                                    @else
-                                        <div></div>
-                                    @endif
+                                    <div class="flex items-center gap-2">
+                                        @if($task->due_at)
+                                            <div class="flex items-center gap-1">
+                                                <flux:icon name="calendar" variant="micro" class="text-zinc-400" />
+                                                <span class="text-xs text-zinc-500 dark:text-zinc-400">
+                                                    {{ $task->due_at->format('Y/m/d') }}
+                                                </span>
+                                            </div>
+                                        @endif
+
+                                        <flux:avatar.group>
+                                            @foreach($task->users as $user)
+                                                <flux:avatar circle size="xs" :name="$user->name" :tooltip="$user->name" />
+                                            @endforeach
+                                        </flux:avatar.group>
+                                    </div>
 
                                     {{-- dropdown must not start drag --}}
                                     <div wire:sort:ignore>
