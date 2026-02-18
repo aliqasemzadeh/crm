@@ -27,6 +27,7 @@ class Index extends Component
         return auth()
             ->user()
             ->tasks()
+            ->with('users')
             ->where('approval_status', '!=', 'approved')
             ->orderByRaw("
             CASE status

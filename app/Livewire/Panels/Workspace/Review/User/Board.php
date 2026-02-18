@@ -25,6 +25,7 @@ class Board extends Component
     {
         return $this->user
             ->tasks()
+            ->with('users')
             ->orderByRaw("
                 CASE status
                     WHEN 'planning' THEN 1

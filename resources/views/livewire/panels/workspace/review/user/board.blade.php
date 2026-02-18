@@ -77,10 +77,18 @@
 
                             <x-slot name="footer">
                                 <div class="flex justify-between items-center w-full">
-                                    <div class="text-xs text-zinc-500">
+                                    <div class="flex items-center gap-2">
                                         @if($task->due_at)
-                                            {{ $task->due_at->format('Y/m/d') }}
+                                            <div class="text-xs text-zinc-500">
+                                                {{ $task->due_at->format('Y/m/d') }}
+                                            </div>
                                         @endif
+
+                                        <flux:avatar.group>
+                                            @foreach($task->users as $user)
+                                                <flux:avatar circle size="xs" :name="$user->name" :tooltip="$user->name" />
+                                            @endforeach
+                                        </flux:avatar.group>
                                     </div>
 
                                     <div wire:sort:ignore>
