@@ -14,19 +14,19 @@
     </div>
 
     <div class="flex flex-col md:flex-row gap-4 md:gap-6 mb-6">
-            <div class="relative flex-1 rounded-lg px-6 py-4 bg-zinc-50 dark:bg-zinc-700">
-                <flux:subheading>{{ __('app.inventory_rial_balance') }}</flux:subheading>
+        <div class="relative flex-1 rounded-lg px-6 py-4 bg-zinc-50 dark:bg-zinc-700">
+            <flux:subheading>{{ __('app.inventory_rial_balance') }}</flux:subheading>
 
-                <flux:heading size="xl" class="mb-2">{{ number_format(0) }}</flux:heading>
+            <flux:heading size="xl" class="mb-2">{{ number_format($this->inventory) }}</flux:heading>
 
-                <div class="flex items-center gap-1 font-medium text-sm">
+            <div class="flex items-center gap-1 font-medium text-sm">
 
-                </div>
-
-                <div class="absolute top-0 right-0 pr-2 pt-2">
-                    <flux:button icon="ellipsis-horizontal" variant="subtle" size="sm" />
-                </div>
             </div>
+
+            <div class="absolute top-0 right-0 pr-2 pt-2">
+                <flux:button icon="ellipsis-horizontal" variant="subtle" size="sm" />
+            </div>
+        </div>
     </div>
 
 </div>
