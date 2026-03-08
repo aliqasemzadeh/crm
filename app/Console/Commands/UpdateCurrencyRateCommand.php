@@ -96,7 +96,7 @@ class UpdateCurrencyRateCommand extends Command
             }
 
             BaleSendMessageJob::dispatch(trim($message));
-            SendSmsMessageJob::dispatch("09177114358", trim($message));
+            //SendSmsMessageJob::dispatch("09177114358", trim($message));
             $this->info(__('currencies.notification_dispatched'));
         } else {
             $this->info(__('currencies.outside_hours'));
