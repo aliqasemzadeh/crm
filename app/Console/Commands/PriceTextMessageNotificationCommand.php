@@ -28,6 +28,36 @@ class PriceTextMessageNotificationCommand extends Command
      */
     public function handle()
     {
+        $phones = [
+            "09177886099", "09177114358"
+        ];
+        $symbols = [
+            'USDT' => [
+                'title' => 'دلار',
+                'pair' => 'USDTIRT',
+                'currency' => 'ریال',
+                'decimal' => 0
+            ],
+            'PAXG' => [
+                'title' => 'اونس',
+                'pair' => 'PAXGUSDT',
+                'currency' => 'دلار',
+                'decimal' => 0
+            ],
+            'BTC' => [
+                'title' => 'BTC',
+                'pair' => 'BTCUSDT',
+                'currency' => 'دلار',
+                'decimal' => 0
+            ],
+            'XRP' => [
+                'title' => 'XRP',
+                'pair' => 'XRPUSDT',
+                'currency' => 'دلار',
+                'decimal' => 3
+            ],
+        ];
+        $message = "";
         $now = Carbon::now('Asia/Tehran');
 
         // Check if it's Friday
@@ -36,44 +66,28 @@ class PriceTextMessageNotificationCommand extends Command
             return;
         }
         if ($now->hour >= 7 && $now->hour < 21) {
-            try {
-                $usdtResponse = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('https://apiv2.nobitex.ir/v3/orderbook/USDTIRT');
-            } catch (\Exception $e) {
-                $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
-                return;
+            foreach ($symbols as $symbol) {
+                try {
+                    $response = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('https://apiv2.nobitex.ir/v3/orderbook/'.$symbol['pair']);
+                } catch (\Exception $e) {
+                    $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
+                    return;
+                }
+
+                if ($response->failed()) {
+                    $this->error(__('currencies.fetch_failed'));
+                    return;
+                }
+
+                $data = $response->json();
+                $price = $data['lastTradePrice'] ?? null;
+
+
+                $message .=  $symbol['title'] .":" . number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
             }
-
-            if ($usdtResponse->failed()) {
-                $this->error(__('currencies.fetch_failed'));
-                return;
+            foreach($phones as $phone) {
+                SendSmsMessageJob::dispatch($phone, trim($message));
             }
-
-            $usdtData = $usdtResponse->json();
-            $usdt = $usdtData['lastTradePrice'] ?? null;
-
-
-            try {
-                $paxgResponse = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('https://apiv2.nobitex.ir/v3/orderbook/PAXGUSDT');
-            } catch (\Exception $e) {
-                $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
-                return;
-            }
-
-
-            if ($paxgResponse->failed()) {
-                $this->error(__('currencies.fetch_failed'));
-                return;
-            }
-
-            $paxgData = $paxgResponse->json();
-            $paxg = $paxgData['lastTradePrice'] ?? null;
-
-            $message = "قیمت دلار:" . number_format(floor($usdt),0,'.',',') . " ریال " . PHP_EOL;
-            $message .= "قیمت اونس:" . number_format(floor($paxg),0,'.',','). " دلار " . PHP_EOL;
-
-            SendSmsMessageJob::dispatch("09177886099", trim($message));
-            SendSmsMessageJob::dispatch("09177114358", trim($message));
         }
-
     }
 }
