@@ -33,18 +33,18 @@ class PriceTextMessageNotificationCommand extends Command
         ];
         $symbols = [
             'USDT' => [
-                'title' => 'دلار',
+                'title' => '',
                 'pair' => 'USDTIRT',
-                'currency' => 'ریال',
+                'currency' => '',
                 'decimal' => 0
             ],
             'PAXG' => [
-                'title' => 'اونس',
+                'title' => '',
                 'pair' => 'PAXGUSDT',
-                'currency' => 'دلار',
+                'currency' => '',
                 'decimal' => 0
             ],
-            'BTC' => [
+            /*'BTC' => [
                 'title' => 'BTC',
                 'pair' => 'BTCUSDT',
                 'currency' => 'دلار',
@@ -55,7 +55,7 @@ class PriceTextMessageNotificationCommand extends Command
                 'pair' => 'XRPUSDT',
                 'currency' => 'دلار',
                 'decimal' => 3
-            ],
+            ],*/
         ];
         $message = "";
         $now = Carbon::now('Asia/Tehran');
@@ -83,7 +83,7 @@ class PriceTextMessageNotificationCommand extends Command
                 $price = $data['lastTradePrice'] ?? null;
 
 
-                $message .=  $symbol['title'] .":" . number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
+                $message .=  $symbol['title'] . number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
             }
             foreach($phones as $phone) {
                 SendSmsMessageJob::dispatch($phone, trim($message));
