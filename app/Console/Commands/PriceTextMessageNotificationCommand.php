@@ -33,29 +33,45 @@ class PriceTextMessageNotificationCommand extends Command
         ];
         $symbols = [
             'USDT' => [
-                'title' => '',
+                'title' => 'دلار',
                 'pair' => 'USDTIRT',
-                'currency' => '',
-                'decimal' => 0
+                'currency' => 'ریال',
+                'decimal' => 0,
+                'last-price' => 0,
+                'api' => true
             ],
             'PAXG' => [
-                'title' => '',
+                'title' => 'انس',
                 'pair' => 'PAXGUSDT',
-                'currency' => '',
-                'decimal' => 0
+                'currency' => 'دلار',
+                'decimal' => 0,
+                'last-price' => 0,
+                'api' => true
             ],
-            /*'BTC' => [
+            'BTC' => [
                 'title' => 'BTC',
                 'pair' => 'BTCUSDT',
                 'currency' => 'دلار',
-                'decimal' => 0
+                'decimal' => 0,
+                'last-price' => 0,
+                'api' => true
             ],
             'XRP' => [
                 'title' => 'XRP',
                 'pair' => 'XRPUSDT',
                 'currency' => 'دلار',
-                'decimal' => 3
-            ],*/
+                'decimal' => 3,
+                'last-price' => 0,
+                'api' => true
+            ],
+            'GOLD' => [
+                'title' => 'طلا',
+                'pair' => 'GOLDIRT',
+                'currency' => 'ریال',
+                'decimal' => 0,
+                'last-price' => 0,
+                'api' => false
+            ],
         ];
         $message = "";
         $now = Carbon::now('Asia/Tehran');
@@ -66,24 +82,32 @@ class PriceTextMessageNotificationCommand extends Command
             return;
         }
         if ($now->hour >= 7 && $now->hour < 21) {
-            foreach ($symbols as $symbol) {
-                try {
-                    $response = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('https://apiv2.nobitex.ir/v3/orderbook/'.$symbol['pair']);
-                } catch (\Exception $e) {
-                    $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
-                    return;
+            foreach ($symbols as $key => $symbol) {
+                if($symbol['api']) {
+                    try {
+                        $response = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('https://apiv2.nobitex.ir/v3/orderbook/'.$symbol['pair']);
+                    } catch (\Exception $e) {
+                        $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
+                        return;
+                    }
+
+                    if ($response->failed()) {
+                        $this->error(__('currencies.fetch_failed'));
+                        return;
+                    }
+
+                    $data = $response->json();
+                    $price = $symbol['last-price'] = $data['lastTradePrice'] ?? null;
+                    $symbols[$key]['last-price'] = $price;
+
+                    $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
+                } else {
+                    if($symbol['pair'] == 'GOLDIRT') {
+                        $price = ($symbols['USDT']['last-price'] * $symbols['PAXG']['last-price'] * 750) / (990 * 31.1038);
+                        $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
+                    }
                 }
 
-                if ($response->failed()) {
-                    $this->error(__('currencies.fetch_failed'));
-                    return;
-                }
-
-                $data = $response->json();
-                $price = $data['lastTradePrice'] ?? null;
-
-
-                $message .=  $symbol['title'] . number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
             }
             foreach($phones as $phone) {
                 SendSmsMessageJob::dispatch($phone, trim($message));
