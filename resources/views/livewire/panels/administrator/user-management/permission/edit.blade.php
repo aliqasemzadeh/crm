@@ -21,9 +21,9 @@
                     <flux:error name="guard_name" />
                 </flux:field>
             </div>
-            <button type="submit" class="btn-default btn-indigo w-full">
-                {{ __('app.update') }}
-            </button>
+            <flux:button type="submit" class="w-full" variant="primary">
+                {{ __('common.update') }}
+            </flux:button>
         </form>
     </div>
 </flux:modal>
