@@ -72,6 +72,14 @@ class PriceTextMessageNotificationCommand extends Command
                 'last-price' => 0,
                 'api' => false
             ],
+            'AED' => [
+                'title' => 'درهم',
+                'pair' => 'AEDIRT',
+                'currency' => 'ریال',
+                'decimal' => 0,
+                'last-price' => 0,
+                'api' => false
+            ],
         ];
         $message = "";
         $now = Carbon::now('Asia/Tehran');
@@ -104,6 +112,11 @@ class PriceTextMessageNotificationCommand extends Command
                 } else {
                     if($symbol['pair'] == 'GOLDIRT') {
                         $price = ($symbols['USDT']['last-price'] * $symbols['PAXG']['last-price'] * 750) / (990 * 31.1038);
+                        $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
+                    }
+
+                    if($symbol['pair'] == 'AEDIRT') {
+                        $price = $symbols['USDT']['last-price'] * 0.2723;
                         $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
                     }
                 }
