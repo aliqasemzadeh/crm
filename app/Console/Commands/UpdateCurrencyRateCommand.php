@@ -95,7 +95,7 @@ class UpdateCurrencyRateCommand extends Command
                 $message .= __('currencies.max_price', ['price' => number_format($maxPrice)]) . "\n";
             }
 
-            BaleSendMessageJob::dispatch(trim($message));
+            //BaleSendMessageJob::dispatch(trim($message));
             //SendSmsMessageJob::dispatch("09177114358", trim($message));
             $this->info(__('currencies.notification_dispatched'));
         } else {
