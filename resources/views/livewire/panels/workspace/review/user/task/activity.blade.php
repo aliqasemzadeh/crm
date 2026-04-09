@@ -7,6 +7,10 @@
             @endif
         </div>
 
+        <div>
+            {{ $task->description }}
+        </div>
+
         <div class="space-y-4 max-h-[60vh] overflow-y-auto px-1">
             @if($task && $task->reports->count() > 0)
                 @foreach($task->reports as $report)
