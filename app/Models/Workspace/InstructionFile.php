@@ -10,6 +10,8 @@ class InstructionFile extends Model
     use SoftDeletes;
     protected $table = 'workspace_instruction_files';
 
+    protected $fillable = ['file_name', 'file_path', 'file_description', 'instruction_id', 'user_id'];
+
     public function instruction()
     {
         return $this->belongsTo(Instruction::class);
