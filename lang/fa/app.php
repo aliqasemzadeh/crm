@@ -1083,4 +1083,7 @@ return [
     'update_project' => 'بروز رسانی پروژه',
 
     'announcement_bale_message' => 'لطفا نسبت به مطالعه اقدام فرمایید',
+    'instructions' => 'دستورالعل ها',
+    'create_instruction' => 'ایجاد دستورالعمل',
+    'edit_instruction' => 'ویرایش دستورالعمل',
 ];
