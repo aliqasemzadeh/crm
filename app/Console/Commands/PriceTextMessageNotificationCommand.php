@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\Notification\BaleSendMessageJob;
 use App\Jobs\Notification\SendSmsMessageJob;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -124,6 +125,7 @@ class PriceTextMessageNotificationCommand extends Command
             }
             foreach($phones as $phone) {
                 SendSmsMessageJob::dispatch($phone, trim($message));
+                BaleSendMessageJob::dispatch(trim($message));
             }
         }
     }
