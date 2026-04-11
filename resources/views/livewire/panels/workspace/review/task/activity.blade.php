@@ -6,8 +6,11 @@
                 <flux:subheading>{{ $task->title }}</flux:subheading>
             @endif
         </div>
+
         <div>
-            {{ $task->description }}
+            @if($task)
+                {{ $task->description ?? "" }}
+            @endif
         </div>
 
         <div class="space-y-4 max-h-[60vh] overflow-y-auto px-1">
