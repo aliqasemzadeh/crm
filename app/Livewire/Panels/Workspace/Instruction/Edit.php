@@ -28,7 +28,7 @@ class Edit extends Component
     {
         $this->instruction = Instruction::findOrFail($id);
 
-        if ($this->instruction->user_id !== auth()->id() && !auth()->user()->can('workspace_instruction_manage')) {
+        if ($this->instruction->user_id !== auth()->id() && !auth()->user()->can('administrator_workspace_instruction_manage')) {
             Flux::toast(__('app.unauthorized'), variant: 'danger');
             return;
         }
@@ -48,7 +48,7 @@ class Edit extends Component
 
     public function save()
     {
-        if (!$this->instruction || ($this->instruction->user_id !== auth()->id() && !auth()->user()->can('workspace_instruction_manage'))) {
+        if (!$this->instruction || ($this->instruction->user_id !== auth()->id() && !auth()->user()->can('administrator_workspace_instruction_manage'))) {
             return;
         }
 

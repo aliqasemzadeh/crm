@@ -46,7 +46,7 @@
                             {{ __('app.files') }}
                         </flux:button>
 
-                        @if($instruction->user_id === auth()->id() || auth()->user()->can('workspace_instruction_manage'))
+                        @if($instruction->user_id === auth()->id() || auth()->user()->can('administrator_workspace_instruction_manage'))
                             <flux:button wire:click="$dispatch('instruction-edit-modal', { id: {{ $instruction->id }} })" icon="pencil-square" variant="ghost" size="sm" />
 
                             <flux:modal.trigger name="delete-instruction-{{ $instruction->id }}">

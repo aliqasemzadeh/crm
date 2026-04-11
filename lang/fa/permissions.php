@@ -17,6 +17,8 @@ return [
         'administrator_dashboard_index' => 'داشبورد مدیر',
         'administrator_user_management' => 'مدیریت کاربران',
 
+        'administrator_workspace_instruction_manage' => 'مدیریت دستورالعمل ها',
+
         'administrator_user_management_index' => 'فهرست کاربران',
         'administrator_user_management_create' => 'ایجاد کاربر',
         'administrator_user_management_edit' => 'ویرایش کاربر',
@@ -179,7 +181,6 @@ return [
         'workspace_task_create' => 'ایجاد وظیفه',
         'workspace_task_edit' => 'ویرایش وظیفه',
         'workspace_task_delete' => 'ویرایش وظیفه',
-        'workspace_instruction_manage' => 'مدیریت دستورالعمل ها',
     ],
 
     'workspace_review' => [
