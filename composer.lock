@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2215aaebc7bfe8817257956bb183b28d",
+    "content-hash": "84cb3be08177957d4dfa522dfe1c2507",
     "packages": [
         {
             "name": "archtechx/enums",
@@ -1345,6 +1345,68 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "getartisanflow/wireflow",
+            "version": "v0.1.2-alpha",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/getartisanflow/wireflow.git",
+                "reference": "a4265dfdf86203f9fd663b608f2908eb25e4815c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/getartisanflow/wireflow/zipball/a4265dfdf86203f9fd663b608f2908eb25e4815c",
+                "reference": "a4265dfdf86203f9fd663b608f2908eb25e4815c",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "livewire/livewire": "^3.0|^4.0",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.4",
+                "pestphp/pest-plugin-laravel": "^4.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "ArtisanFlow\\WireFlow\\WireFlowServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "ArtisanFlow\\WireFlow\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Zac Hiler",
+                    "homepage": "https://github.com/zachiler"
+                }
+            ],
+            "description": "Livewire components for AlpineFlow — build interactive flow diagrams in Laravel.",
+            "keywords": [
+                "alpineflow",
+                "diagram",
+                "flow",
+                "laravel",
+                "livewire",
+                "wireflow"
+            ],
+            "support": {
+                "issues": "https://github.com/getartisanflow/wireflow/issues",
+                "source": "https://github.com/getartisanflow/wireflow/tree/v0.1.2-alpha"
+            },
+            "time": "2026-04-03T18:46:30+00:00"
         },
         {
             "name": "graham-campbell/result-type",
@@ -6653,6 +6715,75 @@
                 }
             ],
             "time": "2025-12-08T14:26:03+00:00"
+        },
+        {
+            "name": "ringlesoft/laravel-process-approval",
+            "version": "1.1.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ringlesoft/laravel-process-approval.git",
+                "reference": "f4567e185cc302244e39d14e230c2793bf4b636b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ringlesoft/laravel-process-approval/zipball/f4567e185cc302244e39d14e230c2793bf4b636b",
+                "reference": "f4567e185cc302244e39d14e230c2793bf4b636b",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/auth": "^10|^11|^12",
+                "illuminate/broadcasting": "^10|^11|^12",
+                "illuminate/database": "^10|^11|^12",
+                "illuminate/routing": "^10|^11|^12",
+                "php": ">=8.1"
+            },
+            "require-dev": {
+                "roave/security-advisories": "dev-latest"
+            },
+            "type": "laravel-package",
+            "extra": {
+                "laravel": {
+                    "aliases": {
+                        "ProcessApproval": "RingleSoft\\LaravelProcessApproval\\Facade"
+                    },
+                    "providers": [
+                        "RingleSoft\\LaravelProcessApproval\\LaravelProcessApprovalServiceProvider"
+                    ],
+                    "dont-discover": []
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "RingleSoft\\LaravelProcessApproval\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "David Ringle",
+                    "email": "ringunger@gmail.com",
+                    "homepage": "https://ringlesoft.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A package to handle process approval flow in a laravel application.",
+            "homepage": "https://ringlesoft.com/packages/laravel-process-approval",
+            "keywords": [
+                "approval",
+                "approve",
+                "flow",
+                "laravel",
+                "procedure",
+                "ringlesoft"
+            ],
+            "support": {
+                "issues": "https://github.com/ringlesoft/laravel-process-approval/issues",
+                "source": "https://github.com/ringlesoft/laravel-process-approval/tree/1.1.4"
+            },
+            "time": "2025-12-19T13:18:18+00:00"
         },
         {
             "name": "sadegh19b/laravel-persian-validation",
@@ -12715,8 +12846,10 @@
         }
     ],
     "aliases": [],
-    "minimum-stability": "stable",
-    "stability-flags": {},
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "getartisanflow/wireflow": 15
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
