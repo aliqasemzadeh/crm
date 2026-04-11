@@ -1,4 +1,8 @@
 <div>
+    <livewire:panels.workspace.instruction.create />
+    <livewire:panels.workspace.instruction.edit />
+    <livewire:panels.workspace.instruction.file.index />
+
     <flux:main>
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <flux:heading size="xl">{{ __('app.instructions') }}</flux:heading>
@@ -9,7 +13,7 @@
                     <flux:select.option value="finalized">{{ __('app.instruction_status.finalized') }}</flux:select.option>
                 </flux:select>
 
-                <flux:button href="{{ route('panels.workspace.instruction.create') }}" icon="plus" variant="primary" wire:navigate>
+                <flux:button wire:click="$dispatch('instruction-create-modal')" icon="plus" variant="primary">
                     {{ __('app.create_instruction') }}
                 </flux:button>
             </div>
@@ -33,13 +37,17 @@
                             {{ $instruction->user->name }}
                             <span class="mx-1">•</span>
                             <flux:icon.calendar variant="micro" />
-                            {{ $instruction->created_at->format('Y-m-d H:i') }}
+                            {{ \Morilog\Jalali\Jalalian::fromDateTime($instruction->created_at)->format('Y/m/d H:i') }}
                         </div>
                     </div>
 
                     <div class="flex gap-2">
-                        @if($instruction->user_id === auth()->id())
-                            <flux:button href="{{ route('panels.workspace.instruction.edit', $instruction) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
+                        <flux:button wire:click="$dispatch('instruction-files-modal', { id: {{ $instruction->id }} })" icon="paper-clip" variant="ghost" size="sm">
+                            {{ __('app.files') }}
+                        </flux:button>
+
+                        @if($instruction->user_id === auth()->id() || auth()->user()->can('workspace_instruction_manage'))
+                            <flux:button wire:click="$dispatch('instruction-edit-modal', { id: {{ $instruction->id }} })" icon="pencil-square" variant="ghost" size="sm" />
 
                             <flux:modal.trigger name="delete-instruction-{{ $instruction->id }}">
                                 <flux:button icon="trash" variant="ghost" size="sm" color="red" />
@@ -69,7 +77,7 @@
                     <flux:icon.document-text class="mx-auto h-12 w-12 text-zinc-400" />
                     <flux:heading class="mt-4">{{ __('app.no_instructions_found') }}</flux:heading>
                     <div class="mt-6">
-                        <flux:button href="{{ route('panels.workspace.instruction.create') }}" icon="plus" variant="primary" wire:navigate>
+                        <flux:button wire:click="$dispatch('instruction-create-modal')" icon="plus" variant="primary">
                             {{ __('app.create_instruction') }}
                         </flux:button>
                     </div>

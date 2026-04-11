@@ -179,6 +179,7 @@ return [
         'workspace_task_create' => 'ایجاد وظیفه',
         'workspace_task_edit' => 'ویرایش وظیفه',
         'workspace_task_delete' => 'ویرایش وظیفه',
+        'workspace_instruction_manage' => 'مدیریت دستورالعمل ها',
     ],
 
     'workspace_review' => [

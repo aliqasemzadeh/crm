@@ -3,7 +3,8 @@
 namespace App\Livewire\Panels\Workspace\Instruction;
 
 use App\Models\Workspace\Instruction;
-use Livewire\Attributes\Layout;
+use Flux\Flux;
+use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Create extends Component
@@ -11,6 +12,14 @@ class Create extends Component
     public $title;
     public $body;
     public $status = 'draft';
+
+    #[On('instruction-create-modal')]
+    public function showModal()
+    {
+        $this->reset(['title', 'body', 'status']);
+        $this->status = 'draft';
+        Flux::modal('instruction-create-modal')->show();
+    }
 
     protected $rules = [
         'title' => 'required|min:3',
@@ -29,10 +38,11 @@ class Create extends Component
             'user_id' => auth()->id(),
         ]);
 
-        return redirect()->route('panels.workspace.instruction.edit', $instruction);
+        $this->dispatch('instruction-saved');
+        Flux::modal('instruction-create-modal')->close();
+        Flux::toast(__('app.instruction_created'));
     }
 
-    #[Layout('layouts.panels.workspace')]
     public function render()
     {
         return view('livewire.panels.workspace.instruction.create');
