@@ -1,7 +1,8 @@
 <?php
 return [
-    'bot_name' => 'SetareganCRMBot',
-    'bot_token' => '47361680:2XDfKTRdJ3wM1CiSfxgsIW4qDp8Ti2Pb-K8',
-    'bot_group_chat_id' => '4716603133'
+    'bot_name' => 'SetareganPriceBot',
+    'bot_token' => '33900659:j_WtvwLYj53IUvWWyihQjrOXAmIWgKqU1rA',
+    //'bot_group_chat_id' => '4716603133',
+    'bot_group_chat_id' => '4846873138'
 
 ];
