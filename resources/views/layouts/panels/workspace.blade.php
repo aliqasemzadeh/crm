@@ -12,6 +12,7 @@
     <flux:sidebar.nav>
         <flux:sidebar.item icon="home" href="{{ route('panels.workspace.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
         <flux:sidebar.item icon="clipboard-document-list" href="{{ route('panels.workspace.task.index') }}" wire:navigate>{{ __('app.tasks') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="files" href="{{ route('panels.workspace.instruction.index') }}" wire:navigate>{{ __('app.instructions') }}</flux:sidebar.item>
         @can('workspace_review_index')
         <flux:sidebar.item icon="list-check" href="{{ route('panels.workspace.review.index') }}" wire:navigate>{{ __('app.reviews') }}</flux:sidebar.item>
         <flux:sidebar.item icon="users" href="{{ route('panels.workspace.review.user.index') }}" wire:navigate>{{ __('app.workspace_review.users_list') }}</flux:sidebar.item>
