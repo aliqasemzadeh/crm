@@ -36,9 +36,15 @@ class BaleSendMessageJob implements ShouldQueue
             return;
         }
 
-        \Illuminate\Support\Facades\Http::withoutVerifying()->withOptions(["verify"=>false])->post("http://tapi.bale.ai/bot{$token}/sendMessage", [
-            'chat_id' => $chatId,
-            'text' => $this->message,
-        ]);
+        try {
+
+            \Illuminate\Support\Facades\Http::withoutVerifying()->withOptions(["verify"=>false])->post("http://tapi.bale.ai/bot{$token}/sendMessage", [
+                'chat_id' => $chatId,
+                'text' => $this->message,
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send message to Bale: '.$e->getMessage());
+        }
+
     }
 }

@@ -90,7 +90,7 @@ class PriceTextMessageNotificationCommand extends Command
             $this->info(__('currencies.friday_no_notification'));
             return;
         }
-        if ($now->hour >= 7 && $now->hour < 21) {
+        if ($now->hour >= 8 && $now->hour < 21) {
             foreach ($symbols as $key => $symbol) {
                 if($symbol['api']) {
                     try {
@@ -125,8 +125,11 @@ class PriceTextMessageNotificationCommand extends Command
             }
             foreach($phones as $phone) {
                 SendSmsMessageJob::dispatch($phone, trim($message));
+            }
+            if(in_array($now->hour, [10,  14])) {
                 BaleSendMessageJob::dispatch(trim($message));
             }
+
         }
     }
 }
