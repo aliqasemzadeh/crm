@@ -58,7 +58,7 @@ class Index extends Component
     public function deleteFile(InstructionFile $file)
     {
         // Only owner or manager can delete
-        if ($file->user_id !== auth()->id() && !auth()->user()->can('workspace_instruction_manage')) {
+        if ($file->user_id !== auth()->id() && !auth()->user()->can('administrator_workspace_instruction_manage')) {
             return;
         }
 

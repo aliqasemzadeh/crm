@@ -23,7 +23,7 @@ class Index extends Component
 
     public function deleteInstruction(Instruction $instruction)
     {
-        if ($instruction->user_id !== auth()->id() && !auth()->user()->can('workspace_instruction_manage')) {
+        if ($instruction->user_id !== auth()->id() && !auth()->user()->can('administrator_workspace_instruction_manage')) {
             return;
         }
 

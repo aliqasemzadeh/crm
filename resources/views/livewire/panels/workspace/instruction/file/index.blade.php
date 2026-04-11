@@ -6,7 +6,7 @@
 
         @if($instruction)
             @php
-                $canManage = $instruction->user_id === auth()->id() || auth()->user()->can('workspace_instruction_manage');
+                $canManage = $instruction->user_id === auth()->id() || auth()->user()->can('administrator_workspace_instruction_manage');
             @endphp
 
             @if($canManage)
@@ -28,7 +28,7 @@
                     <div class="flex items-center justify-between p-3 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700">
                         <div class="flex flex-col overflow-hidden">
                             @php
-                                $canAccess = $instruction->status === 'finalized' || $file->user_id === auth()->id() || auth()->user()->can('workspace_instruction_manage');
+                                $canAccess = $instruction->status === 'finalized' || $file->user_id === auth()->id() || auth()->user()->can('administrator_workspace_instruction_manage');
                             @endphp
                             @if($canAccess)
                                 <a href="{{ Storage::url($file->file_path) }}" target="_blank" class="text-sm font-medium text-blue-600 dark:text-blue-400 truncate hover:underline">
@@ -48,7 +48,7 @@
                             </div>
                         </div>
                         <div class="flex gap-1">
-                            @if($file->user_id === auth()->id() || auth()->user()->can('workspace_instruction_manage'))
+                            @if($file->user_id === auth()->id() || auth()->user()->can('administrator_workspace_instruction_manage'))
                                 <flux:button wire:click="deleteFile({{ $file->id }})" wire:confirm="{{ __('app.are_you_sure') }}" icon="trash" variant="ghost" size="xs" color="red" />
                             @endif
                         </div>
