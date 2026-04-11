@@ -1,3 +1,84 @@
 <div>
-    {{-- Always remember that you are absolutely unique. Just like everyone else. - Margaret Mead --}}
+    <flux:main>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <flux:heading size="xl">{{ __('app.instructions') }}</flux:heading>
+            <div class="flex flex-wrap items-center gap-4">
+                <flux:select wire:model.live="filter_status" placeholder="{{ __('app.status') }}" class="w-40">
+                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                    <flux:select.option value="draft">{{ __('app.instruction_status.draft') }}</flux:select.option>
+                    <flux:select.option value="finalized">{{ __('app.instruction_status.finalized') }}</flux:select.option>
+                </flux:select>
+
+                <flux:button href="{{ route('panels.workspace.instruction.create') }}" icon="plus" variant="primary" wire:navigate>
+                    {{ __('app.create_instruction') }}
+                </flux:button>
+            </div>
+        </div>
+
+        <div class="space-y-4">
+            @forelse ($instructions as $instruction)
+                <div class="p-4 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 flex justify-between items-center">
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center gap-2">
+                            <flux:heading size="lg">{{ $instruction->title }}</flux:heading>
+                            <flux:badge size="sm" :color="match($instruction->status) {
+                                'draft' => 'zinc',
+                                'finalized' => 'green',
+                                default => 'zinc',
+                            }">{{ __('app.instruction_status.' . $instruction->status) }}</flux:badge>
+                        </div>
+                        <flux:subheading>{{ Str::limit(strip_tags($instruction->body), 100) }}</flux:subheading>
+                        <div class="text-xs text-zinc-500 flex items-center gap-1">
+                            <flux:icon.user variant="micro" />
+                            {{ $instruction->user->name }}
+                            <span class="mx-1">•</span>
+                            <flux:icon.calendar variant="micro" />
+                            {{ $instruction->created_at->format('Y-m-d H:i') }}
+                        </div>
+                    </div>
+
+                    <div class="flex gap-2">
+                        @if($instruction->user_id === auth()->id())
+                            <flux:button href="{{ route('panels.workspace.instruction.edit', $instruction) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
+
+                            <flux:modal.trigger name="delete-instruction-{{ $instruction->id }}">
+                                <flux:button icon="trash" variant="ghost" size="sm" color="red" />
+                            </flux:modal.trigger>
+
+                            <flux:modal name="delete-instruction-{{ $instruction->id }}" class="min-w-[22rem]">
+                                <form class="space-y-6" wire:submit="deleteInstruction({{ $instruction->id }})">
+                                    <div>
+                                        <flux:heading size="lg">{{ __('app.delete') }}</flux:heading>
+                                        <flux:subheading>{{ __('app.are_you_sure') }}</flux:subheading>
+                                    </div>
+
+                                    <div class="flex gap-2">
+                                        <flux:spacer />
+                                        <flux:modal.close>
+                                            <flux:button variant="ghost">{{ __('app.cancel') }}</flux:button>
+                                        </flux:modal.close>
+                                        <flux:button type="submit" variant="danger">{{ __('app.delete') }}</flux:button>
+                                    </div>
+                                </form>
+                            </flux:modal>
+                        @endif
+                    </div>
+                </div>
+            @empty
+                <div class="p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl">
+                    <flux:icon.document-text class="mx-auto h-12 w-12 text-zinc-400" />
+                    <flux:heading class="mt-4">{{ __('app.no_instructions_found') }}</flux:heading>
+                    <div class="mt-6">
+                        <flux:button href="{{ route('panels.workspace.instruction.create') }}" icon="plus" variant="primary" wire:navigate>
+                            {{ __('app.create_instruction') }}
+                        </flux:button>
+                    </div>
+                </div>
+            @endforelse
+
+            <div class="mt-4">
+                {{ $instructions->links() }}
+            </div>
+        </div>
+    </flux:main>
 </div>

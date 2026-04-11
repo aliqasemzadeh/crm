@@ -10,7 +10,7 @@ class Instruction extends Model
     use SoftDeletes;
     protected $table = 'workspace_instructions';
 
-    protected $fillable = ['title', 'body', 'user_id'];
+    protected $fillable = ['title', 'body', 'status', 'user_id'];
 
     public function files()
     {
