@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('instruction_files', function (Blueprint $table) {
+        Schema::create('workspace_instructions', function (Blueprint $table) {
             $table->id();
+            $table->string('title');
+            $table->longText('body');
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('instruction_files');
+        Schema::dropIfExists('instructions');
     }
 };
