@@ -4,6 +4,7 @@ namespace App\Livewire\Panels\Workspace\Instruction;
 
 use App\Models\Workspace\Instruction;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -22,11 +23,18 @@ class Index extends Component
 
     public function deleteInstruction(Instruction $instruction)
     {
-        if ($instruction->user_id !== auth()->id()) {
+        if ($instruction->user_id !== auth()->id() && !auth()->user()->can('workspace_instruction_manage')) {
             return;
         }
 
         $instruction->delete();
+        $this->dispatch('instruction-deleted');
+    }
+
+    #[On('instruction-saved')]
+    public function refreshInstructions()
+    {
+        // رندر مجدد کامپوننت به صورت خودکار توسط لایووایر انجام می‌شود
     }
 
     #[Layout('layouts.panels.workspace')]

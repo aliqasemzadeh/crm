@@ -124,7 +124,7 @@
                                             <div class="flex items-center gap-1">
                                                 <flux:icon name="calendar" variant="micro" class="text-zinc-400" />
                                                 <span class="text-xs text-zinc-500 dark:text-zinc-400">
-                                                    {{ $task->due_at->format('Y/m/d') }}
+                                                    {{ \Morilog\Jalali\Jalalian::fromDateTime($task->due_at)->format('Y/m/d') }}
                                                 </span>
                                             </div>
                                         @endif

@@ -69,7 +69,7 @@
                         @if($task->due_at)
                             <div class="text-xs text-zinc-500 flex items-center gap-1">
                                 <flux:icon.calendar variant="micro" />
-                                {{ $task->due_at->format('Y-m-d') }}
+                                {{ \Morilog\Jalali\Jalalian::fromDateTime($task->due_at)->format('Y/m/d') }}
                             </div>
                         @endif
                     </div>

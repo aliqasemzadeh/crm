@@ -43,8 +43,6 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/workspace/review/user/{user}/board', \App\Livewire\Panels\Workspace\Review\User\Board::class)->name('panels.workspace.review.user.board');
 
     Route::livewire('/panels/workspace/instruction/index', \App\Livewire\Panels\Workspace\Instruction\Index::class)->name('panels.workspace.instruction.index');
-    Route::livewire('/panels/workspace/instruction/create', \App\Livewire\Panels\Workspace\Instruction\Create::class)->name('panels.workspace.instruction.create');
-    Route::livewire('/panels/workspace/instruction/{instruction}/edit', \App\Livewire\Panels\Workspace\Instruction\Edit::class)->name('panels.workspace.instruction.edit');
 
     Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
     Route::livewire('/panels/accounting/bank/index', \App\Livewire\Panels\Accounting\Bank\Index::class)->name('panels.accounting.bank.index');
