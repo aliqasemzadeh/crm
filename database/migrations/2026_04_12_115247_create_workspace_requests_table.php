@@ -20,7 +20,7 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             // نوع درخواست (purchase, loan, document, etc)
-            $table->string('type');
+            $table->string('type', 100);
 
             // عنوان اختیاری
             $table->string('title')->nullable();
@@ -40,7 +40,7 @@ return new class extends Migration
             $table->text('reason')->nullable();
 
             // وضعیت کلی درخواست
-            $table->string('status')->default('pending');
+            $table->string('status', 50)->default('pending');
 
             // ProcessApproval integration
             $table->unsignedBigInteger('current_step')->nullable();
