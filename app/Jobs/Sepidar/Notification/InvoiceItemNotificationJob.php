@@ -27,6 +27,6 @@ class InvoiceItemNotificationJob implements ShouldQueue
     {
         $title = $this->item->Title ?? $this->item->Title ??  $this->item->Code  ?? '---';
         $message = __('app.invoice_item_zero_stock', ['title' => $title]);
-        \App\Jobs\Notification\BaleSendMessageJob::dispatch($message);
+        // \App\Jobs\Notification\BaleSendMessageJob::dispatch($message);
     }
 }

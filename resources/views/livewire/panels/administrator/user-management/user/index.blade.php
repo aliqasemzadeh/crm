@@ -47,6 +47,11 @@
                         {{ $user->id }}
                     </flux:table.cell>
                     <flux:table.cell class="flex items-center gap-3">
+                        @if ($user->avatar)
+                            <flux:avatar src="{{ $user->getAvatarUrl() }}" size="xs" />
+                        @else
+                            <flux:avatar name="{{ $user->name }}" color="auto" size="xs" />
+                        @endif
                         {{ $user->mobile }}
                     </flux:table.cell>
                     <flux:table.cell>

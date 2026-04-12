@@ -31,7 +31,7 @@
                                 default => 'zinc',
                             }">{{ __('app.instruction_status.' . $instruction->status) }}</flux:badge>
                         </div>
-                        <flux:subheading>{{ Str::limit(strip_tags($instruction->body), 100) }}</flux:subheading>
+                        <flux:subheading>{!! $instruction->body !!}</flux:subheading>
                         <div class="text-xs text-zinc-500 flex items-center gap-1">
                             <flux:icon.user variant="micro" />
                             {{ $instruction->user->name }}
