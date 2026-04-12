@@ -18,10 +18,11 @@
 
     <livewire:panels.administrator.workspace.request-type.create />
     <livewire:panels.administrator.workspace.request-type.edit />
+    <livewire:panels.administrator.workspace.request-type.schema />
 
     <flux:table :paginate="$requestTypes">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column colspan="5" class="bg-white dark:bg-zinc-900">
+            <flux:table.column colspan="6" class="bg-white dark:bg-zinc-900">
                 <div class="flex flex-col gap-1 pe-2 items-end">
                     <flux:input
                         size="sm"
@@ -59,7 +60,10 @@
                     <flux:table.cell class="whitespace-nowrap">
                         {{ $type->created_at->format('Y/m/d H:i') }}
                     </flux:table.cell>
-                    <flux:table.cell class="whitespace-nowrap flex gap-2 justify-end">
+                    <flux:table.cell class="flex justify-end gap-2">
+                        <flux:button size="xs" variant="primary" color="orange" wire:click="$dispatch('panels.administrator.workspace.request-type.schema.assign-data', { id: {{ $type->id }} })">
+                            {{ __('app.request_type_schema') }}
+                        </flux:button>
                         <flux:button size="xs" variant="primary" wire:click="$dispatch('panels.administrator.workspace.request-type.edit.assign-data', { id: {{ $type->id }} })">
                             {{ __('app.edit') }}
                         </flux:button>
