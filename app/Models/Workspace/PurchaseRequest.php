@@ -13,6 +13,8 @@ use RingleSoft\LaravelProcessApproval\Traits\Approvable;
 class PurchaseRequest extends Model implements ApprovableModel
 {
     use Approvable, SoftDeletes;
+    public bool $autoSubmit = true;
+
 
     protected $fillable = [
         'user_id',
@@ -30,6 +32,12 @@ class PurchaseRequest extends Model implements ApprovableModel
 
     public function onApprovalCompleted(ProcessApproval $approval): bool
     {
+        return true;
+    }
+
+    public function enableAutoSubmit(): bool
+    {
+        // Your logic here
         return true;
     }
 }
