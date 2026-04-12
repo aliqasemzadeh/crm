@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Administrator\Workspace\RequestType;
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 use App\Models\Workspace\RequestType;
@@ -25,6 +26,7 @@ class Index extends Component
         $this->dispatch('toast', heading: __('app.delete'), text: __('app.deleted_successfully'), variant: 'success');
     }
 
+    #[Layout('layouts.panels.administrator')]
     public function render()
     {
         $requestTypes = RequestType::query()

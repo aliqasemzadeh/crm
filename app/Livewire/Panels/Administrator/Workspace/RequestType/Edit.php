@@ -13,7 +13,6 @@ class Edit extends Component
     public $title = '';
     public $description = '';
     public $is_active = true;
-    public $schema_text = '';
 
     protected $listeners = [
         'panels.administrator.workspace.request-type.edit.assign-data' => 'assignData',
@@ -26,7 +25,6 @@ class Edit extends Component
         $this->title = $this->requestType->title;
         $this->description = $this->requestType->description;
         $this->is_active = $this->requestType->is_active;
-        $this->schema_text = json_encode($this->requestType->schema, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
         $this->dispatch('modal-show', name: 'panels.administrator.workspace.request-type.edit.modal');
     }
@@ -38,7 +36,6 @@ class Edit extends Component
             'title' => 'required|string',
             'description' => 'nullable|string',
             'is_active' => 'boolean',
-            'schema_text' => 'nullable|json',
         ];
     }
 
@@ -51,7 +48,6 @@ class Edit extends Component
             'title' => $this->title,
             'description' => $this->description,
             'is_active' => $this->is_active,
-            'schema' => json_decode($this->schema_text, true),
         ]);
 
         $this->dispatch('refresh-request-types');

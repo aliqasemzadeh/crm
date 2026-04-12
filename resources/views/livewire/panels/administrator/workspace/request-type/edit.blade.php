@@ -26,12 +26,6 @@
 
             <flux:checkbox wire:model="is_active" label="{{ __('app.request_type_is_active') }}" />
 
-            <flux:field>
-                <flux:label>{{ __('app.request_type_schema') }}</flux:label>
-                <flux:textarea wire:model="schema_text" rows="15" dir="ltr" class="font-mono" />
-                <flux:error name="schema_text" />
-            </flux:field>
-
             <flux:button type="submit" class="w-full" variant="primary">
                 {{ __('app.update') }}
             </flux:button>
