@@ -11,8 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('workspace_requests', function (Blueprint $table) {
-            $table->integer('request_counter')->nullable()->after('request_number');
+        Schema::create('purchase_requests', function (Blueprint $table) {
+            $table->id();
+            $table->timestamps();
         });
     }
 
@@ -21,8 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('workspace_requests', function (Blueprint $table) {
-            $table->dropColumn('request_counter');
-        });
+        Schema::dropIfExists('purchase_requests');
     }
 };
