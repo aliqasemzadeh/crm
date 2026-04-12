@@ -17,8 +17,9 @@
             <flux:sidebar.item href="{{ route('panels.administrator.user-management.permission.index') }}" wire:navigate>{{ __('app.permissions') }}</flux:sidebar.item>
         </flux:sidebar.group>
         <flux:sidebar.item icon="megaphone" href="{{ route('panels.administrator.announcement.index') }}" wire:navigate>{{ __('app.announcements') }}</flux:sidebar.item>
-        <flux:sidebar.group expandable heading="{{ __('app.request_management') }}" class="grid" :expanded="request()->routeIs('panels.administrator.workspace.request-type.*')">
+        <flux:sidebar.group expandable heading="{{ __('app.request_management') }}" class="grid" :expanded="request()->routeIs('panels.administrator.workspace.request-type.*') || request()->routeIs('panels.workspace.purchase-request.*')">
             <flux:sidebar.item href="{{ route('panels.administrator.workspace.request-type.index') }}" wire:navigate>{{ __('app.request_types') }}</flux:sidebar.item>
+            <flux:sidebar.item href="{{ route('panels.workspace.purchase-request.index') }}" wire:navigate>{{ __('app.purchase_requests') }}</flux:sidebar.item>
         </flux:sidebar.group>
         <flux:sidebar.group expandable heading="{{ __('app.setting_management') }}" class="grid" :expanded="request()->routeIs('panels.administrator.setting-management.*')">
             <flux:sidebar.item href="{{ route('panels.administrator.setting-management.function.index') }}" wire:navigate>{{ __('app.functions') }}</flux:sidebar.item>

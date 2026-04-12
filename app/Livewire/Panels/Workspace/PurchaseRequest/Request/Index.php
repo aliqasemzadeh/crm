@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Panels\Workspace\PurchaseRequest;
+namespace App\Livewire\Panels\Workspace\Request;
 
 use App\Models\Workspace\PurchaseRequest;
 use Livewire\Attributes\Layout;
