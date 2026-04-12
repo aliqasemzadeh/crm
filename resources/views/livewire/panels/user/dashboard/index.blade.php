@@ -24,4 +24,5 @@
             </x-slot>
         </flux:callout>
     @endforeach
+
 </div>

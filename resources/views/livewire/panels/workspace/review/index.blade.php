@@ -30,7 +30,7 @@
                     <flux:table.cell>
                         <flux:avatar.group>
                             @foreach($task->users as $user)
-                                <flux:avatar circle size="xs" :name="$user->name" :tooltip="$user->name" />
+                                 <flux:avatar circle size="xs" src="{{ $user->getAvatarUrl() }}" :name="$user->name" :tooltip="$user->name" />
                             @endforeach
                         </flux:avatar.group>
                     </flux:table.cell>

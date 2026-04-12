@@ -30,6 +30,8 @@ class User extends Authenticatable
         'email',
         'mobile',
         'password',
+        'avatar',
+        'signature',
     ];
 
     /**
@@ -97,5 +99,22 @@ class User extends Authenticatable
         return $this->belongsToMany(Announcement::class)
             ->withPivot('viewed_at')
             ->withTimestamps();
+    }
+
+    public function getSignature()
+    {
+        $signatures = json_decode($this->signature, true);
+        if ($signatures && count($signatures) > 0) {
+            return asset('storage/' . $signatures[0]);
+        }
+        return null;
+    }
+
+    public function getAvatarUrl()
+    {
+        if ($this->avatar) {
+            return asset('storage/' . $this->avatar);
+        }
+        return null;
     }
 }
