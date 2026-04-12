@@ -109,6 +109,21 @@ return [
     // Roles & Permissions
     'roles_description' => 'نقش‌ها را جستجو و به کاربر اختصاص دهید یا حذف کنید.',
     'permissions_description' => 'مجوزها را جستجو و به کاربر اختصاص دهید یا حذف کنید.',
+
+    // Request Management
+    'request_management' => 'مدیریت درخواست‌ها',
+    'request_types' => 'انواع درخواست',
+    'request_types_description' => 'مدیریت و تعریف انواع درخواست‌های سیستم.',
+    'create_request_type' => 'ایجاد نوع درخواست',
+    'create_request_type_description' => 'برای ایجاد نوع درخواست جدید، اطلاعات زیر را تکمیل کنید.',
+    'edit_request_type' => 'ویرایش نوع درخواست',
+    'edit_request_type_description' => 'اطلاعات نوع درخواست را ویرایش و به‌روزرسانی کنید.',
+    'request_type_name' => 'نام (انگلیسی)',
+    'request_type_title' => 'عنوان (فارسی)',
+    'request_type_description' => 'توضیحات',
+    'request_type_schema' => 'ساختار (Schema)',
+    'request_type_is_active' => 'وضعیت فعال بودن',
+    'request_type_created_at' => 'تاریخ ایجاد',
     'are_you_sure' => 'آیا مطمئن هستید؟',
 
     // Permissions Create/Edit
