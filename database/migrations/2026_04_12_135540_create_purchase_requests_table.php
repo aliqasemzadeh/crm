@@ -13,6 +13,13 @@ return new class extends Migration
     {
         Schema::create('purchase_requests', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade')->comment('کاربر ثبت کننده');
+            $table->string('name')->comment('نام کالا');
+            $table->integer('quantity')->comment('تعداد');
+            $table->text('description')->comment('دلیل خرید یا توضیحات');
+            $table->decimal('price', 15, 2)->comment('قیمت تقریبی');
+            $table->text('supplier')->nullable()->comment('تامین کننده (اختیاری)');
+            $table->softDeletes();
             $table->timestamps();
         });
     }
