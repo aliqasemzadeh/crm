@@ -28,7 +28,6 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/administrator/setting-management/function/index', \App\Livewire\Panels\Administrator\SettingManagement\Function\Index::class)->name('panels.administrator.setting-management.function.index');
     Route::livewire('/panels/administrator/setting-management/option/index', \App\Livewire\Panels\Administrator\SettingManagement\Option\Index::class)->name('panels.administrator.setting-management.option.index');
     Route::livewire('/panels/administrator/announcement/index', \App\Livewire\Panels\Administrator\Announcement\Index::class)->name('panels.administrator.announcement.index');
-    Route::livewire('/panels/administrator/workspace/request-type/index', \App\Livewire\Panels\Administrator\Workspace\RequestType\Index::class)->name('panels.administrator.workspace.request-type.index');
 
     Route::livewire('/panels/service-center/dashboard/index', \App\Livewire\Panels\ServiceCenter\Dashboard\Index::class)->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');
@@ -36,6 +35,7 @@ Route::middleware(['auth'])->group( function () {
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
     Route::livewire('/panels/workspace/task/index', \App\Livewire\Panels\Workspace\Task\Index::class)->name('panels.workspace.task.index');
+    Route::livewire('/panels/workspace/purchase-request/index', \App\Livewire\Panels\Workspace\PurchaseRequest\Index::class)->name('panels.workspace.purchase-request.index');
     Route::livewire('/panels/workspace/review/index', \App\Livewire\Panels\Workspace\Review\Index::class)->name('panels.workspace.review.index');
     Route::livewire('/panels/workspace/task/create', \App\Livewire\Panels\Workspace\Task\Create::class)->name('panels.workspace.task.create');
     Route::livewire('/panels/workspace/task/{task}/edit', \App\Livewire\Panels\Workspace\Task\Edit::class)->name('panels.workspace.task.edit');
