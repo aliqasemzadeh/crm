@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
 
             // شناسه داخلی نوع درخواست (purchase, loan, document)
-            $table->string('name')->unique();
+            $table->string('name', 100)->unique();
 
             // عنوان نمایشی
             $table->string('title');
