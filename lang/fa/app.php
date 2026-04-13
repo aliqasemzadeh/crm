@@ -1179,4 +1179,6 @@ return [
     'site_stock' => 'موجودی سایت',
     'sync_titles' => 'یکسان سازی عنوان ها',
     'sync_titles_confirm' => 'آیا از یکسان سازی عنوان ها اطمینان دارید؟',
+    'last_purchase_price' => 'آخرین قیمت خرید',
+    'last_sale_price' => 'آخرین قیمت فروش',
 ];

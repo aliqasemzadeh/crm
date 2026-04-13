@@ -16,6 +16,8 @@
             <flux:table.column>{{ __('app.action') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.balance') }}</flux:table.column>
+            <flux:table.column>{{ __('app.last_purchase_price') }}</flux:table.column>
+            <flux:table.column>{{ __('app.last_sale_price') }}</flux:table.column>
             <flux:table.column>{{ __('app.fee') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
@@ -32,6 +34,12 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 {{ number_format($lastStockSummary->Quantity) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ number_format($item->getLastPurchasePrice()) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                {{ number_format($item->getLastSalePrice()) }}
                             </flux:table.cell>
                             <flux:table.cell>
                                 <livewire:panels.accounting.price-note.item-fee :itemId="$item->ItemID" />
