@@ -13,7 +13,13 @@ return new class extends Migration
     {
         Schema::create('item_price_fetchers', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('item_id');
+            $table->string('fetcher');
+            $table->string('link');
+            $table->string('price')->nullable();
+            $table->text('message')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
