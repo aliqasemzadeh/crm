@@ -170,6 +170,11 @@ return [
 
 
         'accounting_profit_index' => 'مشاهده سود',
+
+        'accounting_price_note_index' => 'مشاهده سود',
+        'accounting_price_note_edit' => 'ویرایش اعلام قیمت',
+        'accounting_price_note_site_edit' => 'ویرایش اعلان قیمت سایت',
+        'accounting_price_note_fetchers' => 'دریافت کننده قیمت',
     ],
 
     'workspace' => [
