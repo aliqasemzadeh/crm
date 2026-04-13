@@ -33,6 +33,7 @@
                     <flux:input wire:model="siteStock" label="{{ __('app.site_stock') }}" type="number" />
                 </div>
                 <flux:button type="submit" variant="primary">{{ __('app.save') }}</flux:button>
+
             </div>
         </form>
     @endif

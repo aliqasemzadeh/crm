@@ -24,11 +24,6 @@ class ItemPriceNoteFeeRule implements ValidationRule
     {
         $value = (int) str_replace(',', '', $value);
 
-        // If it is site price validation, convert from Toman to Rial
-        if ($attribute === 'siteFee') {
-            $value *= 10;
-        }
-
         $item = Item::find($this->itemId);
 
         if (! $item) {
