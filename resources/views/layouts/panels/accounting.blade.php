@@ -97,6 +97,13 @@
             {{ __('app.payment_cheques') }}
         </flux:sidebar.item>
         @endcan
+
+
+                <flux:sidebar.item icon="chart-candlestick"
+                                   href="{{ route('panels.accounting.price-note.index') }}"
+                                   wire:navigate>
+                    {{ __('app.price_notes') }}
+                </flux:sidebar.item>
     </flux:sidebar.nav>
 
 

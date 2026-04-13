@@ -44,6 +44,7 @@ return [
     'crm' => 'ارتباط با مشتریان',
     'administrator' => 'مدیریت',
     'search_placeholder' => 'جستجو...',
+    'saved_successfully' => 'با موفقیت ذخیره شد.',
     'catalog' => 'کاتالوگ',
     'configuration' => 'پیکربندی',
 
@@ -1171,4 +1172,5 @@ return [
     'status_returned' => 'برگشت داده شده',
     'status_discarded' => 'انصراف داده شده',
     'not_specified' => 'نامشخص',
+    'price_notes' => 'قیمت گذاری',
 ];

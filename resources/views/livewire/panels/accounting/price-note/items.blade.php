@@ -34,14 +34,7 @@
                                 {{ number_format($lastStockSummary->Quantity) }}
                             </flux:table.cell>
                             <flux:table.cell>
-
-                                @if($priceNote = \App\Models\Sepidar\SLS\PriceNoteItem::where('ItemRef', $item->ItemID)->first())
-                                    <flux:input wire:model="" mask:dynamic="$money($input)" value="{{ $priceNote->Fee }}" />
-                                @else
-                                    <flux:input wire:model="" mask:dynamic="$money($input)" />
-                                @endif
-
-
+                                <livewire:panels.accounting.price-note.item-fee :itemId="$item->ItemID" />
                             </flux:table.cell>
                         </flux:table.row>
                     @endif
