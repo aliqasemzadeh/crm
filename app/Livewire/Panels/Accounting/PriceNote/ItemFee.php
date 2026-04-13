@@ -4,6 +4,7 @@ namespace App\Livewire\Panels\Accounting\PriceNote;
 
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\SLS\PriceNoteItem;
+use App\Models\SetareganCo\ProductPrice;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -14,12 +15,31 @@ class ItemFee extends Component
     public $priceNoteItemId = 0;
     public $fee = 0;
 
+    public $siteFee = 0;
+    public $siteStock = 0;
+    public $productPriceId = 0;
+
     public function mount($itemId)
     {
         $this->itemId = $itemId;
         if ($this->priceNote) {
             $this->priceNoteItemId = $this->priceNote->PriceNoteItemID;
             $this->fee = $this->priceNote->Fee;
+        }
+
+        $this->loadSiteData();
+    }
+
+    public function loadSiteData()
+    {
+        $item = Item::find($this->itemId);
+        if ($item && $item->product) {
+            $productPrice = $item->productPrices()->first();
+            if ($productPrice) {
+                $this->productPriceId = $productPrice->Id;
+                $this->siteFee = (int) $productPrice->Price;
+                $this->siteStock = (int) $productPrice->Quantity;
+            }
         }
     }
 
@@ -67,6 +87,36 @@ class ItemFee extends Component
         $itemName = Item::where('ItemID', $this->itemId)->value('Title') ?? __('app.not_specified');
 
         Flux::toast(__('app.saved_successfully', ['name' => $itemName]));
+    }
+
+    public function saveSite()
+    {
+        if ($this->productPriceId == 0) {
+            return;
+        }
+
+        $productPrice = ProductPrice::find($this->productPriceId);
+        if ($productPrice) {
+            $productPrice->update([
+                'Price' => $this->siteFee,
+                'Quantity' => $this->siteStock,
+                'PriceChangeDate' => now(),
+            ]);
+
+            Flux::toast(__('app.saved_successfully', ['name' => __('app.site_price')]));
+        }
+    }
+
+    public function syncTitle()
+    {
+        $item = Item::find($this->itemId);
+        if ($item && $item->product) {
+            $item->product->update([
+                'Name' => $item->Title,
+            ]);
+
+            Flux::toast(__('app.saved_successfully', ['name' => __('app.title')]));
+        }
     }
 
     public function render()
