@@ -101,6 +101,7 @@
             @can('accounting_price_note_index')
                 <flux:sidebar.item icon="chart-candlestick"
                                    href="{{ route('panels.accounting.price-note.index') }}"
+                                   :current="request()->routeIs('panels.accounting.price-note.*')"
                                    wire:navigate>
                     {{ __('app.price_notes') }}
                 </flux:sidebar.item>

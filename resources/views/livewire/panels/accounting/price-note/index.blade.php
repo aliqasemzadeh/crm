@@ -5,12 +5,12 @@
     <livewire:panels.accounting.invoice.view />
     <livewire:panels.accounting.inventory-receipt.view />
 
-    <div class="grid grid-cols-1  md:grid-cols-6 gap-4">
+    <div class="flex overflow-x-auto md:grid md:grid-cols-6 gap-4 pb-2 scrollbar-hide">
         @foreach($this->groupings as $groupingItem)
             <flux:button
                 variant="primary"
                 :color="$groupingItem->GroupingID == $grouping->GroupingID ? 'green' : ''"
-                class="w-full"
+                class="w-full shrink-0 md:shrink"
                 wire:navigate
                 href="{{ route('panels.accounting.price-note.index', ['groupingId' => $groupingItem->GroupingID]) }}"
             >
