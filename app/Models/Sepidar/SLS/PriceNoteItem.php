@@ -11,6 +11,7 @@ class PriceNoteItem extends Model
     public $table = 'SLS.PriceNoteItem';
     public $connection = 'sqlsrv';
     public $primaryKey = 'PriceNoteItemID';
+    public $incrementing = false;
 
     public $timestamps = false;
     public $fillable = [
