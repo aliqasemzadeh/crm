@@ -30,4 +30,12 @@ class ProductPrice extends Model
     {
         return $this->belongsTo(Product::class, 'ProductId', 'Id');
     }
+
+    /**
+     * Get the item associated with the product price.
+     */
+    public function item()
+    {
+        return $this->belongsTo(\App\Models\Sepidar\INV\Item::class, 'ProductId', 'IranCode');
+    }
 }
