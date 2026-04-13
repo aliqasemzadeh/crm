@@ -16,6 +16,7 @@
             <flux:table.column>{{ __('app.action') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.balance') }}</flux:table.column>
+            <flux:table.column>{{ __('app.fee') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
             @foreach($this->items as $item)
@@ -30,7 +31,17 @@
                                 {{ $item->Title }}
                             </flux:table.cell>
                             <flux:table.cell>
-                                {{ $lastStockSummary->Quantity }}-21221
+                                {{ number_format($lastStockSummary->Quantity) }}
+                            </flux:table.cell>
+                            <flux:table.cell>
+
+                                @if($priceNote = \App\Models\Sepidar\SLS\PriceNoteItem::where('ItemRef', $item->ItemID)->first())
+                                    <flux:input wire:model="" mask:dynamic="$money($input)" value="{{ $priceNote->Fee }}" />
+                                @else
+                                    <flux:input wire:model="" mask:dynamic="$money($input)" />
+                                @endif
+
+
                             </flux:table.cell>
                         </flux:table.row>
                     @endif
