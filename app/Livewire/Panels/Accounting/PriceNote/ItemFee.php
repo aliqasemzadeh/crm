@@ -24,6 +24,14 @@ class ItemFee extends Component
 
     public function save()
     {
+        $this->validate([
+            'fee' => 'required|min:1',
+        ], [], [
+            'fee' => __('app.fee'),
+        ]);
+
+        $fee = str_replace(',', '', $this->fee);
+
         if ($this->priceNoteItemId == 0) {
             $priceNoteItem = PriceNoteItem::create([
                 'PriceNoteItemID' => 1,
@@ -31,7 +39,7 @@ class ItemFee extends Component
                 'SaleTypeRef' => 1,
                 'ItemRef' => $this->itemId,
                 'UnitRef' => 1,
-                'Fee' => $this->fee,
+                'Fee' => $fee,
                 'CurrencyRef' => 1,
                 'CanChangeInvoiceFee' => 1,
                 'CanChangeInvoiceDiscount' => 1,
@@ -43,7 +51,7 @@ class ItemFee extends Component
             $priceNoteItem = PriceNoteItem::find($this->priceNoteItemId);
             if ($priceNoteItem) {
                 $priceNoteItem->update([
-                    'Fee' => $this->fee,
+                    'Fee' => $fee,
                 ]);
             }
         }
