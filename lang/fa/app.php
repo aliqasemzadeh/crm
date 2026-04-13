@@ -46,6 +46,8 @@ return [
     'search_placeholder' => 'جستجو...',
     'fee' => 'مبلغ',
     'saved_successfully' => ':name با موفقیت ذخیره شد.',
+    'price_less_than_last_purchase' => 'قیمت نباید از قیمت آخرین خرید (:price) کمتر باشد.',
+    'price_more_than_last_sale_limit' => 'قیمت نباید بیش از ۳۰ درصد با آخرین قیمت فروش (:price) اختلاف داشته باشد.',
     'catalog' => 'کاتالوگ',
     'configuration' => 'پیکربندی',
 
