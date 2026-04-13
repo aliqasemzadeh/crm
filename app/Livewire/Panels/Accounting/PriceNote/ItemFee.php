@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Accounting\PriceNote;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\SLS\PriceNoteItem;
 use App\Models\SetareganCo\ProductPrice;
+use App\Rules\ItemPriceNoteFeeRule;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -18,6 +19,20 @@ class ItemFee extends Component
     public $siteFee = 0;
     public $siteStock = 0;
     public $productPriceId = 0;
+
+    public $siteSaved = false;
+    public $feeSaved = false;
+
+    public function updated($propertyName)
+    {
+        if ($propertyName === 'siteFee' || $propertyName === 'siteStock') {
+            $this->siteSaved = false;
+        }
+
+        if ($propertyName === 'fee') {
+            $this->feeSaved = false;
+        }
+    }
 
     public function mount($itemId)
     {
@@ -52,7 +67,7 @@ class ItemFee extends Component
     public function save()
     {
         $this->validate([
-            'fee' => 'required|min:1',
+            'fee' => ['required', 'min:1', new ItemPriceNoteFeeRule($this->itemId)],
         ], [], [
             'fee' => __('app.fee'),
         ]);
@@ -67,7 +82,7 @@ class ItemFee extends Component
                 'SaleTypeRef' => 1,
                 'ItemRef' => $this->itemId,
                 'UnitRef' => 1,
-                'Fee' => $fee,
+                'Fee' => (int) $fee,
                 'CurrencyRef' => 1,
                 'Discount' => 0,
                 'CanChangeInvoiceFee' => 1,
@@ -80,11 +95,13 @@ class ItemFee extends Component
             $priceNoteItem = PriceNoteItem::find($this->priceNoteItemId);
             if ($priceNoteItem) {
                 $priceNoteItem->update([
-                    'Fee' => $fee,
+                    'Fee' => (int) $fee,
                     'Discount' => 0,
                 ]);
             }
         }
+
+        $this->feeSaved = true;
 
         $itemName = Item::where('ItemID', $this->itemId)->value('Title') ?? __('app.not_specified');
 
@@ -98,7 +115,7 @@ class ItemFee extends Component
         }
 
         $this->validate([
-            'siteFee' => 'required',
+            'siteFee' => ['required', new ItemPriceNoteFeeRule($this->itemId)],
         ], [], [
             'siteFee' => __('app.site_price'),
         ]);
@@ -112,6 +129,8 @@ class ItemFee extends Component
                 'Quantity' => $this->siteStock,
                 'PriceChangeDate' => now(),
             ]);
+
+            $this->siteSaved = true;
 
             Flux::toast(__('app.saved_successfully', ['name' => __('app.site_price')]));
         }
