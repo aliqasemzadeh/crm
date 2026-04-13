@@ -3,6 +3,7 @@
 namespace App\Jobs\Sepidar;
 
 use App\Jobs\Sepidar\Notification\InvoiceItemNotificationJob;
+use App\Jobs\SetareganCo\InvoiceItemCheckJob;
 use App\Models\Sepidar\SLS\Invoice;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -35,6 +36,7 @@ class CheckInvoiceJob implements ShouldQueue
             if ($lastStockSummary) {
                 if ($lastStockSummary->Quantity == 0) {
                     InvoiceItemNotificationJob::dispatch($item->ItemRef);
+                    InvoiceItemCheckJob::dispatch($item->ItemRef);
                 }
             }
         }
