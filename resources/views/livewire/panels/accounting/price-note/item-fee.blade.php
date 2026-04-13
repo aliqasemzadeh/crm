@@ -1,4 +1,6 @@
 <div class="space-y-4">
+
+    @can('accounting_price_note_edit')
     <form wire:submit="save">
         <div class="flex items-end gap-2">
             <div class="flex-1">
@@ -14,7 +16,8 @@
             <flux:button type="submit" variant="primary">{{ __('app.save') }}</flux:button>
         </div>
     </form>
-
+    @endcan
+    @can('accounting_price_note_site_edit')
     @if($productPriceId)
         <hr class="border-gray-200 dark:border-white/10" />
 
@@ -37,4 +40,5 @@
             </div>
         </form>
     @endif
+    @endcan
 </div>
