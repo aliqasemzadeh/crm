@@ -45,7 +45,7 @@ return [
     'administrator' => 'مدیریت',
     'search_placeholder' => 'جستجو...',
     'fee' => 'مبلغ',
-    'saved_successfully' => 'با موفقیت ذخیره شد.',
+    'saved_successfully' => ':name با موفقیت ذخیره شد.',
     'catalog' => 'کاتالوگ',
     'configuration' => 'پیکربندی',
 

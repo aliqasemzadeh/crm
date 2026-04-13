@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Accounting\PriceNote;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\SLS\PriceNoteItem;
 use Flux\Flux;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class ItemFee extends Component
@@ -12,14 +13,20 @@ class ItemFee extends Component
     public $itemId;
     public $priceNoteItemId = 0;
     public $fee = 0;
+
     public function mount($itemId)
     {
         $this->itemId = $itemId;
-        $priceNote = PriceNoteItem::where('ItemRef', $itemId)->first();
-        if ($priceNote) {
-            $this->priceNoteItemId = $priceNote->PriceNoteItemID;
-            $this->fee = $priceNote->Fee;
+        if ($this->priceNote) {
+            $this->priceNoteItemId = $this->priceNote->PriceNoteItemID;
+            $this->fee = $this->priceNote->Fee;
         }
+    }
+
+    #[Computed]
+    public function priceNote()
+    {
+        return PriceNoteItem::where('ItemRef', $this->itemId)->first();
     }
 
     public function save()
@@ -33,8 +40,9 @@ class ItemFee extends Component
         $fee = str_replace(',', '', $this->fee);
 
         if ($this->priceNoteItemId == 0) {
+            $lastId = PriceNoteItem::max('PriceNoteItemID') ?? 0;
             $priceNoteItem = PriceNoteItem::create([
-                'PriceNoteItemID' => 1,
+                'PriceNoteItemID' => $lastId + 1,
                 'PriceNoteRef' => 1,
                 'SaleTypeRef' => 1,
                 'ItemRef' => $this->itemId,
@@ -56,7 +64,9 @@ class ItemFee extends Component
             }
         }
 
-        Flux::toast(__('app.saved_successfully'));
+        $itemName = Item::where('ItemID', $this->itemId)->value('Title') ?? __('app.not_specified');
+
+        Flux::toast(__('app.saved_successfully', ['name' => $itemName]));
     }
 
     public function render()
