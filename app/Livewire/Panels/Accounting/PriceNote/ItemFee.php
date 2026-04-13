@@ -69,6 +69,7 @@ class ItemFee extends Component
                 'UnitRef' => 1,
                 'Fee' => $fee,
                 'CurrencyRef' => 1,
+                'Discount' => 0,
                 'CanChangeInvoiceFee' => 1,
                 'CanChangeInvoiceDiscount' => 1,
                 'AdditionRate' => 0,
@@ -80,6 +81,7 @@ class ItemFee extends Component
             if ($priceNoteItem) {
                 $priceNoteItem->update([
                     'Fee' => $fee,
+                    'Discount' => 0,
                 ]);
             }
         }
@@ -95,10 +97,18 @@ class ItemFee extends Component
             return;
         }
 
+        $this->validate([
+            'siteFee' => 'required',
+        ], [], [
+            'siteFee' => __('app.site_price'),
+        ]);
+
+        $siteFee = str_replace(',', '', $this->siteFee);
+
         $productPrice = ProductPrice::find($this->productPriceId);
         if ($productPrice) {
             $productPrice->update([
-                'Price' => $this->siteFee,
+                'Price' => $siteFee,
                 'Quantity' => $this->siteStock,
                 'PriceChangeDate' => now(),
             ]);
