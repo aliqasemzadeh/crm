@@ -1174,4 +1174,8 @@ return [
     'status_discarded' => 'انصراف داده شده',
     'not_specified' => 'نامشخص',
     'price_notes' => 'قیمت گذاری',
+    'site_price' => 'قیمت سایت',
+    'site_stock' => 'موجودی سایت',
+    'sync_titles' => 'یکسان سازی عنوان ها',
+    'sync_titles_confirm' => 'آیا از یکسان سازی عنوان ها اطمینان دارید؟',
 ];
