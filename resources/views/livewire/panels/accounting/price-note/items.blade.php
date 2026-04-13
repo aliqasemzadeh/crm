@@ -34,7 +34,6 @@
                                 {{ number_format($lastStockSummary->Quantity) }}
                             </flux:table.cell>
                             <flux:table.cell>
-                                {{ $item->IranCode ?? "NoConnected" }}
                                 <livewire:panels.accounting.price-note.item-fee :itemId="$item->ItemID" />
                             </flux:table.cell>
                         </flux:table.row>
