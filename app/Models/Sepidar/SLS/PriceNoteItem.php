@@ -12,6 +12,25 @@ class PriceNoteItem extends Model
     public $connection = 'sqlsrv';
     public $primaryKey = 'PriceNoteItemID';
 
+    public $timestamps = false;
+    public $fillable = [
+        'PriceNoteItemID',
+        'PriceNoteRef',
+        'SaleTypeRef',
+        'ItemRef',
+        'UnitRef',
+        'Fee',
+        'CurrencyRef',
+        'Discount',
+        'CanChangeInvoiceFee',
+        'CanChangeInvoiceDiscount',
+        'AdditionRate',
+        'TracingRef',
+        'CustomerGroupingRef',
+        'LowerMargin',
+        'UpperMargin',
+        'EnforceFeeMargins',
+    ];
 
     public function item(): BelongsTo
     {
