@@ -1,15 +1,13 @@
 <div>
     <flux:table>
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column class="w-1 whitespace-nowrap"></flux:table.column>
-            <flux:table.column colspan="6" class="bg-white dark:bg-zinc-900">
-                <div class="flex flex-col gap-1 pe-2 items-end">
+            <flux:table.column colspan="7" class="bg-white dark:bg-zinc-900">
                     <flux:input
                         size="sm"
+                        class="m-3"
                         placeholder="{{ __('app.search_placeholder') }}"
                         wire:model.live="search"
                     />
-                </div>
             </flux:table.column>
         </flux:table.columns>
         <flux:table.columns sticky>
