@@ -34,4 +34,14 @@ class Item extends Model
     {
         return $this->belongsTo(User::class, 'Creator', 'UserID');
     }
+
+    public function product(): HasOne
+    {
+        return $this->hasOne(\App\Models\SetareganCo\Product::class, 'Id', 'IranCode');
+    }
+
+    public function productPrices(): HasMany
+    {
+        return $this->hasMany(\App\Models\SetareganCo\ProductPrice::class, 'ProductId', 'IranCode');
+    }
 }

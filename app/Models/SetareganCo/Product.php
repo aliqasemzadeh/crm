@@ -45,4 +45,12 @@ class Product extends Model
     {
         return $this->hasMany(ProductPrice::class, 'ProductId', 'Id');
     }
+
+    /**
+     * Get the item associated with the product.
+     */
+    public function item()
+    {
+        return $this->belongsTo(\App\Models\Sepidar\INV\Item::class, 'Id', 'IranCode');
+    }
 }
