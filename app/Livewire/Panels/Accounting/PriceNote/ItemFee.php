@@ -52,7 +52,7 @@ class ItemFee extends Component
             $productPrice = $item->productPrices()->first();
             if ($productPrice) {
                 $this->productPriceId = $productPrice->Id;
-                $this->siteFee = (int) $productPrice->Price / 10;
+                $this->siteFee = (int) $productPrice->Price * 10;
                 $this->siteStock = (int) $productPrice->Quantity;
             }
         }
@@ -120,7 +120,7 @@ class ItemFee extends Component
             'siteFee' => __('app.site_price'),
         ]);
 
-        $siteFee = (int) str_replace(',', '', $this->siteFee) * 10;
+        $siteFee = (int) str_replace(',', '', $this->siteFee) / 10;
 
         $productPrice = ProductPrice::find($this->productPriceId);
         if ($productPrice) {
@@ -129,6 +129,16 @@ class ItemFee extends Component
                 'Quantity' => $this->siteStock,
                 'PriceChangeDate' => now(),
             ]);
+
+            if ((int) $this->siteStock === 0) {
+                $productPrice->product()->update([
+                    'MinPrice' => null,
+                ]);
+            } else {
+                $productPrice->product()->update([
+                    'MinPrice' => $siteFee,
+                ]);
+            }
 
             $this->siteSaved = true;
 

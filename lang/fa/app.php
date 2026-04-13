@@ -1183,4 +1183,5 @@ return [
     'sync_titles_confirm' => 'آیا از یکسان سازی عنوان ها اطمینان دارید؟',
     'last_purchase_price' => 'آخرین قیمت خرید',
     'last_sale_price' => 'آخرین قیمت فروش',
+    'website' => 'سایت',
 ];
