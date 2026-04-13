@@ -23,6 +23,12 @@ class ItemPriceNoteFeeRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         $value = (int) str_replace(',', '', $value);
+
+        // If it is site price validation, convert from Toman to Rial
+        if ($attribute === 'siteFee') {
+            $value *= 10;
+        }
+
         $item = Item::find($this->itemId);
 
         if (! $item) {
@@ -37,9 +43,9 @@ class ItemPriceNoteFeeRule implements ValidationRule
         }
 
         if ($lastSalePrice > 0) {
-            $maxPrice = $lastSalePrice * 1.3;
-            if ($value > $maxPrice) {
-                $fail(__('app.price_more_than_last_sale_limit', ['price' => number_format($lastSalePrice)]));
+            $minPrice = $lastSalePrice * 0.7;
+            if ($value < $minPrice) {
+                $fail(__('app.price_less_than_last_sale_limit', ['price' => number_format($lastSalePrice)]));
             }
         }
     }
