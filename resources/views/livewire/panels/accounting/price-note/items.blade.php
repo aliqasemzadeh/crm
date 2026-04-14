@@ -27,7 +27,7 @@
                                 @if($item->IranCode)
                                 <flux:button size="xs" target="_blank" type="link" href="https://setaregan.co/Product/{{ $item->IranCode }}"  variant="filled" color="rose">{{ __('app.website') }}</flux:button>
                                 @else
-                                <flux:button size="xs" variant="filled" color="red" wire:click="$dispatch('panels.accounting.price-note.edit-site.assign-data', { id: '{{ $item->ItemID }}' })">{{ __('app.irancode_not_set') }}</flux:button>
+                                <flux:button size="xs" variant="danger" wire:click="$dispatch('panels.accounting.price-note.edit-site.assign-data', { id: '{{ $item->ItemID }}' })">{{ __('app.irancode_not_set') }}</flux:button>
                                 @endif
                                     @can('accounting_price_note_fetchers')
                                     <flux:button size="xs" variant="primary" color="yellow" wire:click="$dispatch('panels.accounting.price-note.fetchers.assign-data', { id: '{{ $item->ItemID }}' })">{{ __('app.get_price') }}</flux:button>
