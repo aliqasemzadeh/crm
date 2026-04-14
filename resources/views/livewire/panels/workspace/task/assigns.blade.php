@@ -16,9 +16,16 @@
                     <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-200 dark:divide-zinc-700">
                         @foreach($users as $user)
                             <div class="p-4 flex items-center justify-between">
-                                <div>
-                                    <div class="font-medium">{{ $user->name }}</div>
-                                    <div class="text-xs text-zinc-500">{{ $user->mobile }}</div>
+                                <div class="flex items-center gap-3">
+                                    @if($user->avatar)
+                                        <flux:avatar src="{{ $user->getAvatarUrl() }}" size="sm" />
+                                    @else
+                                        <flux:avatar name="{{ $user->name }}" color="auto" size="sm" />
+                                    @endif
+                                    <div>
+                                        <div class="font-medium text-sm text-zinc-800 dark:text-white">{{ $user->name }}</div>
+                                        <div class="text-xs text-zinc-500">{{ $user->mobile }}</div>
+                                    </div>
                                 </div>
                                 <div class="flex gap-1">
                                     <flux:button size="xs" wire:click="assign({{ $user->id }}, 'assignee')">{{ __('app.task.assignee') }}</flux:button>
@@ -41,13 +48,20 @@
                 <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-200 dark:divide-zinc-700">
                     @forelse($assignedUsers as $user)
                         <div class="p-4 flex items-center justify-between">
-                            <div>
-                                <div class="font-medium">{{ $user->name }}</div>
-                                <div class="text-xs text-zinc-500">
-                                    <flux:badge size="sm" variant="outline">
-                                        {{ __('app.task.' . $user->pivot->role) }}
-                                    </flux:badge>
-                                    {{ $user->mobile }}
+                            <div class="flex items-center gap-3">
+                                @if($user->avatar)
+                                    <flux:avatar src="{{ $user->getAvatarUrl() }}" size="sm" />
+                                @else
+                                    <flux:avatar name="{{ $user->name }}" color="auto" size="sm" />
+                                @endif
+                                <div>
+                                    <div class="font-medium text-sm text-zinc-800 dark:text-white">{{ $user->name }}</div>
+                                    <div class="text-xs text-zinc-500">
+                                        <flux:badge size="sm" variant="outline">
+                                            {{ __('app.task.' . $user->pivot->role) }}
+                                        </flux:badge>
+                                        {{ $user->mobile }}
+                                    </div>
                                 </div>
                             </div>
                             <flux:button icon="trash" size="sm" variant="ghost" color="red" wire:click="delete({{ $user->id }}, '{{ $user->pivot->role }}')" wire:confirm="{{ __('app.are_you_sure') }}" />

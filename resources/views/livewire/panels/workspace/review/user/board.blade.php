@@ -2,9 +2,16 @@
     <div class="flex justify-between items-center">
         <div class="flex items-center gap-4">
             <flux:button variant="subtle" icon="chevron-right" href="{{ route('panels.workspace.review.user.index') }}" />
-            <div>
-                <flux:heading size="xl">{{ __('app.workspace_review.user_board') }}: {{ $user->name }}</flux:heading>
-                <flux:subheading size="sm">{{ $user->email }}</flux:subheading>
+            <div class="flex items-center gap-3">
+                @if($user->avatar)
+                    <flux:avatar src="{{ $user->getAvatarUrl() }}" size="lg" />
+                @else
+                    <flux:avatar name="{{ $user->name }}" color="auto" size="lg" />
+                @endif
+                <div>
+                    <flux:heading size="xl">{{ __('app.workspace_review.user_board') }}: {{ $user->name }}</flux:heading>
+                    <flux:subheading size="sm">{{ $user->email }}</flux:subheading>
+                </div>
             </div>
         </div>
     </div>

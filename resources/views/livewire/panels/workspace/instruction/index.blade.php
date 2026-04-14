@@ -32,8 +32,12 @@
                             }">{{ __('app.instruction_status.' . $instruction->status) }}</flux:badge>
                         </div>
                         <flux:subheading>{!! $instruction->body !!}</flux:subheading>
-                        <div class="text-xs text-zinc-500 flex items-center gap-1">
-                            <flux:icon.user variant="micro" />
+                        <div class="text-xs text-zinc-500 flex items-center gap-2">
+                            @if($instruction->user?->avatar)
+                                <flux:avatar src="{{ $instruction->user->getAvatarUrl() }}" size="xs" />
+                            @else
+                                <flux:avatar name="{{ $instruction->user?->name }}" color="auto" size="xs" />
+                            @endif
                             {{ $instruction->user->name }}
                             <span class="mx-1">•</span>
                             <flux:icon.calendar variant="micro" />

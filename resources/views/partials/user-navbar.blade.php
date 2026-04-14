@@ -4,6 +4,7 @@
     <flux:spacer />
 
     <flux:dropdown position="top" align="start">
+
         @auth
             @if (\Illuminate\Support\Facades\Auth::user()->avatar)
                 <flux:sidebar.profile src="{{ \Illuminate\Support\Facades\Auth::user()->getAvatarUrl() }}" name="{{ auth()->user()->name ?? __('app.no_name') }}" size="xs" />
