@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Accounting\PriceNote;
 use App\Models\Sepidar\GNR\Grouping;
 use App\Models\Sepidar\INV\Item;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Illuminate\Support\Facades\Cache;
 
@@ -12,6 +13,13 @@ class Items extends Component
 {
     public string $search = '';
     public Grouping $grouping;
+
+    #[On('panels.accounting.price-note.items.refresh')]
+    public function refresh(): void
+    {
+        Cache::forget("items_by_grouping_{$this->grouping->GroupingID}");
+        $this->render();
+    }
 
     public function mount(int $groupingId): void
     {

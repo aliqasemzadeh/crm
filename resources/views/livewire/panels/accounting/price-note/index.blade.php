@@ -1,6 +1,7 @@
 <div>
     <livewire:panels.accounting.grouping.item.invoice />
     <livewire:panels.accounting.price-note.fetchers />
+    <livewire:panels.accounting.price-note.edit-site />
     <livewire:panels.accounting.grouping.item.receipt />
     <livewire:panels.accounting.invoice.view />
     <livewire:panels.accounting.inventory-receipt.view />
