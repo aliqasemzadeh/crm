@@ -15,6 +15,9 @@
         "vite": "^7.0.7"
     },
     "dependencies": {
+        "jalali-moment": "^3.3.11",
+        "persian-date": "^1.1.0",
+        "persian-datepicker": "^1.2.0",
         "vazirmatn": "^33.0.3"
     }
 }
