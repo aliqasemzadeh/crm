@@ -1,6 +1,10 @@
 <flux:dropdown position="top" align="start" class="max-lg:hidden">
     @auth
-    <flux:sidebar.profile name="{{ \Illuminate\Support\Facades\Auth::user()->name ?? \Illuminate\Support\Facades\Auth::mobile() }}" />
+        @if (\Illuminate\Support\Facades\Auth::user()->avatar)
+            <flux:sidebar.profile src="{{ \Illuminate\Support\Facades\Auth::user()->getAvatarUrl() }}" name="{{ auth()->user()->name ?? __('app.no_name') }}" size="xs" />
+        @else
+            <flux:sidebar.profile name="{{ auth()->user()->name ?? __('app.no_name') }}" color="auto" size="xs" />
+        @endif
     @endauth
 
     <flux:menu>

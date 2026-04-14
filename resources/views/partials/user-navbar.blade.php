@@ -5,7 +5,11 @@
 
     <flux:dropdown position="top" align="start">
         @auth
-            <flux:sidebar.profile name="{{ auth()->user()->name ?? __('app.no_name') }}" />
+            @if (\Illuminate\Support\Facades\Auth::user()->avatar)
+                <flux:sidebar.profile src="{{ \Illuminate\Support\Facades\Auth::user()->getAvatarUrl() }}" name="{{ auth()->user()->name ?? __('app.no_name') }}" size="xs" />
+            @else
+                <flux:sidebar.profile name="{{ auth()->user()->name ?? __('app.no_name') }}" color="auto" size="xs" />
+            @endif
         @endauth
 
         @guest
