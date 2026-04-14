@@ -42,7 +42,12 @@
                             @if($file->file_description)
                                 <span class="text-xs text-zinc-500 truncate">{{ $file->file_description }}</span>
                             @endif
-                            <div class="text-[10px] text-zinc-400 flex gap-2">
+                            <div class="text-[10px] text-zinc-400 flex items-center gap-2">
+                                @if($file->user?->avatar)
+                                    <flux:avatar src="{{ $file->user->getAvatarUrl() }}" size="xs" class="size-4" />
+                                @else
+                                    <flux:avatar name="{{ $file->user?->name }}" color="auto" size="xs" class="size-4" />
+                                @endif
                                 <span>{{ $file->user->name }}</span>
                                 <span>{{ \Morilog\Jalali\Jalalian::fromDateTime($file->created_at)->format('Y/m/d H:i') }}</span>
                             </div>

@@ -16,7 +16,14 @@
             <flux:table.rows>
                 @forelse ($this->viewedUsers as $user)
                     <flux:table.row :key="$user->id">
-                        <flux:table.cell>{{ $user->name }}</flux:table.cell>
+                        <flux:table.cell class="flex items-center gap-3">
+                            @if($user->avatar)
+                                <flux:avatar src="{{ $user->getAvatarUrl() }}" size="xs" />
+                            @else
+                                <flux:avatar name="{{ $user->name }}" color="auto" size="xs" />
+                            @endif
+                            {{ $user->name }}
+                        </flux:table.cell>
                         <flux:table.cell>{{ $user->mobile }}</flux:table.cell>
                         <flux:table.cell>{{ $user->pivot->viewed_at }}</flux:table.cell>
                     </flux:table.row>

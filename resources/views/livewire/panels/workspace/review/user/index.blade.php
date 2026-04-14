@@ -10,7 +10,11 @@
         @foreach($users as $user)
             <flux:card class="flex flex-col justify-between">
                 <div class="flex items-center gap-4 mb-4">
-                    <flux:avatar src="{{ $user->avatar_url }}" name="{{ $user->name }}" size="lg" />
+                    @if($user->avatar)
+                        <flux:avatar src="{{ $user->getAvatarUrl() }}" name="{{ $user->name }}" size="lg" />
+                    @else
+                        <flux:avatar name="{{ $user->name }}" color="auto" size="lg" />
+                    @endif
                     <div>
                         <flux:heading size="md">{{ $user->name }}</flux:heading>
                         <flux:subheading size="xs">{{ $user->email }}</flux:subheading>
