@@ -14,6 +14,8 @@ class Item extends Model
     public $table = 'INV.Item';
     public $connection = 'sqlsrv';
     public $primaryKey = 'ItemID';
+    public $timestamps = false;
+    protected $fillable = ['IranCode'];
 
     public function grouping(): BelongsTo
     {
