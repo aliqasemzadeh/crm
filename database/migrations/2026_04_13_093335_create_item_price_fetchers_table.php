@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('item_id');
             $table->string('fetcher');
-            $table->string('link');
+            $table->text('link');
             $table->string('price')->nullable();
             $table->text('message')->nullable();
             $table->timestamps();
