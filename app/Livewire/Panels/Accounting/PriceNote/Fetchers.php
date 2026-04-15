@@ -19,6 +19,7 @@ class Fetchers extends Component
         'FaterPriceFetcher' => \App\Support\FaterPriceFetcher::class,
         'MarkaziPriceFetcher' => \App\Support\MarkaziPriceFetcher::class,
         'SetareganPriceFetcher' => \App\Support\SetareganPriceFetcher::class,
+        'HadishPriceFetcher' => \App\Support\HadishPriceFetcher::class,
         'TechnolifePriceFetcher' => \App\Support\TechnolifePriceFetcher::class,
     ];
 
