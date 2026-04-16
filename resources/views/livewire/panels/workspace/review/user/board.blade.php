@@ -19,6 +19,7 @@
     <livewire:panels.workspace.review.user.task.create :user="$user" />
     <livewire:panels.workspace.review.user.task.edit :user="$user" />
     <livewire:panels.workspace.review.user.task.activity :user="$user" />
+    <livewire:panels.workspace.review.user.task.assign />
 
     @php
         $allTasks = $this->tasks;
@@ -102,17 +103,25 @@
                                         <flux:dropdown>
                                             <flux:button variant="subtle" icon="ellipsis-vertical" size="xs" />
                                             <flux:menu>
-                                                <flux:menu.item icon="pencil"
-                                                                wire:click="$dispatch('panels.workspace.review.user.task.edit.assign-data', { id: {{ $task->id }} })">
-                                                    {{ __('app.edit_task') }}
-                                                </flux:menu.item>
+                                                @if($task->approval_status !== 'approved')
+                                                    <flux:menu.item icon="pencil"
+                                                                    wire:click="$dispatch('panels.workspace.review.user.task.edit.assign-data', { id: {{ $task->id }} })">
+                                                        {{ __('app.edit_task') }}
+                                                    </flux:menu.item>
+                                                    <flux:menu.item icon="user-plus"
+                                                                    wire:click="$dispatch('panels.workspace.review.user.task.assign.assign-data', { id: {{ $task->id }} })">
+                                                        {{ __('app.task.assign_users') }}
+                                                    </flux:menu.item>
+                                                @endif
                                                 <flux:menu.item icon="chat-bubble-left-right"
                                                                 wire:click="$dispatch('panels.workspace.review.user.task.activity.assign-data', { id: {{ $task->id }} })">
                                                     {{ __('app.task.activity.modal_title') }}
                                                 </flux:menu.item>
-                                                <flux:menu.item icon="trash" variant="danger" wire:click="deleteTask({{ $task->id }})">
-                                                    {{ __('app.delete') }}
-                                                </flux:menu.item>
+                                                @if($task->status !== 'done' && $task->approval_status !== 'approved')
+                                                    <flux:menu.item icon="trash" variant="danger" wire:click="deleteTask({{ $task->id }})">
+                                                        {{ __('app.delete') }}
+                                                    </flux:menu.item>
+                                                @endif
                                             </flux:menu>
                                         </flux:dropdown>
                                     </div>
