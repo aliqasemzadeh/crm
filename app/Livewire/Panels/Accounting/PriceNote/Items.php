@@ -39,7 +39,7 @@ class Items extends Component
         }
 
         $cacheKey = "items_by_grouping_{$groupingId}";
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($groupingId) {
+        return Cache::remember($cacheKey, now()->addMinutes(8000), function () use ($groupingId) {
             return Item::query()
                 ->where('CodingGroupRef', $groupingId)
                 ->get();
