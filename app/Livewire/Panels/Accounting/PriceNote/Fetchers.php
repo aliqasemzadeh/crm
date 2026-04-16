@@ -21,6 +21,7 @@ class Fetchers extends Component
         'SetareganPriceFetcher' => \App\Support\SetareganPriceFetcher::class,
         'HadishPriceFetcher' => \App\Support\HadishPriceFetcher::class,
         'TechnolifePriceFetcher' => \App\Support\TechnolifePriceFetcher::class,
+        'WooCommerce' => \App\Support\WooPriceFetcher::class,
     ];
 
     #[On('panels.accounting.price-note.fetchers.assign-data')]
