@@ -8,8 +8,10 @@ use App\Models\SetareganCo\ProductPrice;
 use App\Rules\ItemPriceNoteFeeRule;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
+#[Lazy]
 class ItemFee extends Component
 {
     public $itemId;

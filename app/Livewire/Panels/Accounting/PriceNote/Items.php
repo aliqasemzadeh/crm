@@ -5,6 +5,7 @@ namespace App\Livewire\Panels\Accounting\PriceNote;
 use App\Models\Sepidar\GNR\Grouping;
 use App\Models\Sepidar\INV\Item;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Illuminate\Support\Facades\Cache;
@@ -44,6 +45,15 @@ class Items extends Component
                 ->where('CodingGroupRef', $groupingId)
                 ->get();
         });
+    }
+
+    public function placeholder()
+    {
+        return <<<'HTML'
+        <div>
+            <flux:icon.loading />
+        </div>
+        HTML;
     }
 
     public function render()

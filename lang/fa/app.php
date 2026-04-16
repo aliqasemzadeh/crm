@@ -1203,4 +1203,5 @@ return [
     'fetch_price' => 'دریافت قیمت',
     'fetched_at' => 'زمان دریافت',
     'message' => 'زمان دریافت',
+    'website_edit' => 'ویرایش کد سایت'
 ];
