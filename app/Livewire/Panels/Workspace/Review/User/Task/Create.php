@@ -48,6 +48,12 @@ class Create extends Component
             $this->user->id => ['role' => 'assignee', 'assigned_at' => now(), 'assigned_by' => auth()->id()]
         ]);
 
+        try {
+            \App\Jobs\Notification\SendSmsMessageJob::dispatch($this->user->mobile, "فعالیت:" . $task->title . " در میزکار شما قرارگرفت.");
+        } catch (\Exception $e) {
+            // Log error or ignore
+        }
+
         Flux::toast(__('app.task.notifications.created'));
         $this->dispatch('panels.workspace.review.user.board.render');
         Flux::modal('review-user-task-create-modal')->close();
