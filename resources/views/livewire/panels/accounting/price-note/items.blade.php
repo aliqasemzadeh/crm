@@ -25,7 +25,7 @@
                         <flux:table.row class="odd:bg-zinc-50 even:bg-white dark:odd:bg-zinc-800/50 dark:even:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                             <flux:table.cell>
                                 @if($item->IranCode)
-                                <flux:button size="xs" target="_blank" type="link" href="https://setaregan.co/Product/{{ $item->IranCode }}"  variant="filled" color="rose">{{ __('app.website') }}</flux:button>
+                                    <flux:button size="xs" target="_blank" type="link" href="https://setaregan.co/Product/{{ $item->IranCode }}"  variant="filled" color="rose">{{ __('app.website') }}</flux:button>
                                     <flux:button size="xs" variant="primary" wire:click="$dispatch('panels.accounting.price-note.edit-site.assign-data', { id: '{{ $item->ItemID }}' })">{{ __('app.website_edit') }}</flux:button>
                                 @else
 

@@ -160,6 +160,13 @@ class ItemFee extends Component
         }
     }
 
+    public function placeholder()
+    {
+        return <<<'HTML'
+            <flux:icon.loading />
+        HTML;
+    }
+
     public function render()
     {
         return view('livewire.panels.accounting.price-note.item-fee');
