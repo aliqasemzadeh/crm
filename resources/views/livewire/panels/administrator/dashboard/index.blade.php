@@ -12,7 +12,7 @@
                 <flux:button wire:click="reload" icon="arrow-path" size="sm" variant="subtle">{{ __('app.reload') }}</flux:button>
                 <flux:select wire:model.live="fiscalYearRef" class="w-48">
                     @foreach($this->fiscalYears as $year)
-                        <flux:select.option value="{{ $year->FiscalYearID }}">{{ $year->Year }}</flux:select.option>
+                        <flux:select.option value="{{ $year->FiscalYearID }}">{{ $year->Title }}</flux:select.option>
                     @endforeach
                 </flux:select>
             </div>
