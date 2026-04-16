@@ -9,4 +9,9 @@ class ItemStockSummary extends Model
     public $table = 'INV.ItemStockSummary';
     public $connection = 'sqlsrv';
     public $primaryKey = 'ItemStockSummaryId';
+
+    public function item(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Item::class, 'ItemRef', 'ItemID');
+    }
 }
