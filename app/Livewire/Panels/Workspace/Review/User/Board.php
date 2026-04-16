@@ -109,6 +109,8 @@ class Board extends Component
         Task::query()
             ->whereHas('users', fn ($q) => $q->where('users.id', $this->user->id))
             ->whereKey($id)
+            ->where('status', '!=', 'done')
+            ->where('approval_status', '!=', 'approved')
             ->first()?->delete();
     }
 

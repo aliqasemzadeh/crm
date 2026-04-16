@@ -2,6 +2,7 @@
     <livewire:panels.workspace.dashboard.task.create />
     <livewire:panels.workspace.dashboard.task.edit />
     <livewire:panels.workspace.dashboard.task.activity />
+    <livewire:panels.workspace.dashboard.task.assign />
 
     @php
         // یکبار خواندن برای جلوگیری از N+1 و تکرار filter
@@ -147,6 +148,13 @@
                                                         wire:click="$dispatch('panels.workspace.dashboard.task.edit.assign-data', { id: {{ $task->id }} })"
                                                     >
                                                         {{ __('app.edit_task') }}
+                                                    </flux:menu.item>
+
+                                                    <flux:menu.item
+                                                        icon="user-plus"
+                                                        wire:click="$dispatch('panels.workspace.dashboard.task.assign.assign-data', { id: {{ $task->id }} })"
+                                                    >
+                                                        {{ __('app.task.assign_users') }}
                                                     </flux:menu.item>
                                                 @endif
 
