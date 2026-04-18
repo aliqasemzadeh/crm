@@ -113,6 +113,7 @@ return [
         'accounting_access' => 'دسترسی حسابداری',
 
         'accounting_dashboard_index' => 'داشبورد حسابداری',
+        'accounting_account_index' => 'حساب ها حسابداری',
 
         'accounting_bank_index' => 'فهرست حساب‌های بانکی',
         'accounting_bank_create' => 'ایجاد حساب بانکی',
