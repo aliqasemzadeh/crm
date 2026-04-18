@@ -21,6 +21,7 @@ class Fetchers extends Component
         'SetareganPriceFetcher' => \App\Support\SetareganPriceFetcher::class,
         'HadishPriceFetcher' => \App\Support\HadishPriceFetcher::class,
         'TechnolifePriceFetcher' => \App\Support\TechnolifePriceFetcher::class,
+        'SnappShopPriceFetcher' => \App\Support\SnappShopPriceFetcher::class,
         'WooCommerce' => \App\Support\WooPriceFetcher::class,
     ];
 
