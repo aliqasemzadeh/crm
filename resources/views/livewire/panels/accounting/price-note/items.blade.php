@@ -38,6 +38,7 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 {{ $item->Title }}
+                                <livewire:panels.accounting.price-note.fetcher-card :itemId="$item->ItemID" />
                             </flux:table.cell>
                             <flux:table.cell>
                                 {{ number_format($lastStockSummary->Quantity) }}
