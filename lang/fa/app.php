@@ -1203,5 +1203,11 @@ return [
     'fetch_price' => 'دریافت قیمت',
     'fetched_at' => 'زمان دریافت',
     'message' => 'زمان دریافت',
-    'website_edit' => 'ویرایش کد سایت'
+    'website_edit' => 'ویرایش کد سایت',
+    'accounts' => 'حساب‌ها',
+    'account_code' => 'کد حساب',
+    'account_title' => 'عنوان حساب',
+    'account_type' => 'نوع حساب',
+    'parent_account' => 'حساب والد',
+    'topics' => 'سرفصل‌ها',
 ];

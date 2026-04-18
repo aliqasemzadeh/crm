@@ -106,6 +106,15 @@
                     {{ __('app.price_notes') }}
                 </flux:sidebar.item>
             @endcan
+
+            @can('accounting_account_index')
+                <flux:sidebar.item icon="book-open"
+                                   href="{{ route('panels.accounting.account.index') }}"
+                                   :current="request()->routeIs('panels.accounting.account.*')"
+                                   wire:navigate>
+                    {{ __('app.accounts') }}
+                </flux:sidebar.item>
+            @endcan
     </flux:sidebar.nav>
 
 

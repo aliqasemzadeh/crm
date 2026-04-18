@@ -8,6 +8,7 @@
             <flux:field>
                 <flux:label>{{ __('app.fetcher') }}</flux:label>
                 <flux:select wire:model="fetcher" placeholder="{{ __('app.select_fetcher') }}">
+                    <flux:select.option></flux:select.option>
                     @foreach($supportedFetchers as $name => $class)
                         <flux:select.option :value="$name">{{ $name }}</flux:select.option>
                     @endforeach
@@ -44,15 +45,23 @@
                             @if($itemFetcher->message)
                                 <span class="text-red-500 text-xs">{{ $itemFetcher->message }}</span>
                             @endif
+                                @if($itemFetcher->updated_at)
+                                    <span
+                                        class="text-xs">{{ \Morilog\Jalali\Jalalian::fromDateTime($itemFetcher->update_at)->format('Y/m/d H:i:s') }}</span>
+                                @endif
                         </flux:table.cell>
                         <flux:table.cell>
                             <div class="flex gap-2">
+                                <flux:button size="xs" href="{{ $itemFetcher->link }}" target="_blank" >
+                                    <flux:icon.link class="w-4 h-4" />
+                                </flux:button>
                                 <flux:button size="xs" wire:click="run({{ $itemFetcher->id }})" variant="primary" color="green" wire:loading.attr="disabled">
                                     <flux:icon.play class="w-4 h-4" />
                                 </flux:button>
                                 <flux:button size="xs" wire:click="delete({{ $itemFetcher->id }})" variant="danger" wire:confirm="{{ __('app.are_you_sure') }}">
                                     <flux:icon.trash class="w-4 h-4" />
                                 </flux:button>
+
                             </div>
                         </flux:table.cell>
                     </flux:table.row>

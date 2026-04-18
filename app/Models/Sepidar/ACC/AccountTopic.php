@@ -4,9 +4,9 @@ namespace App\Models\Sepidar\ACC;
 
 use Illuminate\Database\Eloquent\Model;
 
-class DL extends Model
+class AccountTopic extends Model
 {
-    protected $table = 'ACC.DL';
+    protected $table = 'ACC.AccountTopic';
     protected $connection = 'sqlsrv';
-    protected $primaryKey = 'DLId';
+    protected $primaryKey = 'AccountTopicId';
 }
