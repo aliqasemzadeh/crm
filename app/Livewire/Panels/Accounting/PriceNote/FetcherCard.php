@@ -2,16 +2,13 @@
 
 namespace App\Livewire\Panels\Accounting\PriceNote;
 
-use App\Models\Accounting\PriceNote\ItemPriceFetcher;
-use Livewire\Attributes\On;
+use Livewire\Attributes\Lazy;
 use Livewire\Component;
 
-class Fetchers extends Component
+#[Lazy]
+class FetcherCard extends Component
 {
     public $itemId;
-    public $fetchers = [];
-    public $fetcher;
-    public $link;
 
     public $supportedFetchers = [
         'DigikalaPriceFetcher' => \App\Support\DigikalaPriceFetcher::class,
@@ -25,43 +22,11 @@ class Fetchers extends Component
         'WooCommerce' => \App\Support\WooPriceFetcher::class,
     ];
 
-    #[On('panels.accounting.price-note.fetchers.assign-data')]
-    public function assignData($id)
+    public function getFetchersProperty()
     {
-        $this->itemId = $id;
-        $this->loadFetchers();
-        $this->js('$flux.modal(\'panels.accounting.price-note.fetchers.modal\').show()');
-    }
-
-    public function loadFetchers()
-    {
-        $this->fetchers = ItemPriceFetcher::where('item_id', $this->itemId)->get();
-    }
-
-    public function add()
-    {
-        $this->validate([
-            'fetcher' => 'required',
-            'link' => 'required|url',
-        ]);
-
-        \App\Models\Accounting\PriceNote\ItemPriceFetcher::create([
-            'item_id' => $this->itemId,
-            'fetcher' => $this->fetcher,
-            'link' => $this->link,
-        ]);
-
-        \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
-
-        $this->reset(['fetcher', 'link']);
-        $this->loadFetchers();
-    }
-
-    public function delete($id)
-    {
-        \App\Models\Accounting\PriceNote\ItemPriceFetcher::find($id)->delete();
-        \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
-        $this->loadFetchers();
+        return \Illuminate\Support\Facades\Cache::remember('item-fetchers-'.$this->itemId, 3600, function () {
+            return \App\Models\Accounting\PriceNote\ItemPriceFetcher::where('item_id', $this->itemId)->get();
+        });
     }
 
     public function run($id)
@@ -92,19 +57,18 @@ class Fetchers extends Component
         }
 
         \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
-
-        $this->loadFetchers();
     }
 
-    public function placeholder()
+    public function delete($id)
     {
-        return <<<'HTML'
-            <flux:icon.loading />
-        HTML;
+        \App\Models\Accounting\PriceNote\ItemPriceFetcher::find($id)->delete();
+        \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
     }
 
     public function render()
     {
-        return view('livewire.panels.accounting.price-note.fetchers');
+        return view('livewire.panels.accounting.price-note.fetcher-card', [
+            'fetchers' => $this->fetchers,
+        ]);
     }
 }

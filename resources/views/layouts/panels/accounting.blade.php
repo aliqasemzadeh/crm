@@ -115,6 +115,15 @@
                     {{ __('app.accounts') }}
                 </flux:sidebar.item>
             @endcan
+
+
+                <flux:sidebar.item icon="calculator"
+                                   href="{{ route('panels.accounting.tax.index') }}"
+                                   :current="request()->routeIs('panels.accounting.tax.*')"
+                                   wire:navigate>
+                    {{ __('app.tax_report') }}
+                </flux:sidebar.item>
+
     </flux:sidebar.nav>
 
 
