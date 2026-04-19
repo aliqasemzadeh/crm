@@ -18,17 +18,17 @@ class ItemFee extends Component
     public $priceNoteItemId = 0;
     public $fee = 0;
 
-    public $siteFee = 0;
-    public $siteStock = 0;
-    public $productPriceId = 0;
+    public $prices = [];
 
     public $siteSaved = false;
     public $feeSaved = false;
 
     public function updated($propertyName)
     {
-        if ($propertyName === 'siteFee' || $propertyName === 'siteStock') {
-            $this->siteSaved = false;
+        if (str_starts_with($propertyName, 'prices.')) {
+            $parts = explode('.', $propertyName);
+            $index = $parts[1];
+            $this->prices[$index]['saved'] = false;
         }
 
         if ($propertyName === 'fee') {
@@ -51,11 +51,17 @@ class ItemFee extends Component
     {
         $item = Item::find($this->itemId);
         if ($item && $item->product) {
-            $productPrice = $item->productPrices()->first();
-            if ($productPrice) {
-                $this->productPriceId = $productPrice->Id;
-                $this->siteFee = (int) $productPrice->Price * 10;
-                $this->siteStock = (int) $productPrice->Quantity;
+            $productPrices = $item->productPrices()->with(['color', 'guarantee'])->get();
+            foreach ($productPrices as $productPrice) {
+                $this->prices[] = [
+                    'id' => $productPrice->Id,
+                    'fee' => (int) $productPrice->Price * 10,
+                    'stock' => (int) $productPrice->Quantity,
+                    'color' => $productPrice->color?->Title,
+                    'color_code' => $productPrice->color?->Code,
+                    'guarantee' => $productPrice->guarantee?->Title,
+                    'saved' => false,
+                ];
             }
         }
     }
@@ -110,39 +116,33 @@ class ItemFee extends Component
         Flux::toast(__('app.saved_successfully', ['name' => $itemName]));
     }
 
-    public function saveSite()
+    public function saveSite($index)
     {
-        if ($this->productPriceId == 0) {
-            return;
-        }
+        $priceData = $this->prices[$index];
 
         $this->validate([
-            'siteFee' => ['required', new ItemPriceNoteFeeRule($this->itemId)],
+            "prices.$index.fee" => ['required', new ItemPriceNoteFeeRule($this->itemId)],
         ], [], [
-            'siteFee' => __('app.site_price'),
+            "prices.$index.fee" => __('app.site_price'),
         ]);
 
-        $siteFee = (int) str_replace(',', '', $this->siteFee) / 10;
+        $siteFee = (int) str_replace(',', '', $priceData['fee']) / 10;
 
-        $productPrice = ProductPrice::find($this->productPriceId);
+        $productPrice = ProductPrice::find($priceData['id']);
         if ($productPrice) {
             $productPrice->update([
                 'Price' => $siteFee,
-                'Quantity' => $this->siteStock,
+                'Quantity' => $priceData['stock'],
                 'PriceChangeDate' => now(),
             ]);
 
-            if ((int) $this->siteStock === 0) {
-                $productPrice->product()->update([
-                    'MinPrice' => null,
-                ]);
-            } else {
-                $productPrice->product()->update([
-                    'MinPrice' => $siteFee,
-                ]);
-            }
+            $minPrice = $productPrice->product->prices()->where('Quantity', '>', 0)->min('Price');
 
-            $this->siteSaved = true;
+            $productPrice->product()->update([
+                'MinPrice' => $minPrice,
+            ]);
+
+            $this->prices[$index]['saved'] = true;
 
             Flux::toast(__('app.saved_successfully', ['name' => __('app.site_price')]));
         }
