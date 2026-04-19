@@ -20,26 +20,32 @@
     </flux:card>
     @endcan
     @can('accounting_price_note_site_edit')
-    @if($productPriceId)
+    @foreach($prices as $index => $price)
         <flux:card class="m-3">
-            <form wire:submit="saveSite">
+            <form wire:submit="saveSite({{ $index }})">
+                <div class="mb-2 text-sm font-bold flex items-center gap-2">
+                    @if($price['color_code'])
+                        <span class="w-4 h-4 rounded-full border border-gray-200" style="background-color: {{ $price['color_code'] }}"></span>
+                    @endif
+                    {{ $price['color'] }} - {{ $price['guarantee'] }}
+                </div>
                 <div class="flex items-end gap-2">
                     <div class="flex-1">
                         <flux:input
-                            wire:model="siteFee"
+                            wire:model="prices.{{ $index }}.fee"
                             label="{{ __('app.site_price') }}"
                             mask:dynamic="$money($input, '.', ',', 0)"
-                            :icon-trailing="$siteSaved ? 'check' : ''"
-                            :class="$siteSaved ? '!border-green-500' : ''"
+                            :icon-trailing="$price['saved'] ? 'check' : ''"
+                            :class="$price['saved'] ? '!border-green-500' : ''"
                         />
                     </div>
                     <div class="w-24">
-                        <flux:input wire:model="siteStock" label="{{ __('app.site_stock') }}" type="number" />
+                        <flux:input wire:model="prices.{{ $index }}.stock" label="{{ __('app.site_stock') }}" type="number" />
                     </div>
                     <flux:button type="submit" variant="primary">{{ __('app.save') }}</flux:button>
                 </div>
             </form>
         </flux:card>
-    @endif
+    @endforeach
     @endcan
 </div>

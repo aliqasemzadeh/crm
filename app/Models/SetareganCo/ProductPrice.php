@@ -32,6 +32,22 @@ class ProductPrice extends Model
     }
 
     /**
+     * Get the color associated with the product price.
+     */
+    public function color()
+    {
+        return $this->belongsTo(Color::class, 'ColorId', 'Id');
+    }
+
+    /**
+     * Get the guarantee associated with the product price.
+     */
+    public function guarantee()
+    {
+        return $this->belongsTo(Guarantee::class, 'GuaranteeId', 'Id');
+    }
+
+    /**
      * Get the item associated with the product price.
      */
     public function item()
