@@ -3,14 +3,21 @@
 namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TaxReportExport implements FromCollection, WithHeadings, WithMapping, WithEvents
+class TaxReportExport implements FromCollection, WithHeadings, WithMapping, WithEvents, WithStyles, ShouldAutoSize
 {
     protected $data;
+    protected $rowNumber = 0;
 
     public function __construct($data)
     {
@@ -25,13 +32,14 @@ class TaxReportExport implements FromCollection, WithHeadings, WithMapping, With
     public function headings(): array
     {
         return [
-            __('app.economic_code'),
-            __('app.identification_code'),
-            __('app.customer_title'),
-            __('app.invoices_count'),
-            __('app.total_sales'),
-            __('app.total_tax'),
-            __('app.net_amount'),
+            'ردیف',
+            'نام سازمان',
+            'شناسه ملی',
+            'قطعات کامپیوتر',
+            'مبلغ خالص',
+            'مالیات',
+            'مبلغ با ارزش افزوده',
+            'ملاحظات',
         ];
     }
 
@@ -43,20 +51,55 @@ class TaxReportExport implements FromCollection, WithHeadings, WithMapping, With
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $event->sheet->getDelegate()->setRightToLeft(true);
+                $cellRange = 'A1:' . $event->sheet->getDelegate()->getHighestColumn() . $event->sheet->getDelegate()->getHighestRow();
+                $event->sheet->getDelegate()->setAutoFilter($event->sheet->getDelegate()->calculateWorksheetDimension());
             },
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => [
+                'font' => ['bold' => true, 'name' => 'Calibri'],
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'A9D08E'],
+                ],
+            ],
+            'A1:' . $sheet->getHighestColumn() . $sheet->getHighestRow() => [
+                'font' => ['name' => 'Calibri'],
+                'borders' => [
+                    'allBorders' => [
+                        'borderStyle' => Border::BORDER_THIN,
+                    ],
+                ],
+                'alignment' => [
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER,
+                ],
+            ],
+            'A' => [
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['argb' => 'A9D08E'],
+                ],
+            ],
         ];
     }
 
     public function map($row): array
     {
+        $this->rowNumber++;
         return [
-            $row->EconomicCode,
-            $row->IdentificationCode,
+            $this->rowNumber,
             $row->Name . ' ' . $row->LastName,
-            $row->invoices_count,
-            $row->total_price,
-            $row->total_tax,
+            $row->IdentificationCode,
+            'قطعات کامپیوتر',
             $row->total_net_price,
+            $row->total_tax,
+            $row->total_price,
+            '',
         ];
     }
 }
