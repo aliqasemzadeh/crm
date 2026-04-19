@@ -176,6 +176,9 @@ return [
         'accounting_price_note_edit' => 'ویرایش اعلام قیمت',
         'accounting_price_note_site_edit' => 'ویرایش اعلان قیمت سایت',
         'accounting_price_note_fetchers' => 'دریافت کننده قیمت',
+
+        'accounting_full_report_index' => 'گزارش جامع حساب ها',
+        'accounting_tax_index' => 'گزارش مالیاتی',
     ],
 
     'workspace' => [

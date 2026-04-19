@@ -116,20 +116,23 @@
                 </flux:sidebar.item>
             @endcan
 
-
+            @can('accounting_tax_index')
                 <flux:sidebar.item icon="calculator"
                                    href="{{ route('panels.accounting.tax.index') }}"
                                    :current="request()->routeIs('panels.accounting.tax.*')"
                                    wire:navigate>
                     {{ __('app.tax_report') }}
                 </flux:sidebar.item>
+            @endcan
 
+            @can('accounting_full_report_index')
             <flux:sidebar.item icon="calculator"
                                href="{{ route('panels.accounting.full-report.index') }}"
                                :current="request()->routeIs('panels.accounting.full-report.*')"
                                wire:navigate>
                 {{ __('app.full_account_report') }}
             </flux:sidebar.item>
+            @endcan
 
     </flux:sidebar.nav>
 
