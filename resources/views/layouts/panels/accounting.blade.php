@@ -124,6 +124,13 @@
                     {{ __('app.tax_report') }}
                 </flux:sidebar.item>
 
+            <flux:sidebar.item icon="calculator"
+                               href="{{ route('panels.accounting.full-report.index') }}"
+                               :current="request()->routeIs('panels.accounting.full-report.*')"
+                               wire:navigate>
+                {{ __('app.full_account_report') }}
+            </flux:sidebar.item>
+
     </flux:sidebar.nav>
 
 
