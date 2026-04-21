@@ -1,13 +1,3 @@
-<?php
-
-use Livewire\Component;
-
-new class extends Component
-{
-    //
-};
-?>
-
 @props([
     'name' => null,
     'label' => null,
