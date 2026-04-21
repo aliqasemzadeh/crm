@@ -13,9 +13,10 @@ class Index extends Component
     public $startDate;
     public $endDate;
     public $saleType;
+    public $invoiceStatus;
     public $fiscalYear;
 
-    protected $queryString = ['startDate', 'endDate', 'saleType', 'fiscalYear'];
+    protected $queryString = ['startDate', 'endDate', 'saleType', 'invoiceStatus', 'fiscalYear'];
 
     public function mount()
     {
@@ -92,6 +93,10 @@ class Index extends Component
 
         if ($this->saleType) {
             $query->where('inv.SaleTypeRef', $this->saleType);
+        }
+
+        if ($this->invoiceStatus) {
+            $query->where('inv.State', $this->invoiceStatus);
         }
 
         return $query->get();
