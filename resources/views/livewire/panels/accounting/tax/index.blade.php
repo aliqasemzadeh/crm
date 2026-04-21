@@ -1,6 +1,6 @@
 <div class="space-y-6">
     <flux:card>
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
             <flux:select wire:model.live="fiscalYear" :label="__('app.fiscal_year')">
                 @foreach($this->getFiscalYears() as $fy)
                     <flux:select.option value="{{ $fy->FiscalYearId }}">{{ $fy->Title }}</flux:select.option>
@@ -14,6 +14,12 @@
                 <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
                 <flux:select.option value="1">{{ __('app.official') }}</flux:select.option>
                 <flux:select.option value="2">{{ __('app.unofficial') }}</flux:select.option>
+            </flux:select>
+
+            <flux:select wire:model.live="invoiceStatus" :label="__('app.invoice_status')">
+                <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                <flux:select.option value="1">{{ __('app.registered') }}</flux:select.option>
+                <flux:select.option value="2">{{ __('app.canceled') }}</flux:select.option>
             </flux:select>
 
             <div class="flex justify-end">

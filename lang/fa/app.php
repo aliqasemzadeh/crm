@@ -1233,4 +1233,7 @@ return [
     'export_excel' => 'خروجی اکسل',
     'fiscal_year' => 'سال مالی',
     'date_limit_exceeded' => 'محدوده زمانی نمی تواند بیش از ۱۰۰ روز باشد.',
+    'invoice_status' => 'وضعیت فاکتور',
+    'registered' => 'ثبت',
+    'canceled' => 'ابطال شده',
 ];
