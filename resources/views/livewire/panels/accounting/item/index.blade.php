@@ -3,6 +3,8 @@
         <flux:heading size="xl">{{ __('app.items') }}</flux:heading>
     </div>
 
+    <x-date-select />
+
     <div class="space-y-4">
         <flux:input wire:model.live="search" icon="magnifying-glass" placeholder="{{ __('app.search_placeholder') }}" />
 
