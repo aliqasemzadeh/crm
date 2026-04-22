@@ -61,6 +61,21 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/full-report/index', \App\Livewire\Panels\Accounting\FullReport\Index::class)->name('panels.accounting.full-report.index');
     Route::livewire('/panels/accounting/tax/index', \App\Livewire\Panels\Accounting\Tax\Index::class)->name('panels.accounting.tax.index');
 
+    Route::get('/item-image/{itemId}', function ($itemId) {
+        return \Illuminate\Support\Facades\Cache::remember("item_image_$itemId", now()->addDays(7), function () use ($itemId) {
+            $image = \App\Models\Sepidar\INV\ItemImage::where('ItemRef', $itemId)->first();
+            if (!$image || !$image->Image) {
+                return abort(404);
+            }
+            $imageData = $image->Image;
+            // Handle binary if it's hexadecimal string (common in SQL Server)
+            if (is_string($imageData) && str_starts_with($imageData, '0x')) {
+                $imageData = pack("H*", substr($imageData, 2));
+            }
+            return response($imageData)->header('Content-Type', 'image/jpeg');
+        });
+    })->name('item.image');
+
     Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');
 
 });

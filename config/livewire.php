@@ -276,7 +276,7 @@ return [
     'payload' => [
         'max_size' => 1024 * 1024,   // 1MB - maximum request payload size in bytes
         'max_nesting_depth' => 10,   // Maximum depth of dot-notation property paths
-        'max_calls' => 50,           // Maximum method calls per request
-        'max_components' => 500,      // Maximum components per batch request
+        'max_calls' => 500,           // Maximum method calls per request
+        'max_components' => 5000,      // Maximum components per batch request
     ],
 ];
