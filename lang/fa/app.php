@@ -1237,4 +1237,5 @@ return [
     'invoice_status' => 'وضعیت فاکتور',
     'registered' => 'ثبت',
     'canceled' => 'ابطال شده',
+    'welcome_sms' => "همکار گرامی به شرکت ستارگان خوش آمدید\nنام کاربری شما: :username\nکلمه عبور: :password\n\nhttps://crm.setaregan.co",
 ];

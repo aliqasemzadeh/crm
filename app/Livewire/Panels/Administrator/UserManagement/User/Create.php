@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
+use App\Jobs\Notification\SendSmsMessageJob;
 use App\Models\User;
 use Flux\Flux;
 use Livewire\Component;
@@ -33,6 +34,11 @@ class Create extends Component
         ]);
 
         User::create($validated);
+
+        SendSmsMessageJob::dispatch($this->mobile, __('app.welcome_sms', [
+            'username' => $this->mobile,
+            'password' => $this->password
+        ]));
 
         $this->reset(['mobile', 'first_name', 'last_name', 'email', 'password', 'password_confirmation']);
 
