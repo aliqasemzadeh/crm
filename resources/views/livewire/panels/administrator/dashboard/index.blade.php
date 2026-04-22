@@ -21,7 +21,7 @@
         <flux:separator variant="subtle" />
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
         <div class="relative rounded-lg px-6 py-4 bg-zinc-50 dark:bg-zinc-700">
             <flux:subheading>{{ __('app.inventory_rial_balance') }}</flux:subheading>
 
@@ -54,6 +54,20 @@
             <flux:subheading>{{ __('app.unlinked_items_count') }}</flux:subheading>
 
             <flux:heading size="xl" class="mb-2">{{ number_format($this->unlinkedItemsCount) }}</flux:heading>
+
+            <div class="flex items-center gap-1 font-medium text-sm">
+
+            </div>
+
+            <div class="absolute top-0 right-0 pr-2 pt-2">
+                <flux:button icon="ellipsis-horizontal" variant="subtle" size="sm" />
+            </div>
+        </div>
+
+        <div class="relative rounded-lg px-6 py-4 bg-zinc-50 dark:bg-zinc-700">
+            <flux:subheading>{{ __('app.items_with_image_count') }}</flux:subheading>
+
+            <flux:heading size="xl" class="mb-2">{{ number_format($this->itemsWithImageCount) }}</flux:heading>
 
             <div class="flex items-center gap-1 font-medium text-sm">
 

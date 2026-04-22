@@ -21,6 +21,7 @@ class Index extends Component
         unset($this->inventory);
         unset($this->unlinkedItemsCount);
         unset($this->totalItemsCount);
+        unset($this->itemsWithImageCount);
     }
 
     #[Computed(cache: true)]
@@ -71,6 +72,16 @@ class Index extends Component
     {
         return \App\Models\Sepidar\INV\ItemStockSummary::query()
             ->where('FiscalYearRef', $this->fiscalYearRef)
+            ->count();
+    }
+
+    #[Computed(cache: true)]
+    public function itemsWithImageCount()
+    {
+        return \App\Models\Sepidar\INV\ItemStockSummary::query()
+            ->where('FiscalYearRef', $this->fiscalYearRef)
+            ->where('Quantity', '>', 0)
+            ->whereHas('item.image')
             ->count();
     }
 
