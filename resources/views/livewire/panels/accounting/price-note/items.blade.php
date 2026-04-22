@@ -1,7 +1,7 @@
 <div>
     <flux:table>
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column colspan="7" class="bg-white dark:bg-zinc-900">
+            <flux:table.column colspan="8" class="bg-white dark:bg-zinc-900">
                     <flux:input
                         size="sm"
                         class="m-3"
@@ -11,6 +11,7 @@
             </flux:table.column>
         </flux:table.columns>
         <flux:table.columns sticky>
+            <flux:table.column>{{ __('app.image') }}</flux:table.column>
             <flux:table.column>{{ __('app.action') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.balance') }}</flux:table.column>
@@ -23,6 +24,9 @@
                 @if($lastStockSummary = \App\Models\Sepidar\INV\ItemStockSummary::where('ItemRef', $item->ItemID)->where('FiscalYearRef', config('sepidar.FiscalYearRef'))->first())
                     @if($lastStockSummary->Quantity != 0)
                         <flux:table.row class="odd:bg-zinc-50 even:bg-white dark:odd:bg-zinc-800/50 dark:even:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            <flux:table.cell>
+                                <livewire:panels.accounting.price-note.item-image :itemId="$item->ItemID" :key="'item-image-'.$item->ItemID" />
+                            </flux:table.cell>
                             <flux:table.cell>
                                 @if($item->IranCode)
                                     <flux:button size="xs" target="_blank" type="link" href="https://setaregan.co/Product/{{ $item->IranCode }}"  variant="filled" color="rose">{{ __('app.website') }}</flux:button>

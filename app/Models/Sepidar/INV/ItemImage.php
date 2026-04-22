@@ -8,6 +8,7 @@ class ItemImage extends Model
 {
     public $table = 'INV.ItemImage';
     public $connection = 'sqlsrv';
-    public $primaryKey = 'ItemImageId';
-    
+    public $primaryKey = 'ItemImageID';
+    public $timestamps = false;
+    protected $fillable = ['ItemRef', 'Image', 'Thumbnail', 'Version'];
 }
