@@ -975,6 +975,7 @@ return [
     'fiscal_year' => 'سال مالی',
     'reload' => 'بروزرسانی داده‌ها',
     'unlinked_items_count' => 'تعداد کالاهای غیر متصل',
+    'items_with_image_count' => 'تعداد کالاهای دارای عکس (موجودی‌دار)',
     'inventory' => 'انبار',
     'number' => 'شماره',
     'last_buy_fee' => 'آخرین فی',
