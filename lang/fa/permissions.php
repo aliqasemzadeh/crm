@@ -176,6 +176,10 @@ return [
         'accounting_price_note_edit' => 'ویرایش اعلام قیمت',
         'accounting_price_note_site_edit' => 'ویرایش اعلان قیمت سایت',
         'accounting_price_note_fetchers' => 'دریافت کننده قیمت',
+        'accounting_price_note_item_fee' => 'قیمت گذاری',
+        'accounting_price_note_sale_price' => 'قیمت فروش',
+        'accounting_price_note_purchase_price' => 'قیمت خرید',
+        'accounting_price_note_stock_summary' => 'موجودی انبار',
 
         'accounting_full_report_index' => 'گزارش جامع حساب ها',
         'accounting_tax_index' => 'گزارش مالیاتی',
