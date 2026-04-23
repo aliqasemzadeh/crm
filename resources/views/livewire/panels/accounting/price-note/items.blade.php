@@ -42,19 +42,29 @@
                             </flux:table.cell>
                             <flux:table.cell>
                                 {{ $item->Title }}
+                                @can('accounting_price_note_fetchers')
                                 <livewire:panels.accounting.price-note.fetcher-card :itemId="$item->ItemID" />
+                                @endcan
                             </flux:table.cell>
                             <flux:table.cell>
+                                @can('accounting_price_note_stock_summary')
                                 {{ number_format($lastStockSummary->Quantity) }}
+                                @endcan
                             </flux:table.cell>
                             <flux:table.cell>
+                                @can('accounting_price_note_purchase_price')
                                 {{ number_format($item->getLastPurchasePrice()) }}
+                                @endcan
                             </flux:table.cell>
                             <flux:table.cell>
+                                @can('accounting_price_note_sale_price')
                                 {{ number_format($item->getLastSalePrice()) }}
+                                @endcan
                             </flux:table.cell>
                             <flux:table.cell>
+                                @can('accounting_price_note_item_fee')
                                 <livewire:panels.accounting.price-note.item-fee :itemId="$item->ItemID" />
+                                @endcan
                             </flux:table.cell>
                         </flux:table.row>
                     @endif
