@@ -66,13 +66,23 @@ class PriceTextMessageNotificationCommand extends Command
                 'api' => true
             ],
             'GOLD' => [
-                'title' => 'طلا',
+                'title' => 'طلاذاتی',
                 'pair' => 'GOLDIRT',
                 'currency' => 'ریال',
                 'decimal' => 0,
                 'last-price' => 0,
                 'api' => false
             ],
+
+            'MARKETGOLDIRT' => [
+                'title' => 'طلابازار',
+                'pair' => 'MARKETGOLDIRT',
+                'currency' => 'ریال',
+                'decimal' => 0,
+                'last-price' => 0,
+                'api' => false
+            ],
+
             'AED' => [
                 'title' => 'درهم',
                 'pair' => 'AEDIRT',
@@ -116,8 +126,36 @@ class PriceTextMessageNotificationCommand extends Command
                         $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
                     }
 
+                    if($symbol['pair'] == 'MARKETGOLDIRT') {
+                        try {
+                            $response = Http::timeout(15)
+                                ->withoutVerifying()
+                                ->withOptions(["verify" => false])
+                                ->get('https://milli.gold/api/v1/public/milli-price/external');
+                        } catch (\Exception $e) {
+                            $this->error(__('currencies.connection_error', ['error' => $e->getMessage()]));
+                            return;
+                        }
+
+                        if ($response->failed()) {
+                            $this->error(__('currencies.fetch_failed'));
+                            return;
+                        }
+
+                        $data = $response->json();
+                        $price18 = $data['data']['price18'] ?? null;
+
+                        if ($price18 === null) {
+                            $this->error(__('currencies.fetch_failed'));
+                            return;
+                        }
+
+                        $price = $price18 * 1000;
+                        $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
+                    }
+
                     if($symbol['pair'] == 'AEDIRT') {
-                        $price = $symbols['USDT']['last-price'] * 0.2723;
+                        $price = $symbols['USDT']['last-price'] * 0.2722;
                         $message .=  $symbol['title'] .":". number_format($price, $symbol['decimal'],'.',',') . PHP_EOL;
                     }
                 }
