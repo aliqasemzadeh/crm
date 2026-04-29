@@ -22,7 +22,7 @@
         <flux:table.rows>
             @foreach($this->items as $item)
                 @if($lastStockSummary = \App\Models\Sepidar\INV\ItemStockSummary::where('ItemRef', $item->ItemID)->where('FiscalYearRef', config('sepidar.FiscalYearRef'))->first())
-                    @if($lastStockSummary->Quantity != 0)
+
                         <flux:table.row class="odd:bg-zinc-50 even:bg-white dark:odd:bg-zinc-800/50 dark:even:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800">
                             <flux:table.cell>
                                 <livewire:panels.accounting.price-note.item-image :itemId="$item->ItemID" :key="'item-image-'.$item->ItemID" />
@@ -67,7 +67,6 @@
                                 @endcan
                             </flux:table.cell>
                         </flux:table.row>
-                    @endif
                 @endif
             @endforeach
         </flux:table.rows>
