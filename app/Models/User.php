@@ -3,21 +3,23 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Issabel\Device as IssabelDevice;
 use App\Models\Workspace\Task;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Rappasoft\LaravelAuthenticationLog\Traits\AuthenticationLoggable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-    use HasRoles;
+    use AuthenticationLoggable, HasFactory, Notifiable;
 
+    use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -32,6 +34,10 @@ class User extends Authenticatable
         'password',
         'avatar',
         'signature',
+        'internal_phone_id',
+        'bale_code',
+        'personnel_code',
+        'timex_code',
     ];
 
     /**
@@ -45,7 +51,7 @@ class User extends Authenticatable
     ];
 
     protected $appends = [
-        'name'
+        'name',
     ];
 
     /**
@@ -72,9 +78,14 @@ class User extends Authenticatable
                 $first = (string) ($this->first_name ?? '');
                 $last = (string) ($this->last_name ?? '');
 
-                return trim($first . ' ' . $last);
+                return trim($first.' '.$last);
             },
         );
+    }
+
+    public function internalPhoneDevice(): BelongsTo
+    {
+        return $this->belongsTo(IssabelDevice::class, 'internal_phone_id', 'id');
     }
 
     public function tasks(): BelongsToMany
@@ -105,16 +116,18 @@ class User extends Authenticatable
     {
         $signatures = json_decode($this->signature, true);
         if ($signatures && count($signatures) > 0) {
-            return asset('storage/' . $signatures[0]);
+            return asset('storage/'.$signatures[0]);
         }
+
         return null;
     }
 
     public function getAvatarUrl()
     {
         if ($this->avatar) {
-            return asset('storage/' . $this->avatar);
+            return asset('storage/'.$this->avatar);
         }
+
         return null;
     }
 }
