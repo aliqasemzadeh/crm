@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f528c29e4f0dd8fa94d41d40784c9f7c",
+    "content-hash": "37602788430842e3bcadd10cef2c401f",
     "packages": [
         {
             "name": "ammont/fa-slugify",
@@ -12864,7 +12864,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "ammont/fa-slugify": 20,
-        "ammont/finglify": 20,
         "getartisanflow/wireflow": 15
     },
     "prefer-stable": true,
