@@ -18,15 +18,6 @@
             @foreach ($calls as $call)
                 @php
                     $disp = strtoupper(trim($call['disposition_raw'] ?? ''));
-                    $avatarRing =
-                        match ($disp) {
-                            'ANSWERED' => 'ring-emerald-400/50 dark:ring-emerald-500/45',
-                            'NO ANSWER' => 'ring-rose-400/50 dark:ring-rose-500/45',
-                            'BUSY' => 'ring-amber-400/50 dark:ring-amber-500/45',
-                            'FAILED' => 'ring-rose-400/45 dark:ring-rose-500/40',
-                            'CONGESTION' => 'ring-orange-400/45 dark:ring-orange-500/40',
-                            default => 'ring-sky-400/40 dark:ring-sky-500/35',
-                        };
                     $cornerBadge =
                         match ($disp) {
                             'ANSWERED' => 'bg-emerald-500 dark:bg-emerald-600',
@@ -55,24 +46,15 @@
                             <div class="flex items-start gap-3">
                                 <div class="relative shrink-0">
                                     @if (! empty($headingParty['has_avatar']) && ! empty($headingParty['avatar_url']))
-                                        <flux:avatar
-                                            src="{{ $headingParty['avatar_url'] }}"
-                                            size="sm"
-                                            class="size-12 shrink-0 rounded-xl ring-2 ring-offset-2 ring-offset-zinc-50 {{ $avatarRing }} dark:ring-offset-zinc-800 [&_[data-slot]]:rounded-xl [&_img]:rounded-xl"
-                                        />
+                                        <flux:avatar src="{{ $headingParty['avatar_url'] }}" size="xs" />
                                     @else
-                                        <flux:avatar
-                                            name="{{ $headingParty['avatar_name'] }}"
-                                            color="auto"
-                                            size="sm"
-                                            class="size-12 shrink-0 rounded-xl ring-2 ring-offset-2 ring-offset-zinc-50 {{ $avatarRing }} dark:ring-offset-zinc-800 [&_[data-slot]]:rounded-xl [&_img]:rounded-xl"
-                                        />
+                                        <flux:avatar name="{{ $headingParty['avatar_name'] }}" color="auto" size="xs" />
                                     @endif
                                     <span
-                                        class="absolute -bottom-1 -end-1 flex size-7 items-center justify-center rounded-lg {{ $cornerBadge }} text-white shadow-md ring-2 ring-white dark:ring-zinc-800"
+                                        class="absolute -bottom-0.5 -end-0.5 flex size-5 items-center justify-center rounded-md {{ $cornerBadge }} text-white shadow-sm ring-2 ring-white dark:ring-zinc-800"
                                         title="{{ $call['disposition_label'] }}"
                                     >
-                                        <flux:icon.phone variant="micro" class="size-3.5 opacity-95" />
+                                        <flux:icon.phone variant="micro" class="size-2.5 opacity-95" />
                                     </span>
                                 </div>
                                 <div class="min-w-0 flex-1 pt-0.5">
