@@ -4,6 +4,7 @@ namespace App\Livewire\Panels\Crm\Dashboard;
 
 use App\Models\Issabel\Cdr;
 use App\Models\Issabel\Device;
+use App\Models\User;
 use App\Models\Voip\Phone;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
@@ -30,6 +31,8 @@ class Index extends Component
     private const PHONES_CACHE_KEY = 'crm.voip_phones_number_to_name';
 
     private const DEVICES_CACHE_KEY = 'crm.issabel_devices_user_to_description';
+
+    private const INTERNAL_TWO_DIGIT_USER_PROFILES_CACHE_KEY = 'crm.users_by_internal_two_digit_extension';
 
     private const PHONES_CACHE_TTL_SECONDS = 600;
 
@@ -87,10 +90,11 @@ class Index extends Component
 
             $phoneMap = $this->phoneNumberToNameMap();
             $deviceMap = $this->deviceUserToDescriptionMap();
+            $internalProfiles = $this->internalTwoDigitUserProfiles();
             $mapped = [];
 
             foreach ($rows as $row) {
-                $mapped[] = $this->mapRow($row, $phoneMap, $deviceMap);
+                $mapped[] = $this->mapRow($row, $phoneMap, $deviceMap, $internalProfiles);
             }
 
             $this->calls = array_merge($this->calls, $mapped);
@@ -162,11 +166,116 @@ class Index extends Component
     }
 
     /**
+     * پروفایل کاربر CRM برای داخلی‌های دقیقاً دو رقمی (users.internal_phone_id → devices.id).
+     *
+     * @return array<string, array{name: string, avatar_url: ?string, has_avatar: bool}>
+     */
+    private function internalTwoDigitUserProfiles(): array
+    {
+        return Cache::remember(
+            self::INTERNAL_TWO_DIGIT_USER_PROFILES_CACHE_KEY,
+            self::PHONES_CACHE_TTL_SECONDS,
+            function (): array {
+                $map = [];
+                $users = User::query()
+                    ->whereNotNull('internal_phone_id')
+                    ->with('internalPhoneDevice')
+                    ->get();
+
+                foreach ($users as $user) {
+                    $device = $user->internalPhoneDevice;
+                    if ($device === null) {
+                        continue;
+                    }
+
+                    foreach ($this->twoDigitKeysFromDevice($device) as $key) {
+                        $map[$key] = [
+                            'name' => $user->name,
+                            'avatar_url' => $user->getAvatarUrl(),
+                            'has_avatar' => (bool) $user->avatar,
+                        ];
+                    }
+                }
+
+                return $map;
+            }
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function twoDigitKeysFromDevice(Device $device): array
+    {
+        $keys = [];
+        foreach ([trim((string) $device->user), trim((string) $device->dial)] as $t) {
+            if ($t === '') {
+                continue;
+            }
+            if (preg_match('/^\d{2}$/', $t) === 1) {
+                $keys[] = $t;
+            }
+            $digits = preg_replace('/\D+/', '', $t) ?? '';
+            if (preg_match('/^\d{2}$/', $digits) === 1) {
+                $keys[] = $digits;
+            }
+        }
+
+        return array_values(array_unique($keys));
+    }
+
+    /**
+     * استخراج شمارهٔ داخلی دو رقمی از فیلدهای خام CDR برای تطبیق با کاربران CRM.
+     */
+    private function extractTwoDigitExtension(string $raw): ?string
+    {
+        $trim = trim($raw);
+        if ($trim === '') {
+            return null;
+        }
+
+        $normalized = $this->normalizeExtensionCandidate($trim);
+        $digitsOnly = preg_replace('/\D+/', '', $trim) ?? '';
+
+        foreach ([$normalized, $trim, $digitsOnly] as $candidate) {
+            if ($candidate !== '' && preg_match('/^\d{2}$/', $candidate) === 1) {
+                return $candidate;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * دادهٔ نمایش طرف تماس برای UI (آواتار مثل صفحهٔ کاربران ادمین، فقط برای داخلی دو رقمی آواتار کوچک در مسیر).
+     *
+     * @param  array<string, array{name: string, avatar_url: ?string, has_avatar: bool}>  $internalProfiles
+     * @return array{display: string, avatar_url: ?string, has_avatar: bool, avatar_name: string, is_two_digit_party: bool}
+     */
+    private function partyPresentation(string $raw, string $displayLabel, array $internalProfiles): array
+    {
+        $ext = $this->extractTwoDigitExtension($raw);
+        $profile = ($ext !== null && isset($internalProfiles[$ext])) ? $internalProfiles[$ext] : null;
+
+        $display = $profile !== null ? $profile['name'] : $displayLabel;
+        $avatarName = $profile !== null ? $profile['name'] : $displayLabel;
+
+        return [
+            'display' => $display,
+            'avatar_url' => $profile['avatar_url'] ?? null,
+            'has_avatar' => $profile !== null && $profile['has_avatar'],
+            'avatar_name' => $avatarName !== '' ? $avatarName : $displayLabel,
+            'is_two_digit_party' => $ext !== null,
+        ];
+    }
+
+    /**
      * @param  array<string, string>  $phoneMap
      * @param  array<string, string>  $deviceMap
+     * @param  array<string, array{name: string, avatar_url: ?string, has_avatar: bool}>  $internalProfiles
      * @return array<string, mixed>
      */
-    private function mapRow(Cdr $row, array $phoneMap, array $deviceMap): array
+    private function mapRow(Cdr $row, array $phoneMap, array $deviceMap, array $internalProfiles): array
     {
         $cnum = trim((string) $row->cnum);
         $appearance = $this->dispositionAppearance((string) $row->disposition);
@@ -188,6 +297,9 @@ class Index extends Component
             $routeFromLabel
         );
 
+        $headingRaw = $cnum !== '' ? $cnum : (string) $row->src;
+        $headingParty = $this->partyPresentation($headingRaw, $phoneDisplay, $internalProfiles);
+
         return [
             'uniqueid' => $row->uniqueid,
             'jalali_datetime' => Jalalian::fromDateTime($row->calldate)->format('Y/m/d H:i'),
@@ -195,9 +307,10 @@ class Index extends Component
             'disposition_label' => $appearance['label'],
             'indicator_color' => $appearance['color'],
             'badge_color' => $appearance['color'],
-            'phone_display' => $phoneDisplay,
-            'route_from_label' => $routeFromLabel,
-            'route_to_label' => $routeToLabel,
+            'phone_display' => $headingParty['display'],
+            'heading_party' => $headingParty,
+            'route_from_party' => $this->partyPresentation((string) $row->dst, $routeFromLabel, $internalProfiles),
+            'route_to_party' => $this->partyPresentation((string) $row->src, $routeToLabel, $internalProfiles),
             'duration_display' => $this->formatBillsec($billsec),
             'billsec' => $billsec,
         ];

@@ -44,14 +44,30 @@
                     <flux:timeline.content>
                         <div
                             class="rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-700 dark:bg-zinc-800/80 space-y-3 min-w-0">
+                            @php
+                                $headingParty = $call['heading_party'] ?? [
+                                    'display' => $call['phone_display'],
+                                    'avatar_url' => null,
+                                    'has_avatar' => false,
+                                    'avatar_name' => $call['phone_display'],
+                                ];
+                            @endphp
                             <div class="flex items-start gap-3">
                                 <div class="relative shrink-0">
-                                    <flux:avatar
-                                        name="{{ $call['phone_display'] }}"
-                                        color="auto"
-                                        size="sm"
-                                        class="size-12 shrink-0 rounded-xl ring-2 ring-offset-2 ring-offset-zinc-50 {{ $avatarRing }} dark:ring-offset-zinc-800 [&_[data-slot]]:rounded-xl [&_img]:rounded-xl"
-                                    />
+                                    @if (! empty($headingParty['has_avatar']) && ! empty($headingParty['avatar_url']))
+                                        <flux:avatar
+                                            src="{{ $headingParty['avatar_url'] }}"
+                                            size="sm"
+                                            class="size-12 shrink-0 rounded-xl ring-2 ring-offset-2 ring-offset-zinc-50 {{ $avatarRing }} dark:ring-offset-zinc-800 [&_[data-slot]]:rounded-xl [&_img]:rounded-xl"
+                                        />
+                                    @else
+                                        <flux:avatar
+                                            name="{{ $headingParty['avatar_name'] }}"
+                                            color="auto"
+                                            size="sm"
+                                            class="size-12 shrink-0 rounded-xl ring-2 ring-offset-2 ring-offset-zinc-50 {{ $avatarRing }} dark:ring-offset-zinc-800 [&_[data-slot]]:rounded-xl [&_img]:rounded-xl"
+                                        />
+                                    @endif
                                     <span
                                         class="absolute -bottom-1 -end-1 flex size-7 items-center justify-center rounded-lg {{ $cornerBadge }} text-white shadow-md ring-2 ring-white dark:ring-zinc-800"
                                         title="{{ $call['disposition_label'] }}"
@@ -80,9 +96,11 @@
                             </div>
                             <flux:text class="text-sm text-zinc-600 dark:text-zinc-400">
                                 {{ __('app.call_route') }}
-                                <span dir="ltr" class="text-zinc-800 dark:text-zinc-200">{{ $call['route_from_label'] }}</span>
-                                <span class="mx-1">→</span>
-                                <span dir="ltr" class="text-zinc-800 dark:text-zinc-200">{{ $call['route_to_label'] }}</span>
+                                <span class="inline-flex flex-wrap items-center gap-x-1 gap-y-1">
+                                    <x-crm.call-route-party :party="$call['route_from_party'] ?? []" />
+                                    <span class="mx-0.5 font-normal text-zinc-400">→</span>
+                                    <x-crm.call-route-party :party="$call['route_to_party'] ?? []" />
+                                </span>
                             </flux:text>
                         </div>
                     </flux:timeline.content>

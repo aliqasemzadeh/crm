@@ -80,61 +80,60 @@
                 <flux:error name="password_confirmation" />
             </flux:field>
 
-            <flux:accordion transition>
-                <flux:accordion.item>
-                    <flux:accordion.heading>
-                        {{ __('app.user_hr_extra_section') }}
-                    </flux:accordion.heading>
-                    <flux:accordion.content>
-                        <div class="space-y-4 pt-2">
-                            <flux:field>
-                                <flux:label>{{ __('app.internal_phone') }}</flux:label>
-                                <flux:select
-                                    wire:model="internal_phone_id"
-                                    variant="combobox"
-                                    :filter="false"
-                                    placeholder="{{ __('app.internal_phone_placeholder') }}"
-                                >
-                                    <x-slot name="input">
-                                        <flux:select.input
-                                            wire:model.live.debounce.300ms="internal_phone_search"
-                                            placeholder="{{ __('app.search_internal_phone') }}"
-                                        />
-                                    </x-slot>
-                                    <flux:select.option value="">{{ __('app.internal_phone_none') }}</flux:select.option>
-                                    @foreach ($this->internalPhoneDevices as $device)
-                                        <flux:select.option value="{{ $device->id }}" wire:key="device-{{ $device->id }}">
-                                            {{ trim((string) $device->user) }}
-                                            @if(filled($device->description))
-                                                — {{ $device->description }}
-                                            @endif
-                                        </flux:select.option>
-                                    @endforeach
-                                </flux:select>
-                                <flux:error name="internal_phone_id" />
-                            </flux:field>
+            <div class="rounded-xl border border-zinc-200 dark:border-white/10 p-4 space-y-3">
+                <div class="flex items-center justify-between gap-3">
+                    <flux:text class="font-medium">{{ __('app.user_hr_extra_section') }}</flux:text>
+                    <flux:switch wire:model.live="hrExtrasExpanded" />
+                </div>
+                @if ($hrExtrasExpanded)
+                    <div class="space-y-4 pt-1 border-t border-zinc-100 dark:border-white/10">
+                        <flux:field>
+                            <flux:label>{{ __('app.internal_phone') }}</flux:label>
+                            <flux:select
+                                wire:model="internal_phone_id"
+                                variant="combobox"
+                                :filter="false"
+                                placeholder="{{ __('app.internal_phone_placeholder') }}"
+                            >
+                                <x-slot name="input">
+                                    <flux:select.input
+                                        wire:model.live.debounce.300ms="internal_phone_search"
+                                        placeholder="{{ __('app.search_internal_phone') }}"
+                                    />
+                                </x-slot>
+                                <flux:select.option value="">{{ __('app.internal_phone_none') }}</flux:select.option>
+                                @foreach ($this->internalPhoneDevices as $device)
+                                    <flux:select.option value="{{ $device->id }}" wire:key="device-{{ $device->id }}">
+                                        {{ trim((string) $device->user) }}
+                                        @if(filled($device->description))
+                                            — {{ $device->description }}
+                                        @endif
+                                    </flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="internal_phone_id" />
+                        </flux:field>
 
-                            <flux:field>
-                                <flux:label>{{ __('app.bale_code') }}</flux:label>
-                                <flux:input wire:model="bale_code" type="text" />
-                                <flux:error name="bale_code" />
-                            </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('app.bale_code') }}</flux:label>
+                            <flux:input wire:model="bale_code" type="text" />
+                            <flux:error name="bale_code" />
+                        </flux:field>
 
-                            <flux:field>
-                                <flux:label>{{ __('app.personnel_code') }}</flux:label>
-                                <flux:input wire:model="personnel_code" type="text" />
-                                <flux:error name="personnel_code" />
-                            </flux:field>
+                        <flux:field>
+                            <flux:label>{{ __('app.personnel_code') }}</flux:label>
+                            <flux:input wire:model="personnel_code" type="text" />
+                            <flux:error name="personnel_code" />
+                        </flux:field>
 
-                            <flux:field>
-                                <flux:label>{{ __('app.timex_code') }}</flux:label>
-                                <flux:input wire:model="timex_code" type="text" />
-                                <flux:error name="timex_code" />
-                            </flux:field>
-                        </div>
-                    </flux:accordion.content>
-                </flux:accordion.item>
-            </flux:accordion>
+                        <flux:field>
+                            <flux:label>{{ __('app.timex_code') }}</flux:label>
+                            <flux:input wire:model="timex_code" type="text" />
+                            <flux:error name="timex_code" />
+                        </flux:field>
+                    </div>
+                @endif
+            </div>
 
             <flux:field class="mt-4">
                 <flux:label>{{ __('app.signature') }}</flux:label>
