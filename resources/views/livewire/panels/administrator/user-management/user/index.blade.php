@@ -42,13 +42,16 @@
         </flux:table.columns>
         <flux:table.rows>
             @foreach ($this->users as $user)
+                @php
+                    $avatarUrl = $user->getAvatarUrl();
+                @endphp
                 <flux:table.row :key="$user->id">
                     <flux:table.cell>
                         {{ $user->id }}
                     </flux:table.cell>
                     <flux:table.cell class="flex items-center gap-3">
-                        @if ($user->avatar)
-                            <flux:avatar src="{{ $user->getAvatarUrl() }}" size="xs" />
+                        @if ($avatarUrl)
+                            <flux:avatar src="{{ $avatarUrl }}" size="xs" />
                         @else
                             <flux:avatar name="{{ $user->name }}" color="auto" size="xs" />
                         @endif
