@@ -49,9 +49,6 @@ class Edit extends Component
 
     public string $timex_code = '';
 
-    /** نمایش بلوک شمارهٔ داخلی و کدها در فرم ویرایش (فقط UI). */
-    public bool $hrExtrasExpanded = false;
-
     #[On('panels.administrator.user-management.user.edit.assign-data')]
     public function assignData($id): void
     {
@@ -70,7 +67,6 @@ class Edit extends Component
         $this->bale_code = (string) ($this->user->bale_code ?? '');
         $this->personnel_code = (string) ($this->user->personnel_code ?? '');
         $this->timex_code = (string) ($this->user->timex_code ?? '');
-        $this->hrExtrasExpanded = false;
         Flux::modal('panels.administrator.user-management.user.edit.modal')->show();
     }
 

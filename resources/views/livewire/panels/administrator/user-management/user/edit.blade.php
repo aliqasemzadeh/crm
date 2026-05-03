@@ -80,13 +80,12 @@
                 <flux:error name="password_confirmation" />
             </flux:field>
 
-            <div class="rounded-xl border border-zinc-200 dark:border-white/10 p-4 space-y-3">
-                <div class="flex items-center justify-between gap-3">
-                    <flux:text class="font-medium">{{ __('app.user_hr_extra_section') }}</flux:text>
-                    <flux:switch wire:model.live="hrExtrasExpanded" />
-                </div>
-                @if ($hrExtrasExpanded)
-                    <div class="space-y-4 pt-1 border-t border-zinc-100 dark:border-white/10">
+            <flux:accordion transition>
+                <flux:accordion.item
+                    :heading="__('app.user_hr_extra_section')"
+                    :expanded="filled($internal_phone_id) || filled($bale_code) || filled($personnel_code) || filled($timex_code)"
+                >
+                    <div class="space-y-4 pt-2">
                         <flux:field>
                             <flux:label>{{ __('app.internal_phone') }}</flux:label>
                             <flux:select
@@ -132,8 +131,8 @@
                             <flux:error name="timex_code" />
                         </flux:field>
                     </div>
-                @endif
-            </div>
+                </flux:accordion.item>
+            </flux:accordion>
 
             <flux:field class="mt-4">
                 <flux:label>{{ __('app.signature') }}</flux:label>
