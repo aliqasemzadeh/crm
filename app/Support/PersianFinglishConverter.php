@@ -100,7 +100,128 @@ final class PersianFinglishConverter
             return $lookup[$key];
         }
 
-        return $this->transliterateWord($key);
+        $rawLatin = $this->transliteratePersianWordWithPatterns($key);
+
+        return $this->polishTransliteratedWord($rawLatin);
+    }
+
+    /**
+     * Longest Persian suffix first → stem Latin + fixed suffix (دانشگاه → danesh + gah).
+     */
+    private function transliteratePersianWordWithPatterns(string $word): string
+    {
+        foreach (self::persianSuffixLatinSorted() as $faSuffix => $latinSuffix) {
+            $sLen = mb_strlen($faSuffix);
+            if ($sLen === 0 || mb_strlen($word) < $sLen) {
+                continue;
+            }
+            if (mb_substr($word, -$sLen) !== $faSuffix) {
+                continue;
+            }
+
+            $stem = mb_substr($word, 0, mb_strlen($word) - $sLen);
+            $stemLatin = $stem !== '' ? $this->transliteratePersianWordWithPatterns($stem) : '';
+
+            return $stemLatin.$latinSuffix;
+        }
+
+        return $this->transliterateWord($word);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private static function persianSuffixLatinSorted(): array
+    {
+        static $sorted = null;
+
+        if ($sorted !== null) {
+            return $sorted;
+        }
+
+        $map = [
+            'نمایشگاه' => 'namayeshgah',
+            'فرودگاه' => 'forudgah',
+            'دانشکده' => 'daneshkadeh',
+            'دانشگاه' => 'daneshgah',
+            'فروشگاه' => 'forushgah',
+            'کارگاه' => 'kargah',
+            'گروه' => 'grooh',
+            'گاه' => 'gah',
+            'ستان' => 'stan',
+            'آباد' => 'abad',
+            'زاده' => 'zadeh',
+            'نژاد' => 'nejad',
+            'پور' => 'pour',
+            'سرای' => 'saray',
+            'وند' => 'vand',
+            'بخش' => 'bakhsh',
+        ];
+
+        uksort($map, static fn (string $a, string $b): int => mb_strlen($b) <=> mb_strlen($a));
+        $sorted = $map;
+
+        return $sorted;
+    }
+
+    /**
+     * Fixes blind transliteration (missing implicit vowels, گاه endings, short tokens).
+     *
+     * @param  array<string, string>  $exact
+     * @param  array<string, string>  $suffixRegex  pattern => replacement
+     */
+    private function polishTransliteratedWord(string $latin): string
+    {
+        $latin = strtolower($latin);
+        if ($latin === '') {
+            return '';
+        }
+
+        foreach (self::latinRegexPatterns() as $pattern => $replacement) {
+            $replaced = preg_replace($pattern, $replacement, $latin);
+            if (is_string($replaced)) {
+                $latin = $replaced;
+            }
+        }
+
+        $exact = self::latinExactFixes();
+
+        return $exact[$latin] ?? $latin;
+    }
+
+    /**
+     * Ordered regex replacements on lowercase Latin (extend for recurring morphological fixes).
+     *
+     * @return array<string, string>
+     */
+    private static function latinRegexPatterns(): array
+    {
+        return [
+            '/^daneshghah$/u' => 'daneshgah',
+        ];
+    }
+
+    /**
+     * Whole-token fixes when regex cannot infer implicit vowels safely.
+     *
+     * @return array<string, string>
+     */
+    private static function latinExactFixes(): array
+    {
+        static $cache = null;
+
+        if ($cache !== null) {
+            return $cache;
+        }
+
+        $cache = [
+            'fr' => 'far',
+            'aghbal' => 'eqbal',
+            'iqbal' => 'eqbal',
+            'daneshghah' => 'daneshgah',
+        ];
+
+        return $cache;
     }
 
     /**
@@ -145,14 +266,35 @@ final class PersianFinglishConverter
                 continue;
             }
 
+            if ($c === 'و') {
+                $buf .= $this->wawToLatin($chars, $i, $n);
+                $skip = $this->wawConsumeExtraChars($chars, $i, $n);
+                $i += $skip;
+
+                continue;
+            }
+
+            // ی: وسط کلمه → i (امین، نسیم). اول کلمه → y (یوسف). آخر: بعد از ا → y (های)، وگرنه → i (مهدی).
             if ($c === 'ی') {
-                $buf .= $isLast ? 'i' : 'y';
+                if ($i === 0) {
+                    $buf .= 'y';
+
+                    continue;
+                }
+                if ($isLast) {
+                    $prev = $chars[$i - 1] ?? '';
+                    $buf .= ($prev === 'ا') ? 'y' : 'i';
+
+                    continue;
+                }
+                $buf .= 'i';
 
                 continue;
             }
 
             if ($c === 'ه' && $isLast) {
-                $buf .= 'eh';
+                $nextPrev = $i > 0 ? $chars[$i - 1] : '';
+                $buf .= ($nextPrev === 'ا') ? 'h' : 'eh';
 
                 continue;
             }
@@ -161,6 +303,62 @@ final class PersianFinglishConverter
         }
 
         return $buf;
+    }
+
+    /**
+     * Persian و: often "o" between consonants / before consonant / word-final (سورس، نور، سو، نو، فانوس)،
+     * but "v" word-initial (وحید)، before ی (پرویز)، and خوا→kha (خواندن).
+     */
+    private function wawToLatin(array $chars, int $i, int $n): string
+    {
+        $prev = $i > 0 ? $chars[$i - 1] : '';
+        $next = $i < $n - 1 ? $chars[$i + 1] : '';
+
+        if ($i === 0) {
+            return 'v';
+        }
+
+        if ($prev === 'خ' && $next === 'ا') {
+            return 'a';
+        }
+
+        if ($next === 'ی') {
+            return 'v';
+        }
+
+        if ($next === '' || $this->isPersianConsonantForWaw($next)) {
+            return 'o';
+        }
+
+        return 'v';
+    }
+
+    /**
+     * Extra letters consumed after emitting Latin for و at index $i (currently only skips ا in خوا).
+     *
+     * @param  array<int, string>  $chars
+     */
+    private function wawConsumeExtraChars(array $chars, int $i, int $n): int
+    {
+        $prev = $i > 0 ? $chars[$i - 1] : '';
+        $next = $i < $n - 1 ? $chars[$i + 1] : '';
+
+        if ($prev === 'خ' && $next === 'ا') {
+            return 1;
+        }
+
+        return 0;
+    }
+
+    private function isPersianConsonantForWaw(string $c): bool
+    {
+        static $vowelish = [
+            'آ' => true,
+            'ا' => true,
+            'ی' => true,
+        ];
+
+        return ! isset($vowelish[$c]);
     }
 
     /**
@@ -185,7 +383,8 @@ final class PersianFinglishConverter
             'آرتین' => 'artin', 'آیدا' => 'aida', 'آمنه' => 'ameneh', 'آرمان' => 'arman',
             'بنیامین' => 'benyamin', 'بهزاد' => 'behzad', 'بهروز' => 'behrooz', 'پویان' => 'pouyan',
             'پیمان' => 'peyman', 'تینا' => 'tina', 'ثریا' => 'soraya', 'جلال' => 'jalal',
-            'حامد' => 'hamed', 'خدیجه' => 'khadijeh', 'دانیال' => 'danial', 'رامین' => 'ramin',
+            'حامد' => 'hamed', 'حجت' => 'hojjat', 'حبیب' => 'habib', 'خدیجه' => 'khadijeh',
+            'دانیال' => 'danial', 'رامین' => 'ramin',
             'روزبه' => 'roozbeh', 'زینب' => 'zeinab', 'سامان' => 'saman', 'ساناز' => 'sanaz',
             'سپهر' => 'sepehr', 'شاهین' => 'shahin', 'شایان' => 'shayan', 'شیما' => 'shima',
             'صابر' => 'saber', 'صادق' => 'sadegh', 'طاهر' => 'taher',
@@ -193,7 +392,34 @@ final class PersianFinglishConverter
             'کاظم' => 'kazem', 'کریم' => 'karim', 'گلناز' => 'golnaz', 'لیلا' => 'leila',
             'مازیار' => 'maziar', 'مرتضی' => 'morteza', 'میلاد' => 'milad',
             'ناصر' => 'naser', 'نسیم' => 'nasim', 'نگار' => 'negar', 'هادی' => 'hadi',
-            'هوشنگ' => 'hooshang', 'وحید' => 'vahid', 'یاسر' => 'yaser', 'یاسمن' => 'yasaman',
+            'هوشنگ' => 'hooshang', 'وحید' => 'vahid',
+            'یاسر' => 'yaser', 'یاسمن' => 'yasaman', 'یونس' => 'younes',
+
+            'امین' => 'amin', 'اقبال' => 'eqbal', 'فر' => 'far',
+            'دانشگاه' => 'daneshgah', 'دانشکده' => 'daneshkadeh', 'علوم' => 'oloum',
+
+            'سو' => 'so',
+            'تو' => 'to',
+            'مو' => 'mo',
+            'نو' => 'no',
+            'سورس' => 'sors',
+            'فانوس' => 'fanos',
+            'نور' => 'nor',
+            'نمونه' => 'nemoneh',
+            'کل' => 'Kol',
+            'کلانتری' => 'Kalantary',
+            'ایده' => 'Edeh',
+            'پویا' => 'Poia',
+            'موارد' => 'movared',
+            'پرویز' => 'parviz',
+            'خواندن' => 'khandan',
+            'کامپیوتر' => 'computer', 'کامپیوتری' => 'computery',
+            'مرکز' => 'markaz', 'مرکزی' => 'markazi',
+
+            'عباس' => 'abbas', 'عرفان' => 'erfan', 'عبدالله' => 'abdollah', 'عبدالرضا' => 'abdolreza',
+            'مسعود' => 'masoud', 'منصور' => 'mansour', 'هاشم' => 'hashem', 'کمیل' => 'kamil',
+            'ذکریا' => 'zakarya', 'طاها' => 'taha', 'قائم' => 'ghaem',
+            'حجتالله' => 'hojjatollah', 'حجت اله' => 'hojjatollah',
 
             'سید' => 'seyed', 'سیده' => 'seyedeh',
 
@@ -206,7 +432,7 @@ final class PersianFinglishConverter
 
             'احمدی' => 'ahmadi', 'محمدی' => 'mohammadi', 'رضایی' => 'rezaei', 'علوی' => 'alavi',
             'کریمی' => 'karimi', 'موسوی' => 'mousavi', 'حسینی' => 'hosseini', 'نوری' => 'nouri',
-            'کاظمی' => 'kazemi', 'رحیمی' => 'rahimi', 'زارعی' => 'zarei', 'عباسی' => 'abbasi',
+            'کاظمی' => 'kazemi', 'رحیمی' => 'rahimy', 'زارعی' => 'zarei', 'عباسی' => 'abbasi',
             'اکبری' => 'akbari', 'مرادی' => 'moradi', 'فرهادی' => 'farhadi', 'سلطانی' => 'soltani',
             'امینی' => 'amini', 'یزدی' => 'yazdi', 'شیرازی' => 'shirazi', 'تهرانی' => 'tehrani',
             'کوهستانی' => 'koohistani', 'صادقی' => 'sadeghi', 'امیری' => 'amiri', 'محسنی' => 'mohseni',
@@ -246,7 +472,6 @@ final class PersianFinglishConverter
         'ل' => 'l',
         'م' => 'm',
         'ن' => 'n',
-        'و' => 'v',
         'ه' => 'h',
         'ء' => '',
         'ٔ' => '',

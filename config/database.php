@@ -83,6 +83,25 @@ return [
             ]) : [],
         ],
 
+        'issabel' => [
+            'driver' => 'mysql',
+            'host' =>  '192.168.3.101',
+            'port' => '3306',
+            'database' => 'asteriskcdrdb',
+            'username' => 'root',
+            'password' =>  'BigIran@21',
+            'unix_socket' => '',
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

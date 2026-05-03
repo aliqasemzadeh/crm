@@ -18,6 +18,7 @@
         "jalali-moment": "^3.3.11",
         "persian-date": "^1.1.0",
         "persian-datepicker": "^1.2.0",
+        "persian-to-pinglish": "^0.5.2",
         "vazirmatn": "^33.0.3"
     }
 }
