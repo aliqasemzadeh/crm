@@ -7,6 +7,7 @@ use App\Models\Voip\Phone;
 use App\Support\PersianFinglishConverter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class ImportPhoneFromSepidarCommand extends Command
 {
@@ -42,7 +43,7 @@ class ImportPhoneFromSepidarCommand extends Command
                     if ($name !== '') {
                         $translated = trim($converter->convert($name));
                         $spaced = preg_replace('/\s+/u', ' ', $translated);
-                        $nameLatin = strtolower(is_string($spaced) ? $spaced : '');
+                        $nameLatin = Str::title(is_string($spaced) ? $spaced : '');
                     }
 
                     $rows[] = [
