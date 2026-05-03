@@ -2,14 +2,18 @@
 
 namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
+use App\Models\Issabel\Device;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\Rules;
+use Illuminate\Validation\Rules\Password;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Throwable;
 
 class Edit extends Component
 {
@@ -35,6 +39,16 @@ class Edit extends Component
 
     public $photos = [];
 
+    public ?string $internal_phone_id = null;
+
+    public string $internal_phone_search = '';
+
+    public string $bale_code = '';
+
+    public string $personnel_code = '';
+
+    public string $timex_code = '';
+
     #[On('panels.administrator.user-management.user.edit.assign-data')]
     public function assignData($id): void
     {
@@ -48,7 +62,54 @@ class Edit extends Component
         $this->password_confirmation = '';
         $this->photo = null;
         $this->photos = [];
+        $this->internal_phone_id = $this->user->internal_phone_id;
+        $this->internal_phone_search = '';
+        $this->bale_code = (string) ($this->user->bale_code ?? '');
+        $this->personnel_code = (string) ($this->user->personnel_code ?? '');
+        $this->timex_code = (string) ($this->user->timex_code ?? '');
         Flux::modal('panels.administrator.user-management.user.edit.modal')->show();
+    }
+
+    /**
+     * گزینه‌های شمارهٔ داخلی (Issabel devices) برای combobox با جستجوی سمت سرور.
+     *
+     * @return Collection<int, Device>
+     */
+    #[Computed]
+    public function internalPhoneDevices(): Collection
+    {
+        try {
+            $term = trim($this->internal_phone_search);
+
+            $query = Device::query()
+                ->whereNotNull('user')
+                ->orderBy('user')
+                ->limit(25);
+
+            if ($term !== '') {
+                $query->where(function ($q) use ($term) {
+                    $q->where('user', 'like', '%'.$term.'%')
+                        ->orWhere('description', 'like', '%'.$term.'%')
+                        ->orWhere('id', 'like', '%'.$term.'%');
+                });
+            }
+
+            $results = $query->get();
+
+            if ($this->internal_phone_id !== null && $this->internal_phone_id !== ''
+                && ! $results->contains(fn (Device $d): bool => (string) $d->id === (string) $this->internal_phone_id)) {
+                $extra = Device::query()->find($this->internal_phone_id);
+                if ($extra) {
+                    $results = $results->prepend($extra)->take(25)->values();
+                }
+            }
+
+            return $results;
+        } catch (Throwable $e) {
+            report($e);
+
+            return collect();
+        }
     }
 
     public function edit(): void
@@ -64,10 +125,14 @@ class Edit extends Component
             'last_name' => ['nullable', 'string', 'max:255'],
             'mobile' => ['required', 'string', 'ir_mobile', 'max:255', Rule::unique('users', 'mobile')->ignore($this->user)],
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->user)],
-            'password' => ['nullable', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
             'password_confirmation' => ['nullable', 'string'],
             'photo' => ['nullable', 'image', 'max:2048'],
             'photos.*' => ['nullable', 'image', 'max:10240'],
+            'internal_phone_id' => ['nullable', 'string', 'max:255'],
+            'bale_code' => ['nullable', 'string', 'max:255'],
+            'personnel_code' => ['nullable', 'string', 'max:255'],
+            'timex_code' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($this->photo) {
@@ -93,6 +158,18 @@ class Edit extends Component
         $this->user->mobile = $validated['mobile'];
         $this->user->email = $email === '' ? null : $email;
 
+        $internalId = trim((string) ($validated['internal_phone_id'] ?? ''));
+        $this->user->internal_phone_id = $internalId === '' ? null : $internalId;
+
+        $bale = trim((string) ($validated['bale_code'] ?? ''));
+        $this->user->bale_code = $bale === '' ? null : $bale;
+
+        $personnel = trim((string) ($validated['personnel_code'] ?? ''));
+        $this->user->personnel_code = $personnel === '' ? null : $personnel;
+
+        $timex = trim((string) ($validated['timex_code'] ?? ''));
+        $this->user->timex_code = $timex === '' ? null : $timex;
+
         if (! empty($validated['password'] ?? '')) {
             // Will be hashed automatically via the model cast
             $this->user->password = $validated['password'];
@@ -100,6 +177,7 @@ class Edit extends Component
 
         $this->user->save();
 
+        Flux::toast(__('app.user_updated_successfully'));
         $this->dispatch('panels.administrator.user-management.user.index.render');
         Flux::modal('panels.administrator.user-management.user.edit.modal')->close();
     }
@@ -111,7 +189,7 @@ class Edit extends Component
             return;
         }
         $signatures = json_decode($this->user->signature, true) ?? [];
-        $signatures = array_values(array_filter($signatures, fn($sig) => $sig !== $path));
+        $signatures = array_values(array_filter($signatures, fn ($sig) => $sig !== $path));
         $this->user->signature = json_encode($signatures);
         $this->user->save();
     }
