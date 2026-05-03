@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('phones', function (Blueprint $table) {
+        Schema::connection('mysql')->dropIfExists('phones');
+        Schema::connection('mysql')->create('phones', function (Blueprint $table) {
             $table->id();
+            $table->string('number')->unique();
+            $table->string('name', 512);
+            $table->string('name_latin', 512);
             $table->timestamps();
         });
     }
@@ -22,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('phones');
+        Schema::connection('mysql')->dropIfExists('phones');
     }
 };
