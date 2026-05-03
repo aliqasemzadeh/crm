@@ -63,6 +63,26 @@ return [
             ]) : [],
         ],
 
+        'voip' => [
+            'driver' => 'mysql',
+            'url' => env('VOIP_DB_URL'),
+            'host' => env('VOIP_DB_HOST', '127.0.0.1'),
+            'port' => env('VOIP_DB_PORT', '3306'),
+            'database' => env('VOIP_DB_DATABASE', 'phones'),
+            'username' => env('VOIP_DB_USERNAME', 'crm'),
+            'password' => env('VOIP_DB_PASSWORD', '1234554321'),
+            'unix_socket' => env('VOIP_DB_SOCKET', ''),
+            'charset' => env('VOIP_DB_CHARSET', 'utf8mb4'),
+            'collation' => env('VOIP_DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                (PHP_VERSION_ID >= 80500 ? \Pdo\Mysql::ATTR_SSL_CA : \PDO::MYSQL_ATTR_SSL_CA) => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),
