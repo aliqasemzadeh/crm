@@ -32,7 +32,7 @@ class Index extends Component
 
     private const DEVICES_CACHE_KEY = 'crm.issabel_devices_user_to_description';
 
-    private const INTERNAL_TWO_DIGIT_USER_PROFILES_CACHE_KEY = 'crm.users_by_internal_two_digit_extension';
+    private const INTERNAL_USER_PROFILES_BY_EXTENSION_CACHE_KEY = 'crm.users_by_internal_phone_extension_v2';
 
     private const PHONES_CACHE_TTL_SECONDS = 600;
 
@@ -90,7 +90,7 @@ class Index extends Component
 
             $phoneMap = $this->phoneNumberToNameMap();
             $deviceMap = $this->deviceUserToDescriptionMap();
-            $internalProfiles = $this->internalTwoDigitUserProfiles();
+            $internalProfiles = $this->internalUserProfilesByExtension();
             $mapped = [];
 
             foreach ($rows as $row) {
@@ -166,14 +166,14 @@ class Index extends Component
     }
 
     /**
-     * پروفایل کاربر CRM برای داخلی‌های دقیقاً دو رقمی (users.internal_phone_id → devices.id).
+     * پروفایل کاربر CRM برای داخلی متصل به users.internal_phone_id → Issabel devices.
      *
-     * @return array<string, array{name: string, avatar_url: ?string, has_avatar: bool}>
+     * @return array<string, array{name: string, avatar_url: ?string}>
      */
-    private function internalTwoDigitUserProfiles(): array
+    private function internalUserProfilesByExtension(): array
     {
         return Cache::remember(
-            self::INTERNAL_TWO_DIGIT_USER_PROFILES_CACHE_KEY,
+            self::INTERNAL_USER_PROFILES_BY_EXTENSION_CACHE_KEY,
             self::PHONES_CACHE_TTL_SECONDS,
             function (): array {
                 $map = [];
@@ -188,12 +188,13 @@ class Index extends Component
                         continue;
                     }
 
-                    foreach ($this->twoDigitKeysFromDevice($device) as $key) {
-                        $map[$key] = [
-                            'name' => $user->name,
-                            'avatar_url' => $user->getAvatarUrl(),
-                            'has_avatar' => (bool) $user->avatar,
-                        ];
+                    $profile = [
+                        'name' => $user->name,
+                        'avatar_url' => $user->getAvatarUrl(),
+                    ];
+
+                    foreach ($this->extensionKeysFromDevice($device) as $key) {
+                        $map[$key] = $profile;
                     }
                 }
 
@@ -203,59 +204,54 @@ class Index extends Component
     }
 
     /**
+     * همان کلیدهای قابل جستجو برای devices.user / dial تا با partyLookupKeys در CDR هم‌خوان باشد.
+     *
      * @return list<string>
      */
-    private function twoDigitKeysFromDevice(Device $device): array
+    private function extensionKeysFromDevice(Device $device): array
     {
         $keys = [];
-        foreach ([trim((string) $device->user), trim((string) $device->dial)] as $t) {
-            if ($t === '') {
+        foreach ([trim((string) $device->user), trim((string) $device->dial)] as $col) {
+            if ($col === '') {
                 continue;
             }
-            if (preg_match('/^\d{2}$/', $t) === 1) {
-                $keys[] = $t;
-            }
-            $digits = preg_replace('/\D+/', '', $t) ?? '';
-            if (preg_match('/^\d{2}$/', $digits) === 1) {
+
+            $keys[] = $col;
+            $digits = preg_replace('/\D+/', '', $col) ?? '';
+            if ($digits !== '') {
                 $keys[] = $digits;
+                if (strlen($digits) <= 5) {
+                    $stripped = ltrim($digits, '0');
+                    if ($stripped !== '' && $stripped !== $digits) {
+                        $keys[] = $stripped;
+                    }
+                }
             }
         }
 
-        return array_values(array_unique($keys));
+        return array_values(array_unique(array_filter($keys)));
     }
 
     /**
-     * استخراج شمارهٔ داخلی دو رقمی از فیلدهای خام CDR برای تطبیق با کاربران CRM.
-     */
-    private function extractTwoDigitExtension(string $raw): ?string
-    {
-        $trim = trim($raw);
-        if ($trim === '') {
-            return null;
-        }
-
-        $normalized = $this->normalizeExtensionCandidate($trim);
-        $digitsOnly = preg_replace('/\D+/', '', $trim) ?? '';
-
-        foreach ([$normalized, $trim, $digitsOnly] as $candidate) {
-            if ($candidate !== '' && preg_match('/^\d{2}$/', $candidate) === 1) {
-                return $candidate;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * دادهٔ نمایش طرف تماس برای UI (آواتار مثل صفحهٔ کاربران ادمین، فقط برای داخلی دو رقمی آواتار کوچک در مسیر).
+     * دادهٔ نمایش طرف تماس: اگر داخلی به کاربر CRM وصل باشد نام و آواتار همان کاربر؛ در غیر این صورت فقط برچسب (مثلاً مخاطب یا شماره خارجی).
      *
-     * @param  array<string, array{name: string, avatar_url: ?string, has_avatar: bool}>  $internalProfiles
-     * @return array{display: string, avatar_url: ?string, has_avatar: bool, avatar_name: string, is_two_digit_party: bool}
+     * @param  array<string, array{name: string, avatar_url: ?string}>  $internalProfiles
+     * @return array{display: string, avatar_url: ?string, avatar_name: string, is_internal_user: bool}
      */
     private function partyPresentation(string $raw, string $displayLabel, array $internalProfiles): array
     {
-        $ext = $this->extractTwoDigitExtension($raw);
-        $profile = ($ext !== null && isset($internalProfiles[$ext])) ? $internalProfiles[$ext] : null;
+        $profile = null;
+        foreach ($this->partyLookupKeys($raw) as $key) {
+            if (isset($internalProfiles[$key])) {
+                $profile = $internalProfiles[$key];
+                break;
+            }
+        }
+
+        $normalized = $this->normalizeExtensionCandidate($raw);
+        if ($profile === null && $normalized !== '' && isset($internalProfiles[$normalized])) {
+            $profile = $internalProfiles[$normalized];
+        }
 
         $display = $profile !== null ? $profile['name'] : $displayLabel;
         $avatarName = $profile !== null ? $profile['name'] : $displayLabel;
@@ -263,16 +259,15 @@ class Index extends Component
         return [
             'display' => $display,
             'avatar_url' => $profile['avatar_url'] ?? null,
-            'has_avatar' => $profile !== null && $profile['has_avatar'],
             'avatar_name' => $avatarName !== '' ? $avatarName : $displayLabel,
-            'is_two_digit_party' => $ext !== null,
+            'is_internal_user' => $profile !== null,
         ];
     }
 
     /**
      * @param  array<string, string>  $phoneMap
      * @param  array<string, string>  $deviceMap
-     * @param  array<string, array{name: string, avatar_url: ?string, has_avatar: bool}>  $internalProfiles
+     * @param  array<string, array{name: string, avatar_url: ?string}>  $internalProfiles
      * @return array<string, mixed>
      */
     private function mapRow(Cdr $row, array $phoneMap, array $deviceMap, array $internalProfiles): array
@@ -299,6 +294,13 @@ class Index extends Component
 
         $headingRaw = $cnum !== '' ? $cnum : (string) $row->src;
         $headingParty = $this->partyPresentation($headingRaw, $phoneDisplay, $internalProfiles);
+        $callerTooltipNumber = $this->callerTooltipNumber($headingRaw, $headingParty['display']);
+
+        $routeFromParty = $this->partyPresentation((string) $row->dst, $routeFromLabel, $internalProfiles);
+        $routeFromParty['tooltip_number'] = $this->callerTooltipNumber((string) $row->dst, $routeFromParty['display']);
+
+        $routeToParty = $this->partyPresentation((string) $row->src, $routeToLabel, $internalProfiles);
+        $routeToParty['tooltip_number'] = $this->callerTooltipNumber((string) $row->src, $routeToParty['display']);
 
         return [
             'uniqueid' => $row->uniqueid,
@@ -308,9 +310,10 @@ class Index extends Component
             'indicator_color' => $appearance['color'],
             'badge_color' => $appearance['color'],
             'phone_display' => $headingParty['display'],
+            'caller_tooltip_number' => $callerTooltipNumber,
             'heading_party' => $headingParty,
-            'route_from_party' => $this->partyPresentation((string) $row->dst, $routeFromLabel, $internalProfiles),
-            'route_to_party' => $this->partyPresentation((string) $row->src, $routeToLabel, $internalProfiles),
+            'route_from_party' => $routeFromParty,
+            'route_to_party' => $routeToParty,
             'duration_display' => $this->formatBillsec($billsec),
             'billsec' => $billsec,
         ];
@@ -482,6 +485,51 @@ class Index extends Component
         $s = $billsec % 60;
 
         return sprintf('%d:%02d', $m, $s);
+    }
+
+    /**
+     * شمارهٔ خام طرف تماس برای نمایش در tooltip وقتی عنوان، نام است نه خود شماره.
+     */
+    private function formatCallerRawForTooltip(string $raw): string
+    {
+        $trim = trim($raw);
+        if ($trim === '') {
+            return '';
+        }
+
+        $normalized = $this->normalizeExtensionCandidate($trim);
+        $digits = preg_replace('/\D+/', '', $trim) ?? '';
+
+        if ($normalized !== '') {
+            return $normalized;
+        }
+
+        return $digits !== '' ? $digits : $trim;
+    }
+
+    /**
+     * فقط وقتی عنوان با شمارهٔ قابل‌فهم یکی نیست (مثلاً نام کاربر یا مخاطب)، شماره برای tooltip برگردانده می‌شود.
+     */
+    private function callerTooltipNumber(string $headingRaw, string $display): ?string
+    {
+        $tooltip = $this->formatCallerRawForTooltip($headingRaw);
+        if ($tooltip === '') {
+            return null;
+        }
+
+        $displayTrim = trim($display);
+        if ($displayTrim === '' || $displayTrim === $tooltip) {
+            return null;
+        }
+
+        $digitsDisplay = preg_replace('/\D+/', '', $displayTrim) ?? '';
+        $digitsTooltip = preg_replace('/\D+/', '', $tooltip) ?? '';
+
+        if ($digitsTooltip !== '' && $digitsDisplay === $digitsTooltip) {
+            return null;
+        }
+
+        return $tooltip;
     }
 
     #[Layout('layouts.panels.crm')]
