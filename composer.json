@@ -8,7 +8,6 @@
     "require": {
         "php": "^8.2",
         "ammont/fa-slugify": "dev-master",
-        "ammont/finglify": "dev-master",
         "getartisanflow/wireflow": "^0.1.2@alpha",
         "laravel-lang/common": "^6.7",
         "laravel/framework": "^12.0",
