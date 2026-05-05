@@ -5,7 +5,6 @@
     'cancelLabel' => __('app.task.cancel'),
     'cancelRoute' => route('panels.workspace.task.index'),
     'formClass' => 'space-y-6 max-w-2xl',
-    'checklistItems' => [],
 ])
 
 <form wire:submit="{{ $submit }}" class="{{ $formClass }}">
@@ -30,7 +29,7 @@
 
     <flux:input type="date" wire:model="due_at" :label="__('app.task.due_at')" />
 
-    <div x-data class="grid grid-cols-1 gap-6 md:grid-cols-2">
+    <div x-data class="space-y-4">
         <flux:select wire:model="repeat_type" :label="__('app.task.repeat_type')">
             <flux:select.option value="none">{{ __('app.task.repeat_types.none') }}</flux:select.option>
             <flux:select.option value="daily">{{ __('app.task.repeat_types.daily') }}</flux:select.option>
@@ -56,10 +55,12 @@
     </div>
 
     @if(auth()->user()?->hasRole('administrator'))
-        <flux:checkbox wire:model="is_locked" :label="__('app.task.is_locked')" />
+        <flux:field variant="inline">
+            <flux:label>{{ __('app.task.is_locked') }}</flux:label>
+            <flux:switch wire:model.live="is_locked" />
+            <flux:error name="is_locked" />
+        </flux:field>
     @endif
-
-    <x-workspace.task.checklist :checklist-items="$checklistItems" />
 
     <div class="flex gap-2">
         <flux:button type="submit" variant="primary" color="teal">{{ $saveLabel }}</flux:button>

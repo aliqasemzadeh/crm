@@ -34,7 +34,9 @@ class Index extends Component
     #[Layout('layouts.panels.workspace')]
     public function render()
     {
-        $query = Task::where('created_by', auth()->id());
+        $query = Task::query()
+            ->with('users')
+            ->where('created_by', auth()->id());
 
         if ($this->filter_status) {
             $query->where('status', $this->filter_status);

@@ -25,56 +25,17 @@
 
         <div class="space-y-4">
             @forelse ($tasks as $task)
-                <div class="p-4 bg-white dark:bg-zinc-800 rounded-xl shadow-sm border border-zinc-200 dark:border-zinc-700 flex justify-between items-center">
-                    <div class="flex flex-col gap-1">
-                        <div class="flex items-center gap-2">
-                            <flux:heading size="lg">{{ $task->title }}</flux:heading>
-                            <flux:badge size="sm" :color="match($task->priority) {
-                                'low' => 'blue',
-                                'medium' => 'yellow',
-                                'high' => 'orange',
-                                'urgent' => 'red',
-                                default => 'zinc',
-                            }">{{ __('app.task.priorities.' . $task->priority) }}</flux:badge>
-                            <flux:badge size="sm" variant="outline" :color="match($task->status) {
-                                'planning' => 'zinc',
-                                'doing' => 'yellow',
-                                'done' => 'green',
-                                default => 'zinc',
-                            }">{{ __('app.task.statuses.' . $task->status) }}</flux:badge>
-                            @if($task->status === 'done')
-                                @if($task->approval_status === 'pending')
-                                    <flux:badge color="yellow" size="sm">{{ __('app.pending') }}</flux:badge>
-                                @elseif($task->approval_status === 'rejected')
-                                    <flux:dropdown hover position="bottom" align="start" offset="-16" gap="10">
-                                        <flux:badge color="red" size="sm" class="cursor-help">
-                                            {{ __('app.rejected') }}
-                                        </flux:badge>
-
-                                        <flux:popover class="max-w-xs p-4">
-                                            <div class="space-y-2">
-                                                <flux:heading size="sm">{{ __('app.rejection_reason') }}</flux:heading>
-                                                <flux:text size="sm">
-                                                    {{ $task->review_note ?: __('app.no_reason_provided') }}
-                                                </flux:text>
-                                            </div>
-                                        </flux:popover>
-                                    </flux:dropdown>
-                                @elseif($task->approval_status === 'approved')
-                                    <flux:badge color="green" size="sm">{{ __('app.task.review.status_approved') }}</flux:badge>
-                                @endif
-                            @endif
-                        </div>
-                        <flux:subheading>{{ Str::limit($task->description, 100) }}</flux:subheading>
-                        @if($task->due_at)
-                            <div class="text-xs text-zinc-500 flex items-center gap-1">
-                                <flux:icon.calendar variant="micro" />
-                                {{ \Morilog\Jalali\Jalalian::fromDateTime($task->due_at)->format('Y/m/d') }}
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="flex gap-2">
+                <flux:card>
+                    <x-workspace.task.card
+                        :task="$task"
+                        :show-drag-handle="false"
+                        :show-status-badge="true"
+                        :show-edit-action="false"
+                        :show-assign-action="false"
+                        :show-checklist-action="false"
+                        :show-activity-action="false"
+                        :show-delete-action="false"
+                    >
                         <flux:button href="{{ route('panels.workspace.task.assigns', $task) }}" icon="user-plus" variant="ghost" size="sm" wire:navigate />
                         @if($task->approval_status !== 'approved')
                             <flux:button href="{{ route('panels.workspace.task.edit', $task) }}" icon="pencil-square" variant="ghost" size="sm" wire:navigate />
@@ -101,8 +62,8 @@
                                 </form>
                             </flux:modal>
                         @endif
-                    </div>
-                </div>
+                    </x-workspace.task.card>
+                </flux:card>
             @empty
                 <div class="p-12 text-center border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-xl">
                     <flux:icon.clipboard-document-list class="mx-auto h-12 w-12 text-zinc-400" />
