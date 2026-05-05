@@ -61,6 +61,13 @@
                         {{ $user->name }}
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">
+                        @if (auth()->id() !== $user->id)
+                            @can('administrator_user_management_edit')
+                                <flux:tooltip content="{{ __('actions.impersonate') }}">
+                                    <flux:button size="xs" variant="primary" color="violet" icon="user-check" icon:variant="outline" wire:click="impersonate({{ $user->id }})" />
+                                </flux:tooltip>
+                            @endcan
+                        @endif
                         @can('administrator_user_management_edit')
                             <flux:button size="xs" variant="primary" wire:click="$dispatch('panels.administrator.user-management.user.edit.assign-data', { id: '{{ $user->id }}' })">{{ __('app.edit') }}</flux:button>
                         @endcan

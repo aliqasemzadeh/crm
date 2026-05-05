@@ -33,6 +33,12 @@ class Activity extends Component
         Flux::modal('review-user-task-activity-modal')->show();
     }
 
+    #[On('panels.workspace.review.user.task.activity.checklist.assign-data')]
+    public function assignChecklistData($id): void
+    {
+        $this->assignData($id);
+    }
+
     public function send()
     {
         $this->validate([

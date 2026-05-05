@@ -118,6 +118,8 @@ return [
     'timex_code' => 'کد Timex',
     'register' => 'ثبت نام',
     'login_id' => 'ایمیل یا شماره موبایل',
+    'login_as_user_success' => 'ورود به عنوان کاربر با موفقیت انجام شد.',
+    'cannot_login_as_self' => 'امکان ورود به حساب کاربری خودتان از این بخش وجود ندارد.',
 
     // Roles & Permissions
     'roles_description' => 'نقش‌ها را جستجو و به کاربر اختصاص دهید یا حذف کنید.',
