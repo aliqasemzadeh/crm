@@ -87,9 +87,12 @@
     <div class="text-sm text-zinc-600 dark:text-zinc-400">
         <div wire:sort:ignore>
             <div
-                class="font-medium {{ $activityEvent ? 'cursor-pointer' : '' }}"
+                class="flex items-center gap-1 font-medium {{ $activityEvent ? 'cursor-pointer' : '' }}"
                 @if($activityEvent) wire:click="$dispatch('{{ $activityEvent }}', { id: {{ $task->id }} })" @endif
             >
+                @if($task->is_locked)
+                    <flux:icon name="lock-closed" variant="micro" class="text-rose-500" />
+                @endif
                 {{ $task->title }}
             </div>
 
@@ -116,7 +119,10 @@
             @endif
 
             @if($checklistTotal > 0)
-                <div class="flex items-center gap-1">
+                <div
+                    class="flex items-center gap-1 cursor-pointer"
+                    @if($activityEvent) wire:click="$dispatch('{{ $eventPrefix }}.activity.checklist.assign-data', { id: {{ $task->id }} })" @endif
+                >
                     <flux:icon name="list-checks" variant="micro" class="text-zinc-400" />
                     <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $checklistTotal }}</span>
                     <flux:badge color="lime" size="sm">New</flux:badge>

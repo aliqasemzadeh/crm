@@ -21,6 +21,8 @@ class Activity extends Component
     public $files = [];
     public array $checklistItems = [];
     public string $newChecklistTitle = '';
+    public string $editingChecklistId = '';
+    public string $editingChecklistTitle = '';
 
     #[On('panels.workspace.dashboard.task.activity.assign-data')]
     public function assignData($id)
@@ -99,6 +101,32 @@ class Activity extends Component
         $this->task->load('checklists');
         $this->syncChecklistItems();
         Flux::modal('panels.workspace.dashboard.task.activity.checklist.create.modal')->close();
+        Flux::toast(__('app.task.notifications.updated'));
+    }
+
+    public function editChecklistItem(string $itemId): void
+    {
+        $item = TaskChecklist::findOrFail($itemId);
+        $this->editingChecklistId = $itemId;
+        $this->editingChecklistTitle = $item->title;
+        Flux::modal('panels.workspace.dashboard.task.activity.checklist.edit.modal')->show();
+    }
+
+    public function updateChecklistItem(): void
+    {
+        $this->validate([
+            'editingChecklistTitle' => 'required|string|min:2',
+        ]);
+
+        TaskChecklist::query()
+            ->where('id', $this->editingChecklistId)
+            ->update(['title' => $this->editingChecklistTitle]);
+
+        $this->editingChecklistId = '';
+        $this->editingChecklistTitle = '';
+        $this->task->load('checklists');
+        $this->syncChecklistItems();
+        Flux::modal('panels.workspace.dashboard.task.activity.checklist.edit.modal')->close();
         Flux::toast(__('app.task.notifications.updated'));
     }
 
