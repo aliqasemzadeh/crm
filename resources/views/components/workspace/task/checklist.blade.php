@@ -9,13 +9,13 @@
 @endphp
 
 <div class="space-y-3">
-    <div class="flex items-center justify-between">
+    <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
-            <flux:heading size="sm">{{ __('app.task.checklist') }}</flux:heading>
+            <flux:heading size="lg">{{ __('app.task.checklist') }}</flux:heading>
             <flux:badge size="sm" variant="outline">{{ $checklistCount }}</flux:badge>
         </div>
         @if($showControls)
-            <flux:button type="button" size="xs" variant="primary" color="teal" icon="plus" x-on:click="$flux.modal('{{ $addModalName }}').show()">
+            <flux:button type="button" size="sm" variant="primary" color="teal" icon="plus" x-on:click="$flux.modal('{{ $addModalName }}').show()">
                 {{ __('app.task.checklist_add') }}
             </flux:button>
         @endif
@@ -35,18 +35,27 @@
                 @endif
 
                 <span class="flex-1 truncate text-sm text-zinc-700 dark:text-zinc-200">
-                    {{ $itemTitle }}
+                    {{ $index + 1 }}. {{ $itemTitle }}
                 </span>
 
                 @if($showControls)
-                    <flux:button
-                        type="button"
-                        size="xs"
-                        variant="ghost"
-                        color="red"
-                        icon="trash"
-                        wire:click="removeChecklistItem('{{ $itemId }}')"
-                    />
+                    <div class="flex items-center gap-1">
+                        <flux:button
+                            type="button"
+                            size="xs"
+                            variant="ghost"
+                            icon="pencil"
+                            wire:click="editChecklistItem('{{ $itemId }}')"
+                        />
+                        <flux:button
+                            type="button"
+                            size="xs"
+                            variant="ghost"
+                            color="red"
+                            icon="trash"
+                            wire:click="removeChecklistItem('{{ $itemId }}')"
+                        />
+                    </div>
                 @endif
             </div>
         @empty

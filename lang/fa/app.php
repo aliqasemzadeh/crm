@@ -1092,6 +1092,7 @@ return [
         'checklist_create_description' => 'عنوان آیتم جدید را وارد کنید.',
         'checklist_item_title' => 'عنوان آیتم',
         'checklist_title_required' => 'عنوان آیتم چک لیست الزامی است.',
+        'checklist_edit_title' => 'ویرایش آیتم چک لیست',
         'repeat_type' => 'نوع تکرار',
         'repeat_weekday' => 'روز تکرار هفتگی',
         'repeat_monthday' => 'روز ماه',
