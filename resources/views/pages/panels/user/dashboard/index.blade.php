@@ -41,8 +41,6 @@ new #[Layout('layouts.panels.user')] class extends Component
 };
 
 ?>
-
-<flux:main>
     <div class="max-w-4xl mx-auto p-6 space-y-6">
         @foreach($announcements as $announcement)
             @php
@@ -70,4 +68,3 @@ new #[Layout('layouts.panels.user')] class extends Component
             </flux:callout>
         @endforeach
     </div>
-</flux:main>

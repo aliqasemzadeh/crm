@@ -16,9 +16,9 @@ Route::middleware(['auth'])->group( function () {
 
     Route::livewire('/', 'pages::panels.user.dashboard.index')->name('home');
     Route::livewire('/panels/user/dashboard/index', 'pages::panels.user.dashboard.index')->name('panels.user.dashboard.index');
-    Route::livewire('/panels/user/setting/change-password', \App\Livewire\Panels\User\Setting\ChangePassword::class)->name('panels.user.setting.change-password');
-    Route::livewire('/panels/user/setting/change-email', \App\Livewire\Panels\User\Setting\ChangeEmail::class)->name('panels.user.setting.change-email');
-    Route::livewire('/panels/user/setting/change-mobile', \App\Livewire\Panels\User\Setting\ChangeMobile::class)->name('panels.user.setting.change-mobile');
+    Route::livewire('/panels/user/setting/change-password', 'pages::panels.user.setting.change-password')->name('panels.user.setting.change-password');
+    Route::livewire('/panels/user/setting/change-email', 'pages::panels.user.setting.change-email')->name('panels.user.setting.change-email');
+    Route::livewire('/panels/user/setting/change-mobile', 'pages::panels.user.setting.change-mobile')->name('panels.user.setting.change-mobile');
 
 
     Route::livewire('/panels/administrator/dashboard/index', 'pages::panels.administrator.dashboard.index')->name('panels.administrator.dashboard.index');
@@ -29,9 +29,9 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/administrator/setting-management/option/index', \App\Livewire\Panels\Administrator\SettingManagement\Option\Index::class)->name('panels.administrator.setting-management.option.index');
     Route::livewire('/panels/administrator/announcement/index', \App\Livewire\Panels\Administrator\Announcement\Index::class)->name('panels.administrator.announcement.index');
 
-    Route::livewire('/panels/service-center/dashboard/index', \App\Livewire\Panels\ServiceCenter\Dashboard\Index::class)->name('panels.service-center.dashboard.index');
+    Route::livewire('/panels/service-center/dashboard/index', 'pages::panels.service-center.dashboard.index')->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');
-    Route::livewire('/panels/service-center/repair/index', \App\Livewire\Panels\ServiceCenter\Repair\Index::class)->name('panels.service-center.repair.index');
+    Route::livewire('/panels/service-center/repair/index', 'pages::panels.service-center.repair.index')->name('panels.service-center.repair.index');
 
     Route::livewire('/panels/warehouse/dashboard/index', 'pages::panels.warehouse.dashboard.index')->name('panels.warehouse.dashboard.index');
     Route::livewire('/panels/warehouse/item/index', 'pages::panels.warehouse.item.index')->name('panels.warehouse.item.index');
