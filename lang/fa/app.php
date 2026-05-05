@@ -1293,4 +1293,13 @@ return [
     'cdr_disposition_failed' => 'ناموفق',
     'cdr_disposition_congestion' => 'ازدحام',
     'cdr_disposition_unknown' => 'نامشخص',
+    'warehouse_items_description' => 'لیست کامل کالاهای انبار همراه با عکس، کد سایت و دسته‌بندی.',
+    'search_in_warehouse_items' => 'جستجو در کالاهای انبار...',
+    'all_items' => 'همه کالاها',
+    'without_image' => 'بدون عکس',
+    'without_irancode' => 'بدون کد سایت',
+    'all_groupings' => 'همه دسته‌بندی‌ها',
+    'sort_by_date_desc' => 'تاریخ (جدید به قدیم)',
+    'sort_by_date_asc' => 'تاریخ (قدیم به جدید)',
+    'sort_without_image_first' => 'ابتدا کالاهای بدون عکس',
 ];

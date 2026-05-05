@@ -11,6 +11,7 @@
 
     <flux:sidebar.nav>
         <flux:sidebar.item icon="home" href="{{ route('panels.warehouse.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="boxes" href="{{ route('panels.warehouse.item.index') }}" wire:navigate>{{ __('app.items') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />

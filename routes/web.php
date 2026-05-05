@@ -32,6 +32,8 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/service-center/dashboard/index', \App\Livewire\Panels\ServiceCenter\Dashboard\Index::class)->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');
     Route::livewire('/panels/service-center/repair/index', \App\Livewire\Panels\ServiceCenter\Repair\Index::class)->name('panels.service-center.repair.index');
+    Route::view('/panels/warehouse/dashboard/index', 'pages.panels.warehouse.dashboard.index')->name('panels.warehouse.dashboard.index');
+    Route::livewire('/panels/warehouse/item/index', \App\Livewire\Panels\Warehouse\Item\Index::class)->name('panels.warehouse.item.index');
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
     Route::livewire('/panels/workspace/task/index', \App\Livewire\Panels\Workspace\Task\Index::class)->name('panels.workspace.task.index');
