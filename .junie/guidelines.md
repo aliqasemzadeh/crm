@@ -6,7 +6,7 @@
 4-TailwindCSS
 5-AlpineJS
 6-PHP 8.4
-7-All Text Must Translate in /lang/fa/common.php If you want to add new text add it in common.php.
+7-All Text Must Translate in /lang/fa/app.php If you want to add new text add it in app.php.
 8-Optimize Queries and use cache if you can.
 9-Try to use AlpineJS for UI and Livewire for Backend.
 10-We have to use modal for create and edit form.
@@ -63,4 +63,4 @@
 34-try to use colors
 35-I want to use signle file livewire component
 36-I use pages:: for livewire page.
-37-If possible change class base to single file compoenet.
+37-If possible, change class base to single file compoenet.
