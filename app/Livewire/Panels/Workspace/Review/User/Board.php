@@ -25,7 +25,7 @@ class Board extends Component
     {
         return $this->user
             ->tasks()
-            ->with('users')
+            ->with(['users', 'checklists'])
             ->where('approval_status', '!=', 'approved')
             ->orderByRaw("
                 CASE status
