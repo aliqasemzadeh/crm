@@ -58,7 +58,7 @@
         </flux:table.rows>
     </flux:table>
 
-    <flux:modal name="review-task" variant="floating" class="md:w-lg">
+    <flux:modal name="review-task" flyout position="right" class="md:w-lg">
         <form wire:submit="submitReview" class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('app.task.review.modal_title') }}</flux:heading>
