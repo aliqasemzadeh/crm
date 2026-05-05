@@ -5,7 +5,6 @@
     'cancelLabel' => __('app.task.cancel'),
     'cancelRoute' => route('panels.workspace.task.index'),
     'formClass' => 'space-y-6 max-w-2xl',
-    'checklistItems' => [],
 ])
 
 <x-workspace.task.create
@@ -15,5 +14,4 @@
     :cancel-label="$cancelLabel"
     :cancel-route="$cancelRoute"
     :form-class="$formClass"
-    :checklist-items="$checklistItems"
 />

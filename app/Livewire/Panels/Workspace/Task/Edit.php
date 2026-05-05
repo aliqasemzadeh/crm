@@ -3,7 +3,6 @@
 namespace App\Livewire\Panels\Workspace\Task;
 
 use App\Models\Workspace\Task;
-use Illuminate\Support\Str;
 use Flux\Flux;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -21,7 +20,6 @@ class Edit extends Component
     public ?string $repeat_weekday = null;
     public ?int $repeat_monthday = null;
     public bool $is_locked = false;
-    public array $checklistItems = [];
 
     public function mount(Task $task)
     {
@@ -49,10 +47,6 @@ class Edit extends Component
         $this->repeat_weekday = $task->repeat_weekday !== null ? (string) $task->repeat_weekday : null;
         $this->repeat_monthday = $task->repeat_monthday;
         $this->is_locked = (bool) $task->is_locked;
-        $this->checklistItems = $task->checklists->map(fn ($checklist) => [
-            'id' => (string) $checklist->id,
-            'title' => $checklist->title,
-        ])->values()->all();
     }
 
     protected function rules()
@@ -68,32 +62,6 @@ class Edit extends Component
             'repeat_monthday' => 'nullable|required_if:repeat_type,monthly|integer|between:1,31',
             'is_locked' => 'boolean',
         ];
-    }
-
-    public function addChecklistItem(): void
-    {
-        $this->checklistItems[] = ['id' => 'new-' . Str::uuid(), 'title' => ''];
-    }
-
-    public function removeChecklistItem(string $itemId): void
-    {
-        $this->checklistItems = array_values(array_filter(
-            $this->checklistItems,
-            fn ($item) => $item['id'] !== $itemId
-        ));
-    }
-
-    public function sortChecklist($itemId, $position): void
-    {
-        $items = collect($this->checklistItems);
-        $currentIndex = $items->search(fn ($item) => $item['id'] === $itemId);
-        if ($currentIndex === false) {
-            return;
-        }
-
-        $item = $items->pull($currentIndex);
-        $items->splice((int) $position, 0, [$item]);
-        $this->checklistItems = $items->values()->all();
     }
 
     public function save()
@@ -113,20 +81,6 @@ class Edit extends Component
         $validated['locked_at'] = $validated['is_locked'] ? ($this->task->locked_at ?: now()) : null;
 
         $this->task->update($validated);
-        $this->task->checklists()->delete();
-
-        foreach (collect($this->checklistItems)->values() as $index => $item) {
-            $title = trim((string) ($item['title'] ?? ''));
-            if ($title === '') {
-                continue;
-            }
-
-            $this->task->checklists()->create([
-                'title' => $title,
-                'order' => $index + 1,
-            ]);
-        }
-
         Flux::toast(__('app.task.notifications.updated'));
 
         return $this->redirect(route('panels.workspace.task.index'), navigate: true);

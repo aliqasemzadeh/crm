@@ -13,6 +13,40 @@
             @endif
         </div>
 
+        @if($task)
+            <flux:modal name="panels.workspace.dashboard.task.activity.checklist.create.modal" flyout position="right" class="md:w-[420px]">
+                <form wire:submit="addChecklistItem" class="space-y-5">
+                    <div>
+                        <flux:heading size="lg">{{ __('app.task.checklist_create_title') }}</flux:heading>
+                        <flux:subheading>{{ __('app.task.checklist_create_description') }}</flux:subheading>
+                    </div>
+
+                    <flux:input wire:model.live="newChecklistTitle" :label="__('app.task.checklist_item_title')" />
+
+                    <div class="w-full">
+                        <flux:button type="submit" variant="primary" color="teal" class="w-full">
+                            {{ __('app.task.save') }}
+                        </flux:button>
+                    </div>
+                </form>
+            </flux:modal>
+        @endif
+
+        @if($task && $task->checklists->isNotEmpty())
+            <div class="space-y-3">
+                <flux:checkbox.group :label="__('app.task.checklist')">
+                    @foreach($task->checklists as $checklist)
+                        <label wire:key="activity-checklist-{{ $checklist->id }}" class="flex items-center gap-2 rounded-lg border border-zinc-200 px-3 py-2 transition dark:border-zinc-700 {{ $checklist->is_done ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-zinc-900/30' }}">
+                            <flux:checkbox :checked="$checklist->is_done" wire:change="toggleChecklist({{ $checklist->id }})" />
+                            <span class="text-sm {{ $checklist->is_done ? 'text-emerald-700 line-through dark:text-emerald-300' : 'text-zinc-700 dark:text-zinc-200' }}">
+                                {{ $checklist->title }}
+                            </span>
+                        </label>
+                    @endforeach
+                </flux:checkbox.group>
+            </div>
+        @endif
+
         <div class="space-y-4 max-h-[60vh] overflow-y-auto px-1">
             @if($task && $task->reports->count() > 0)
                 @foreach($task->reports as $report)

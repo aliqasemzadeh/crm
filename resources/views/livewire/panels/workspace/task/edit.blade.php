@@ -4,6 +4,6 @@
             <flux:heading size="xl">{{ __('app.task.edit') }}</flux:heading>
         </div>
 
-        <x-workspace.task.edit submit="save" :checklist-items="$checklistItems" />
+        <x-workspace.task.edit submit="save" />
     </flux:main>
 </div>
