@@ -1,3 +1,51 @@
+<?php
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+
+new #[Layout('layouts.auth')] class extends Component {
+    public string $login_id = '';
+
+    public string $password = '';
+
+    public bool $remember = false;
+
+    protected function rules(): array
+    {
+        return [
+            'login_id' => ['required', 'string'],
+            'password' => ['required', 'string'],
+            'remember' => ['boolean'],
+        ];
+    }
+
+    public function login()
+    {
+        $this->validate();
+
+        $fieldType = filter_var($this->login_id, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
+
+        $credentials = [
+            $fieldType => $this->login_id,
+            'password' => $this->password,
+        ];
+
+        if (! Auth::guard('web')->attempt($credentials, $this->remember)) {
+            throw ValidationException::withMessages([
+                'login_id' => trans('app.login.auth_failed'),
+            ]);
+        }
+
+        request()->session()->regenerate();
+        $this->reset('password');
+
+        return $this->redirectIntended(default: route('home'), navigate: true);
+    }
+};
+?>
+
 <div class="space-y-6">
     <flux:heading class="text-center" size="xl">{{ __('app.login.welcome_back') }}</flux:heading>
 
@@ -37,7 +85,6 @@
         <flux:separator text="{{ __('app.login.or') }}" />
     @endif
 
-
     <form wire:submit="login" class="flex flex-col gap-6">
         <flux:input wire:model="login_id" label="{{ __('app.login_id') }}" placeholder="email@example.com / 09..." />
 
@@ -48,7 +95,7 @@
                 <flux:link href="{{ route('forget-password') }}" wire:navigate variant="subtle" class="text-sm">{{ __('app.login.forgot_password') }}</flux:link>
             </div>
 
-            <flux:input wire:model="password" type="password" placeholder="{{ __('app.password_placeholder') }}" viewable/>
+            <flux:input wire:model="password" type="password" placeholder="{{ __('app.password_placeholder') }}" viewable />
         </flux:field>
 
         <flux:checkbox wire:model="remember" label="{{ __('app.login.remember_me') }}" />
