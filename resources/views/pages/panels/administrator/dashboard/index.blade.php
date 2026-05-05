@@ -96,7 +96,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 <x-slot name="title">
     {{ __('app.accounting') }}
 </x-slot>
-<flux:main>
+<div>
     <div class="relative mb-6 w-full">
         <div class="flex items-center justify-between">
             <div>
@@ -149,4 +149,4 @@ new #[Layout('layouts.panels.administrator')] class extends Component
             </div>
         </div>
     </div>
-</flux:main>
+</div>
