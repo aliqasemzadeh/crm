@@ -110,11 +110,6 @@
                     <span class="text-xs text-zinc-500 dark:text-zinc-400">
                         {{ \Morilog\Jalali\Jalalian::fromDateTime($task->due_at)->format('Y/m/d') }}
                     </span>
-                    @if($task->is_locked)
-                        <flux:tooltip :content="__('app.task.is_locked')">
-                            <flux:icon name="lock-closed" variant="micro" class="text-rose-500" />
-                        </flux:tooltip>
-                    @endif
                 </div>
             @endif
 
