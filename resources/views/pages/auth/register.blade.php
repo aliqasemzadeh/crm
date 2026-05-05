@@ -1,3 +1,53 @@
+<?php
+
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password as PasswordRule;
+use Flux\Flux;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+
+new #[Layout('layouts.auth')] class extends Component
+{
+    public string $first_name = '';
+    public string $last_name = '';
+    public string $mobile = '';
+    public string $email = '';
+    public string $password = '';
+    public string $password_confirmation = '';
+
+    protected function rules(): array
+    {
+        return [
+            'first_name' => ['required', 'string', 'max:255'],
+            'last_name' => ['required', 'string', 'max:255'],
+            'mobile' => ['required', 'string', 'max:255', 'unique:users,mobile'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', PasswordRule::min(8), 'confirmed'],
+        ];
+    }
+
+    public function register()
+    {
+        $validated = $this->validate();
+
+        $user = User::create([
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'],
+            'mobile' => $validated['mobile'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        Auth::login($user, true);
+
+        Flux::toast(__('app.login.registration_successful'));
+
+        return $this->redirectIntended(default: '/', navigate: true);
+    }
+}; ?>
+
 <div class="space-y-6">
     <flux:heading class="text-center" size="xl">{{ __('app.login.sign_up') }}</flux:heading>
 

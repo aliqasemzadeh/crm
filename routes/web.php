@@ -4,27 +4,27 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::middleware(['guest'])->group( function () {
-    Route::livewire('/login', \App\Livewire\Auth\Login::class)->name('login');
-    Route::livewire('/register', \App\Livewire\Auth\Register::class)->name('register');
+    Route::livewire('/login', 'pages::auth.login')->name('login');
+    Route::livewire('/register', 'pages::auth.register')->name('register');
 });
 
-Route::livewire('/forget-password', \App\Livewire\Auth\ForgetPassword::class)->name('forget-password');
-Route::livewire('/change-password/{token}', \App\Livewire\Auth\ChangePassword::class)->name('change-password');
+Route::livewire('/forget-password', 'pages::auth.forget-password')->name('forget-password');
+Route::livewire('/change-password/{token}', 'pages::auth.change-password')->name('change-password');
 
 Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/crm/dashboard/index', \App\Livewire\Panels\Crm\Dashboard\Index::class)->name('panels.crm.dashboard.index');
 
-    Route::livewire('/', \App\Livewire\Panels\User\Dashboard\Index::class)->name('home');
-    Route::livewire('/panels/user/dashboard/index', \App\Livewire\Panels\User\Dashboard\Index::class)->name('panels.user.dashboard.index');
+    Route::livewire('/', 'pages::panels.user.dashboard.index')->name('home');
+    Route::livewire('/panels/user/dashboard/index', 'pages::panels.user.dashboard.index')->name('panels.user.dashboard.index');
     Route::livewire('/panels/user/setting/change-password', \App\Livewire\Panels\User\Setting\ChangePassword::class)->name('panels.user.setting.change-password');
     Route::livewire('/panels/user/setting/change-email', \App\Livewire\Panels\User\Setting\ChangeEmail::class)->name('panels.user.setting.change-email');
     Route::livewire('/panels/user/setting/change-mobile', \App\Livewire\Panels\User\Setting\ChangeMobile::class)->name('panels.user.setting.change-mobile');
 
 
-    Route::livewire('/panels/administrator/dashboard/index', \App\Livewire\Panels\Administrator\Dashboard\Index::class)->name('panels.administrator.dashboard.index');
-    Route::livewire('/panels/administrator/user-management/user/index', \App\Livewire\Panels\Administrator\UserManagement\User\Index::class)->name('panels.administrator.user-management.user.index');
-    Route::livewire('/panels/administrator/user-management/role/index', \App\Livewire\Panels\Administrator\UserManagement\Role\Index::class)->name('panels.administrator.user-management.role.index');
-    Route::livewire('/panels/administrator/user-management/permission/index', \App\Livewire\Panels\Administrator\UserManagement\Permission\Index::class)->name('panels.administrator.user-management.permission.index');
+    Route::livewire('/panels/administrator/dashboard/index', 'pages::panels.administrator.dashboard.index')->name('panels.administrator.dashboard.index');
+    Route::livewire('/panels/administrator/user-management/user/index', 'pages::panels.administrator.user-management.user.index')->name('panels.administrator.user-management.user.index');
+    Route::livewire('/panels/administrator/user-management/role/index', 'pages::panels.administrator.user-management.role.index')->name('panels.administrator.user-management.role.index');
+    Route::livewire('/panels/administrator/user-management/permission/index', 'pages::panels.administrator.user-management.permission.index')->name('panels.administrator.user-management.permission.index');
     Route::livewire('/panels/administrator/setting-management/function/index', \App\Livewire\Panels\Administrator\SettingManagement\Function\Index::class)->name('panels.administrator.setting-management.function.index');
     Route::livewire('/panels/administrator/setting-management/option/index', \App\Livewire\Panels\Administrator\SettingManagement\Option\Index::class)->name('panels.administrator.setting-management.option.index');
     Route::livewire('/panels/administrator/announcement/index', \App\Livewire\Panels\Administrator\Announcement\Index::class)->name('panels.administrator.announcement.index');
@@ -79,7 +79,7 @@ Route::middleware(['auth'])->group( function () {
         });
     })->name('item.image');
 
-    Route::livewire('/logout', \App\Livewire\Auth\Logout::class)->name('logout');
+    Route::livewire('/logout', 'pages::auth.logout')->name('logout');
 
 });
 
