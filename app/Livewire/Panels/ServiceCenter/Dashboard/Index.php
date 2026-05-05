@@ -56,6 +56,7 @@ class Index extends Component
             $repair->status = $targetStatus->value;
             $repair->status_date = now();
             $repair->save();
+            $repair->sendCompletedSms();
         }
     }
 
