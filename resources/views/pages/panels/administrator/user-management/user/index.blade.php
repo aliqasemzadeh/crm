@@ -84,7 +84,7 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
 <x-slot name="title">
     {{ __('app.users') }}
 </x-slot>
-<flux:main>
+<div>
     <div class="relative mb-6 w-full">
         <div class="flex items-center justify-between">
             <div>
@@ -179,4 +179,4 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
             @endforeach
         </flux:table.rows>
     </flux:table>
-</flux:main>
+</div>
