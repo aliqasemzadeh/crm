@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
+use Flux\Flux;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -52,6 +54,26 @@ class Index extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
+    }
+
+    public function impersonate(int $userId)
+    {
+        $this->authorize('administrator_user_management_edit');
+
+        $user = \App\Models\User::query()->findOrFail($userId);
+
+        if ((int) Auth::id() === (int) $user->id) {
+            Flux::toast(__('app.cannot_login_as_self'), variant: 'danger');
+
+            return;
+        }
+
+        Auth::login($user);
+        request()->session()->regenerate();
+
+        Flux::toast(__('app.login_as_user_success'));
+
+        return $this->redirectRoute('home', navigate: true);
     }
 
     #[Layout('layouts.panels.administrator')]
