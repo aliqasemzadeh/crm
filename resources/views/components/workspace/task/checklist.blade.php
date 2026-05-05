@@ -4,9 +4,16 @@
     'showControls' => true,
 ])
 
+@php
+    $checklistCount = count($checklistItems);
+@endphp
+
 <div class="space-y-3">
     <div class="flex items-center justify-between">
-        <flux:heading size="sm">{{ __('app.task.checklist') }}</flux:heading>
+        <div class="flex items-center gap-2">
+            <flux:heading size="sm">{{ __('app.task.checklist') }}</flux:heading>
+            <flux:badge size="sm" variant="outline">{{ $checklistCount }}</flux:badge>
+        </div>
         @if($showControls)
             <flux:button type="button" size="xs" variant="primary" color="teal" icon="plus" x-on:click="$flux.modal('{{ $addModalName }}').show()">
                 {{ __('app.task.checklist_add') }}

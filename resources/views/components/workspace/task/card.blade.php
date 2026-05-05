@@ -22,6 +22,10 @@
     };
 
     $activityEvent = $eventPrefix ? $eventPrefix . '.activity.assign-data' : null;
+    $checklists = $task->relationLoaded('checklists') ? $task->checklists : collect();
+    $checklistTotal = $checklists->count();
+    $checklistDone = $checklists->where('is_done', true)->count();
+    $checklistProgress = $checklistTotal > 0 ? (int) round(($checklistDone / $checklistTotal) * 100) : 0;
 @endphp
 
 <div class="space-y-2">
@@ -103,6 +107,20 @@
                     <span class="text-xs text-zinc-500 dark:text-zinc-400">
                         {{ \Morilog\Jalali\Jalalian::fromDateTime($task->due_at)->format('Y/m/d') }}
                     </span>
+                    @if($task->is_locked)
+                        <flux:tooltip :content="__('app.task.is_locked')">
+                            <flux:icon name="lock-closed" variant="micro" class="text-rose-500" />
+                        </flux:tooltip>
+                    @endif
+                </div>
+            @endif
+
+            @if($checklistTotal > 0)
+                <div class="flex items-center gap-1">
+                    <flux:icon name="list-checks" variant="micro" class="text-zinc-400" />
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $checklistTotal }}</span>
+                    <flux:badge color="lime" size="sm">New</flux:badge>
+                    <span class="text-xs text-zinc-500 dark:text-zinc-400">{{ $checklistProgress }}%</span>
                 </div>
             @endif
 

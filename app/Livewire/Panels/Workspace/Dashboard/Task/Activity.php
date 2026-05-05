@@ -25,18 +25,15 @@ class Activity extends Component
     #[On('panels.workspace.dashboard.task.activity.assign-data')]
     public function assignData($id)
     {
-        $this->task = Task::with(['reports.user', 'reports.files', 'checklists'])->findOrFail($id);
-        $this->syncChecklistItems();
-        $this->reset(['body', 'files', 'newChecklistTitle']);
-
+        $this->loadTaskData($id);
         Flux::modal('panels.workspace.dashboard.task.activity.modal')->show();
     }
 
     #[On('panels.workspace.dashboard.task.activity.checklist.assign-data')]
     public function assignChecklistData($id): void
     {
-        $this->assignData($id);
-        Flux::modal('panels.workspace.dashboard.task.activity.checklist.create.modal')->show();
+        $this->loadTaskData($id);
+        Flux::modal('panels.workspace.dashboard.task.activity.checklists.modal')->show();
     }
 
     public function send()
@@ -173,6 +170,13 @@ class Activity extends Component
             ])
             ->values()
             ->all() ?? [];
+    }
+
+    protected function loadTaskData($id): void
+    {
+        $this->task = Task::with(['reports.user', 'reports.files', 'checklists'])->findOrFail($id);
+        $this->syncChecklistItems();
+        $this->reset(['body', 'files', 'newChecklistTitle']);
     }
 
     public function render()
