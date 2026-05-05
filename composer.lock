@@ -4,8 +4,70 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "37602788430842e3bcadd10cef2c401f",
+    "content-hash": "1936950275a0b9a572964d6574c6f8a5",
     "packages": [
+        {
+            "name": "aliqasemzadeh/fluxui-persian-date-picker",
+            "version": "dev-main",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aliqasemzadeh/fluxui-persian-date-picker.git",
+                "reference": "465073ec3edc4aed2d436d11e1e1e26144fb9074"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aliqasemzadeh/fluxui-persian-date-picker/zipball/465073ec3edc4aed2d436d11e1e1e26144fb9074",
+                "reference": "465073ec3edc4aed2d436d11e1e1e26144fb9074",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "livewire/flux": "^1.0|^2.0",
+                "livewire/livewire": "^4.0",
+                "php": "^8.2"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "AliQasemzadeh\\FluxuiPersianDatePicker\\PersianDatePickerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "AliQasemzadeh\\FluxuiPersianDatePicker\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Ali Qasemzadeh",
+                    "email": "AliQasemzadeh7@gmail.com"
+                }
+            ],
+            "description": "Persian (Jalali) Date Picker Blade component for Laravel + Livewire 4 + Flux UI.",
+            "keywords": [
+                "Jalali",
+                "date-picker",
+                "datepicker",
+                "flux",
+                "fluxui",
+                "laravel",
+                "livewire",
+                "persian",
+                "shamsi"
+            ],
+            "support": {
+                "issues": "https://github.com/aliqasemzadeh/fluxui-persian-date-picker/issues",
+                "source": "https://github.com/aliqasemzadeh/fluxui-persian-date-picker/tree/main"
+            },
+            "time": "2026-04-25T08:10:16+00:00"
+        },
         {
             "name": "ammont/fa-slugify",
             "version": "dev-master",
@@ -12863,6 +12925,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "aliqasemzadeh/fluxui-persian-date-picker": 20,
         "ammont/fa-slugify": 20,
         "getartisanflow/wireflow": 15
     },
