@@ -1,4 +1,4 @@
-<flux:modal name="panels.workspace.review.task.activity.modal" class="md:w-1/3">
+<flux:modal name="panels.workspace.review.task.activity.modal" flyout position="right" class="md:w-1/3">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.task.activity.modal_title') }}</flux:heading>

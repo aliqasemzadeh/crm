@@ -84,7 +84,7 @@
                                 <flux:button icon="trash" variant="ghost" size="sm" color="red" />
                             </flux:modal.trigger>
 
-                            <flux:modal name="delete-task-{{ $task->id }}" class="min-w-[22rem]">
+                            <flux:modal name="delete-task-{{ $task->id }}" flyout position="right" class="min-w-[22rem]">
                                 <form class="space-y-6" wire:submit="deleteTask({{ $task->id }})">
                                     <div>
                                         <flux:heading size="lg">{{ __('app.task.delete') }}</flux:heading>

@@ -3,6 +3,7 @@
 namespace App\Models\Workspace;
 
 use App\Models\User;
+use App\Models\Workspace\TaskChecklist;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -36,12 +37,24 @@ class Task extends Model
         // Creator / source
         'created_by',
         'source',            // user | system | manager
+        'repeat_type',       // none | daily | weekly | monthly
+        'repeat_weekday',    // 0..6 (sat..fri)
+        'repeat_monthday',   // 1..31
+        'last_repeated_at',
+        'next_repeat_at',
+        'is_locked',
+        'locked_by',
+        'locked_at',
     ];
 
     protected $casts = [
         'due_at'      => 'datetime',
         'done_at'     => 'datetime',
         'approved_at' => 'datetime',
+        'last_repeated_at' => 'datetime',
+        'next_repeat_at' => 'datetime',
+        'is_locked' => 'boolean',
+        'locked_at' => 'datetime',
     ];
 
     /* ---------------- Booted ---------------- */
@@ -71,6 +84,11 @@ class Task extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function locker(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'locked_by');
     }
 
     public function users(): BelongsToMany
@@ -134,5 +152,23 @@ class Task extends Model
     {
         return $this->hasMany(\App\Models\Workspace\TaskReport::class, 'task_id')
             ->latest();
+    }
+
+    public function checklists()
+    {
+        return $this->hasMany(TaskChecklist::class, 'task_id')->orderBy('order');
+    }
+
+    public function canBeManagedBy(?User $user): bool
+    {
+        if (! $this->is_locked) {
+            return true;
+        }
+
+        if (! $user) {
+            return false;
+        }
+
+        return (int) $this->locked_by === (int) $user->id || $user->hasRole('administrator');
     }
 }

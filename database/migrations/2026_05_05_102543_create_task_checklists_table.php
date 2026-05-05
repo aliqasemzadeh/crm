@@ -13,14 +13,15 @@ return new class extends Migration
     {
         Schema::create('workspace_task_checklists', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('task_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('task_id')->constrained('workspace_tasks')->cascadeOnDelete();
             $table->string('title', 200);
-            $table->text('description')->nullable();
-            $table->string('status', 20)->default('planning');
             $table->integer('order')->default(0);
+            $table->boolean('is_done')->default(false);
+            $table->timestamp('done_at')->nullable();
+            $table->foreignId('done_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
-
+            $table->index(['task_id', 'order']);
         });
     }
 

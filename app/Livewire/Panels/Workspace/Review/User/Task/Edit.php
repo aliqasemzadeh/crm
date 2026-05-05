@@ -4,6 +4,7 @@ namespace App\Livewire\Panels\Workspace\Review\User\Task;
 
 use App\Models\User;
 use App\Models\Workspace\Task;
+use Illuminate\Support\Str;
 use Flux\Flux;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -18,16 +19,33 @@ class Edit extends Component
     public string $status = 'planning';
     public string $priority = 'medium';
     public $due_at;
+    public string $repeat_type = 'none';
+    public ?string $repeat_weekday = null;
+    public ?int $repeat_monthday = null;
+    public bool $is_locked = false;
+    public array $checklistItems = [];
 
     #[On('panels.workspace.review.user.task.edit.assign-data')]
     public function assignData($id)
     {
         $this->task = Task::findOrFail($id);
+        if (! $this->task->canBeManagedBy(auth()->user())) {
+            Flux::toast(__('app.task.notifications.cannot_edit_locked'), variant: 'danger');
+            return;
+        }
         $this->title = $this->task->title;
         $this->description = $this->task->description ?? '';
         $this->status = $this->task->status;
         $this->priority = $this->task->priority;
         $this->due_at = $this->task->due_at?->format('Y-m-d');
+        $this->repeat_type = $this->task->repeat_type ?? 'none';
+        $this->repeat_weekday = $this->task->repeat_weekday !== null ? (string) $this->task->repeat_weekday : null;
+        $this->repeat_monthday = $this->task->repeat_monthday;
+        $this->is_locked = (bool) $this->task->is_locked;
+        $this->checklistItems = $this->task->checklists->map(fn ($checklist) => [
+            'id' => (string) $checklist->id,
+            'title' => $checklist->title,
+        ])->values()->all();
 
         Flux::modal('review-user-task-edit-modal')->show();
     }
@@ -40,14 +58,64 @@ class Edit extends Component
             'status' => 'required|in:planning,doing,done',
             'priority' => 'required|in:low,medium,high,urgent',
             'due_at' => 'nullable|date',
+            'repeat_type' => 'required|in:none,daily,weekly,monthly',
+            'repeat_weekday' => 'nullable|required_if:repeat_type,weekly|integer|between:0,6',
+            'repeat_monthday' => 'nullable|required_if:repeat_type,monthly|integer|between:1,31',
+            'is_locked' => 'boolean',
         ];
+    }
+
+    public function addChecklistItem(): void
+    {
+        $this->checklistItems[] = ['id' => 'new-' . Str::uuid(), 'title' => ''];
+    }
+
+    public function removeChecklistItem(string $itemId): void
+    {
+        $this->checklistItems = array_values(array_filter(
+            $this->checklistItems,
+            fn ($item) => $item['id'] !== $itemId
+        ));
+    }
+
+    public function sortChecklist($itemId, $position): void
+    {
+        $items = collect($this->checklistItems);
+        $currentIndex = $items->search(fn ($item) => $item['id'] === $itemId);
+        if ($currentIndex === false) {
+            return;
+        }
+
+        $item = $items->pull($currentIndex);
+        $items->splice((int) $position, 0, [$item]);
+        $this->checklistItems = $items->values()->all();
     }
 
     public function update()
     {
+        if (! $this->task->canBeManagedBy(auth()->user())) {
+            Flux::toast(__('app.task.notifications.cannot_edit_locked'), variant: 'danger');
+            return;
+        }
+
         $validated = $this->validate();
+        $validated['locked_by'] = $validated['is_locked'] ? ($this->task->locked_by ?: auth()->id()) : null;
+        $validated['locked_at'] = $validated['is_locked'] ? ($this->task->locked_at ?: now()) : null;
 
         $this->task->update($validated);
+        $this->task->checklists()->delete();
+
+        foreach (collect($this->checklistItems)->values() as $index => $item) {
+            $title = trim((string) ($item['title'] ?? ''));
+            if ($title === '') {
+                continue;
+            }
+
+            $this->task->checklists()->create([
+                'title' => $title,
+                'order' => $index + 1,
+            ]);
+        }
 
         Flux::toast(__('app.task.notifications.updated'));
         $this->dispatch('panels.workspace.review.user.board.render');
