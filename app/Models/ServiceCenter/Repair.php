@@ -100,6 +100,22 @@ class Repair extends Model
     }
 
     /**
+     * Send completion SMS to owner when repair is done.
+     */
+    public function sendCompletedSms(): void
+    {
+        if (! $this->owner_mobile || ! $this->admission_code) {
+            return;
+        }
+
+        $message = __('app.repair_completed_sms', [
+            'admission_code' => $this->admission_code,
+        ]);
+
+        SendSmsMessageJob::dispatch($this->owner_mobile, $message);
+    }
+
+    /**
      * Generate and save admission code based on Jalali date.
      */
     public function saveAdmissionCode(): void

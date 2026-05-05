@@ -74,9 +74,15 @@ class Logs extends Component
             'status' => $this->status,
         ]);
 
+        $wasCompleted = $this->repair->status === StatusEnum::Completed->value;
+
         $this->repair->update([
             'status' => $this->status,
         ]);
+
+        if (! $wasCompleted && $this->status === StatusEnum::Completed->value) {
+            $this->repair->sendCompletedSms();
+        }
 
         $this->status = '';
         $this->description = '';
