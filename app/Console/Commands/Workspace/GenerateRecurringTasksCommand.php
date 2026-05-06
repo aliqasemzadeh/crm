@@ -4,6 +4,7 @@ namespace App\Console\Commands\Workspace;
 
 use App\Jobs\Notification\SendSmsMessageJob;
 use App\Models\Workspace\Task;
+use App\Models\Workspace\TaskChecklist;
 use Illuminate\Console\Command;
 
 class GenerateRecurringTasksCommand extends Command
@@ -58,12 +59,25 @@ class GenerateRecurringTasksCommand extends Command
                 $task->users()->sync($syncData);
             }
 
-            foreach ($template->checklists as $checklist) {
-                $task->checklists()->create([
-                    'title' => $checklist->title,
-                    // Keep template ordering; don't renumber on copy.
-                    'order' => (int) ($checklist->order ?? 0),
-                ]);
+            if ($template->checklists->isNotEmpty()) {
+                $ts = now();
+                $rows = [];
+                foreach ($template->checklists as $checklist) {
+                    $rows[] = [
+                        'task_id' => $task->id,
+                        'title' => $checklist->title,
+                        // Keep template ordering; don't renumber on copy.
+                        'order' => (int) ($checklist->order ?? 0),
+                        // New task: checklist starts as not-done.
+                        'is_done' => false,
+                        'done_at' => null,
+                        'done_by' => null,
+                        'created_at' => $ts,
+                        'updated_at' => $ts,
+                    ];
+                }
+
+                TaskChecklist::query()->insert($rows);
             }
 
             foreach ($task->assignees as $assignee) {
