@@ -58,10 +58,11 @@ class GenerateRecurringTasksCommand extends Command
                 $task->users()->sync($syncData);
             }
 
-            foreach ($template->checklists as $index => $checklist) {
+            foreach ($template->checklists as $checklist) {
                 $task->checklists()->create([
                     'title' => $checklist->title,
-                    'order' => $index + 1,
+                    // Keep template ordering; don't renumber on copy.
+                    'order' => (int) ($checklist->order ?? 0),
                 ]);
             }
 
