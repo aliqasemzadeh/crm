@@ -10,6 +10,53 @@
         </flux:tooltip>
     </div>
 
+    @if ($this->isAdministrator)
+        <flux:card>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <flux:select
+                    wire:model.live="userFilter"
+                    searchable
+                    placeholder="{{ __('app.filter_calls_by_user') }}"
+                >
+                    <option value="">{{ __('app.all_users') }}</option>
+                    @foreach ($this->usersForFilter as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                    @endforeach
+                </flux:select>
+
+                <flux:select
+                    wire:model.live="directionFilter"
+                    placeholder="{{ __('app.filter_calls_by_direction') }}"
+                >
+                    <option value="">{{ __('app.all_directions') }}</option>
+                    <option value="incoming">{{ __('app.call_direction_incoming_only') }}</option>
+                    <option value="outgoing">{{ __('app.call_direction_outgoing_only') }}</option>
+                    <option value="internal">{{ __('app.call_direction_internal_only') }}</option>
+                </flux:select>
+
+                <flux:text class="md:col-span-3 text-sm text-zinc-500">
+                    {{ __('app.admin_can_view_all_calls') }}
+                </flux:text>
+            </div>
+        </flux:card>
+    @endif
+
+    @unless ($this->isAdministrator)
+        <flux:card>
+            <div class="grid grid-cols-1 gap-3">
+                <flux:select
+                    wire:model.live="directionFilter"
+                    placeholder="{{ __('app.filter_calls_by_direction') }}"
+                >
+                    <option value="">{{ __('app.all_directions') }}</option>
+                    <option value="incoming">{{ __('app.call_direction_incoming_only') }}</option>
+                    <option value="outgoing">{{ __('app.call_direction_outgoing_only') }}</option>
+                    <option value="internal">{{ __('app.call_direction_internal_only') }}</option>
+                </flux:select>
+            </div>
+        </flux:card>
+    @endunless
+
     @if ($loadError)
         <flux:callout variant="danger" icon="exclamation-triangle">
             {{ $loadError }}
@@ -72,6 +119,11 @@
                                 <flux:badge size="sm" :color="$call['badge_color']">
                                     {{ $call['disposition_label'] }}
                                 </flux:badge>
+                                @if (! empty($call['direction_label']))
+                                    <flux:badge size="sm" :color="$call['direction_color'] ?? 'zinc'">
+                                        {{ $call['direction_label'] }}
+                                    </flux:badge>
+                                @endif
                                 <flux:text class="text-sm text-zinc-600 dark:text-zinc-300">
                                     {{ __('app.call_duration') }}
                                     <span dir="ltr" class="font-medium">{{ $call['duration_display'] }}</span>
