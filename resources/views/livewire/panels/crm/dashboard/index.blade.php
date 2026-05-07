@@ -51,7 +51,7 @@
                             icon="filter"
                             icon:variant="outline"
                             wire:click="$refresh"
-                            class="w-full md:w-auto"
+                            class="w-full"
                         />
                     </flux:tooltip>
                 </div>
@@ -83,7 +83,7 @@
                             icon="filter"
                             icon:variant="outline"
                             wire:click="$refresh"
-                            class="w-full md:w-auto"
+                            class="w-full"
                         />
                     </flux:tooltip>
                 </div>
@@ -100,6 +100,8 @@
     @if (count($calls) === 0 && ! $loadError)
         <flux:text class="text-zinc-500">{{ __('app.call_history_empty') }}</flux:text>
     @else
+        <livewire:crm.call.send-sms :key="'send-sms-modal'" />
+
         <flux:timeline class="[--flux-timeline-item-gap:1rem]">
             @foreach ($calls as $call)
                 <flux:timeline.item wire:key="cdr-{{ $call['uniqueid'] }}" align="start">
@@ -150,9 +152,21 @@
                             </div>
 
                             <div class="flex flex-wrap items-center gap-2">
-                                <flux:badge size="sm" :color="$call['badge_color']">
+                                <flux:badge size="sm" :color="$call['indicator_color']">
                                     {{ $call['disposition_label'] }}
                                 </flux:badge>
+                                @if (isset($call['phone_display']) && str_starts_with($call['phone_display'], '9'))
+                                    <flux:tooltip content="{{ __('app.send_sms') }}">
+                                        <flux:button
+                                            size="xs"
+                                            variant="primary"
+                                            color="blue"
+                                            icon="message-square-text"
+                                            icon:variant="outline"
+                                            wire:click="$dispatch('panels.crm.dashboard.index.send-sms', { phone: '{{ $call['phone_display'] }}' })"
+                                        />
+                                    </flux:tooltip>
+                                @endif
                                 @if (! empty($call['direction_label']))
                                     <flux:badge size="sm" :color="$call['direction_color'] ?? 'zinc'">
                                         {{ $call['direction_label'] }}
@@ -164,14 +178,59 @@
                                 </flux:text>
                             </div>
 
-                            <flux:text class="inline-flex min-w-0 flex-wrap items-start gap-x-1 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
-                                <span class="shrink-0 font-medium text-zinc-700 dark:text-zinc-300">{{ __('app.call_route') }}</span>
-                                <span class="inline-flex max-w-full min-w-0 flex-wrap items-center gap-x-1 gap-y-1">
-                                    <x-crm.call-route-party :party="$call['route_from_party'] ?? []" />
-                                    <span class="mx-0.5 font-normal text-zinc-400">→</span>
-                                    <x-crm.call-route-party :party="$call['route_to_party'] ?? []" />
+                            <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                                <span class="shrink-0 font-medium text-zinc-700 dark:text-zinc-300">
+                                    {{ __('app.call_route') }}
                                 </span>
-                            </flux:text>
+                                <div class="flex min-w-0 flex-1 items-center gap-2">
+                                    @php
+                                        $fromParty = $call['route_from_party'] ?? [];
+                                        $toParty = $call['route_to_party'] ?? [];
+                                    @endphp
+
+                                    @if (! empty($fromParty))
+                                        @php
+                                            $fromTooltip = isset($fromParty['tooltip_number']) && $fromParty['tooltip_number'] !== null && $fromParty['tooltip_number'] !== ''
+                                                ? (string) $fromParty['tooltip_number']
+                                                : null;
+                                        @endphp
+                                        @if ($fromTooltip)
+                                            <flux:tooltip content="{{ $fromTooltip }}">
+                                                <span class="inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200"
+                                                      tabindex="0">
+                                                    <span class="truncate">{{ $fromParty['display'] ?? '' }}</span>
+                                                </span>
+                                            </flux:tooltip>
+                                        @else
+                                            <span class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
+                                                <span class="truncate">{{ $fromParty['display'] ?? '' }}</span>
+                                            </span>
+                                        @endif
+                                    @endif
+
+                                    <flux:icon.arrow-right variant="micro" class="size-3.5 shrink-0 text-zinc-400" />
+
+                                    @if (! empty($toParty))
+                                        @php
+                                            $toTooltip = isset($toParty['tooltip_number']) && $toParty['tooltip_number'] !== null && $toParty['tooltip_number'] !== ''
+                                                ? (string) $toParty['tooltip_number']
+                                                : null;
+                                        @endphp
+                                        @if ($toTooltip)
+                                            <flux:tooltip content="{{ $toTooltip }}">
+                                                <span class="inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200"
+                                                      tabindex="0">
+                                                    <span class="truncate">{{ $toParty['display'] ?? '' }}</span>
+                                                </span>
+                                            </flux:tooltip>
+                                        @else
+                                            <span class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
+                                                <span class="truncate">{{ $toParty['display'] ?? '' }}</span>
+                                            </span>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
                         </div>
                     </flux:timeline.content>
                 </flux:timeline.item>
