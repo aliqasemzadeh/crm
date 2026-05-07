@@ -6,7 +6,9 @@ use App\Models\Issabel\Cdr;
 use App\Models\Issabel\Device;
 use App\Models\User;
 use App\Models\Voip\Phone;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
@@ -25,6 +27,19 @@ class Index extends Component
     public bool $loadingMore = false;
 
     public ?string $loadError = null;
+
+    public ?int $userFilter = null;
+
+    public ?string $directionFilter = null;
+
+    /**
+     * When scoped to a specific user, these are the extension keys used for:
+     * - visibility query scope
+     * - deriving incoming/outgoing direction in the UI
+     *
+     * @var list<string>
+     */
+    private array $scopedExtensionKeys = [];
 
     private const PAGE_SIZE = 50;
 
@@ -46,6 +61,29 @@ class Index extends Component
         $this->fetchBatch(false);
     }
 
+    public function updatedUserFilter(): void
+    {
+        if (! $this->isAdministrator) {
+            $this->userFilter = null;
+
+            return;
+        }
+
+        $this->resetTimeline();
+        $this->fetchBatch(true);
+    }
+
+    public function updatedDirectionFilter(): void
+    {
+        $allowed = [null, '', 'incoming', 'outgoing', 'internal'];
+        if (! in_array($this->directionFilter, $allowed, true)) {
+            $this->directionFilter = null;
+        }
+
+        $this->resetTimeline();
+        $this->fetchBatch(true);
+    }
+
     private function fetchBatch(bool $initial): void
     {
         if ($this->loadingMore) {
@@ -59,9 +97,16 @@ class Index extends Component
         $this->loadingMore = true;
 
         try {
+            // Reset for this batch; will be set again by applyVisibilityScope/applyUserScope.
+            $this->scopedExtensionKeys = [];
+
             $query = Cdr::query()
                 ->validCalldate()
                 ->excludeInternalTwoDigitExtensions();
+
+            $this->applyVisibilityScope($query);
+
+            $this->applyDirectionScope($query);
 
             if (! $initial && $this->cursorCalldate !== null && $this->cursorUniqueid !== null) {
                 $cursorDate = $this->cursorCalldate;
@@ -111,6 +156,132 @@ class Index extends Component
         } finally {
             $this->loadingMore = false;
         }
+    }
+
+    private function resetTimeline(): void
+    {
+        $this->calls = [];
+        $this->hasMore = true;
+        $this->cursorCalldate = null;
+        $this->cursorUniqueid = null;
+        $this->loadError = null;
+    }
+
+    private function applyVisibilityScope(Builder $query): void
+    {
+        $authUser = auth()->user();
+        if (! $authUser instanceof User) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        if ($this->isAdministrator) {
+            if ($this->userFilter === null) {
+                // Admin viewing "all calls": there is no single user context for call direction.
+                $this->scopedExtensionKeys = [];
+                return;
+            }
+
+            $user = User::query()->find($this->userFilter);
+            if (! $user instanceof User) {
+                $query->whereRaw('1 = 0');
+
+                return;
+            }
+
+            $this->applyUserScope($query, $user);
+
+            return;
+        }
+
+        $this->applyUserScope($query, $authUser);
+    }
+
+    private function applyDirectionScope(Builder $query): void
+    {
+        if ($this->directionFilter === null || $this->directionFilter === '' || $this->scopedExtensionKeys === []) {
+            return;
+        }
+
+        $keys = $this->scopedExtensionKeys;
+
+        $query->where(function (Builder $q) use ($keys) {
+            if ($this->directionFilter === 'incoming') {
+                $q->whereIn('dst', $keys)
+                    ->whereNotIn('src', $keys);
+
+                return;
+            }
+
+            if ($this->directionFilter === 'outgoing') {
+                $q->whereIn('src', $keys)
+                    ->whereNotIn('dst', $keys);
+
+                return;
+            }
+
+            if ($this->directionFilter === 'internal') {
+                $q->whereIn('src', $keys)
+                    ->whereIn('dst', $keys);
+            }
+        });
+    }
+
+    private function applyUserScope(Builder $query, User $user): void
+    {
+        $user->loadMissing('internalPhoneDevice');
+        $device = $user->internalPhoneDevice;
+        if ($device === null) {
+            $this->scopedExtensionKeys = [];
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $keys = $this->extensionKeysFromDevice($device);
+        if ($keys === []) {
+            $this->scopedExtensionKeys = [];
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $this->scopedExtensionKeys = $keys;
+
+        $query->where(function (Builder $q) use ($keys) {
+            $q->whereIn('src', $keys)
+                ->orWhereIn('dst', $keys)
+                ->orWhereIn('cnum', $keys);
+        });
+    }
+
+    #[Computed]
+    public function isAdministrator(): bool
+    {
+        $user = auth()->user();
+        if (! $user instanceof User) {
+            return false;
+        }
+
+        return $user->hasRole('Administrator');
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, User>
+     */
+    #[Computed]
+    public function usersForFilter()
+    {
+        if (! $this->isAdministrator) {
+            return collect();
+        }
+
+        return User::query()
+            ->whereNotNull('internal_phone_id')
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get(['id', 'first_name', 'last_name', 'internal_phone_id', 'avatar']);
     }
 
     /**
@@ -276,6 +447,8 @@ class Index extends Component
         $appearance = $this->dispositionAppearance((string) $row->disposition);
         $billsec = (int) $row->billsec;
 
+        $direction = $this->callDirectionForScopedUser($row);
+
         // جهت نمایش مسیر: مقصد CDR سمت چپ، مبدأ سمت راست (مثلاً 32319051 → نام داخلی)
         $routeFromLabel = $this->resolvePartyLabel((string) $row->dst, $deviceMap, $phoneMap);
         $routeToLabel = $this->resolvePartyLabel((string) $row->src, $deviceMap, $phoneMap);
@@ -309,6 +482,8 @@ class Index extends Component
             'disposition_label' => $appearance['label'],
             'indicator_color' => $appearance['color'],
             'badge_color' => $appearance['color'],
+            'direction_label' => $direction['label'],
+            'direction_color' => $direction['color'],
             'phone_display' => $headingParty['display'],
             'caller_tooltip_number' => $callerTooltipNumber,
             'heading_party' => $headingParty,
@@ -317,6 +492,39 @@ class Index extends Component
             'duration_display' => $this->formatBillsec($billsec),
             'billsec' => $billsec,
         ];
+    }
+
+    /**
+     * Direction is only meaningful when viewing calls scoped to a single user's extension(s).
+     *
+     * @return array{label: ?string, color: string}
+     */
+    private function callDirectionForScopedUser(Cdr $row): array
+    {
+        if ($this->scopedExtensionKeys === []) {
+            return ['label' => null, 'color' => 'zinc'];
+        }
+
+        $src = trim((string) $row->src);
+        $dst = trim((string) $row->dst);
+
+        $isOutgoing = $src !== '' && in_array($src, $this->scopedExtensionKeys, true);
+        $isIncoming = $dst !== '' && in_array($dst, $this->scopedExtensionKeys, true);
+
+        // Most common cases:
+        if ($isOutgoing && ! $isIncoming) {
+            return ['label' => __('app.call_direction_outgoing'), 'color' => 'sky'];
+        }
+        if ($isIncoming && ! $isOutgoing) {
+            return ['label' => __('app.call_direction_incoming'), 'color' => 'indigo'];
+        }
+
+        // Internal transfer or ambiguous rows.
+        if ($isIncoming && $isOutgoing) {
+            return ['label' => __('app.call_direction_internal'), 'color' => 'zinc'];
+        }
+
+        return ['label' => null, 'color' => 'zinc'];
     }
 
     /**
