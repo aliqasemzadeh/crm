@@ -155,7 +155,15 @@
                                 <flux:badge size="sm" :color="$call['indicator_color']">
                                     {{ $call['disposition_label'] }}
                                 </flux:badge>
-                                @if (isset($call['phone_display']) && str_starts_with($call['phone_display'], '9'))
+                                @php
+                                    $isMobile = false;
+                                    $phone = $call['phone_display'] ?? '';
+                                    if (preg_match('/^(09|9|00989|\+989)/', $phone)) {
+                                        $isMobile = true;
+                                    }
+                                    $recipientName = $headingParty['display'] ?? $phone;
+                                @endphp
+                                @if ($isMobile)
                                     <flux:tooltip content="{{ __('app.send_sms') }}">
                                         <flux:button
                                             size="xs"
@@ -163,7 +171,7 @@
                                             color="blue"
                                             icon="message-square-text"
                                             icon:variant="outline"
-                                            wire:click="$dispatch('panels.crm.dashboard.index.send-sms', { phone: '{{ $call['phone_display'] }}' })"
+                                            wire:click="$dispatch('panels.crm.dashboard.index.send-sms', { phone: '{{ $phone }}', name: '{{ $recipientName }}' })"
                                         />
                                     </flux:tooltip>
                                 @endif

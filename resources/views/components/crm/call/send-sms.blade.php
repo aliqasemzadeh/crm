@@ -11,14 +11,16 @@ use Flux\Flux;
 new class extends Component
 {
     public $phone = '';
+    public $recipientName = '';
     public $message = '';
     public $search = '';
     public $selectedItemId = null;
 
     #[On('panels.crm.dashboard.index.send-sms')]
-    public function show($phone)
+    public function show($phone, $name = '')
     {
         $this->phone = $phone;
+        $this->recipientName = $name;
         $this->message = '';
         $this->search = '';
         $this->selectedItemId = null;
@@ -58,6 +60,13 @@ new class extends Component
         ];
     }
 
+    public function updatedSelectedItemId($value)
+    {
+        if ($value) {
+            $this->addLink();
+        }
+    }
+
     public function addLink()
     {
         $item = $this->selectedItem();
@@ -83,52 +92,52 @@ new class extends Component
 ?>
 
 <div>
-    <flux:modal name="send-sms-modal" flyout position="right" class="space-y-6 min-w-[400px]">
+    <flux:modal name="send-sms-modal" flyout position="right" class="space-y-6 min-w-[450px]">
         <div class="space-y-6">
-            <flux:heading size="lg">{{ __('app.send_sms') }} ({{ $phone }})</flux:heading>
+            <div>
+                <flux:heading size="lg">{{ __('app.send_sms') }}</flux:heading>
+                <flux:subheading>{{ __('app.recipient') }}: {{ $recipientName ?: $phone }} ({{ $phone }})</flux:subheading>
+            </div>
 
-            <flux:card class="space-y-4">
-                <flux:select
-                    wire:model.live="selectedItemId"
-                    searchable
-                    :placeholder="__('app.search_item')"
-                    wire:key="item-search-select"
-                >
-                    <x-slot name="search">
-                        <flux:select.search wire:model.live.debounce.500ms="search" />
+            <div class="space-y-2">
+                <flux:text size="sm" weight="medium">{{ __('app.search_item') }}</flux:text>
+                <flux:text size="xs" color="zinc">{{ __('app.search_item_description') }}</flux:text>
+
+                <flux:select wire:model.live="selectedItemId" variant="combobox" :filter="false" :placeholder="__('app.search_placeholder')">
+                    <x-slot name="input">
+                        <flux:select.input wire:model.live.debounce.500ms="search" />
                     </x-slot>
 
                     @foreach ($this->items as $item)
-                        <flux:select.option value="{{ $item->ItemID }}">{{ $item->ItemName }} ({{ $item->ItemCode }})</flux:select.option>
+                        <flux:select.option value="{{ $item->ItemID }}" wire:key="item-{{ $item->ItemID }}">
+                            {{ $item->ItemName }} ({{ $item->ItemCode }})
+                        </flux:select.option>
                     @endforeach
                 </flux:select>
+            </div>
 
-                @if ($this->selectedItem)
-                    <div class="p-3 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-zinc-500">{{ __('app.item_stock') }}:</span>
-                            <span class="font-medium">{{ number_format($this->selectedItem['stock']) }}</span>
-                        </div>
-                        <div class="flex justify-between text-orange-600">
-                            <span>{{ __('app.last_purchase_price') }}:</span>
-                            <span class="font-medium">{{ number_format($this->selectedItem['last_purchase_price']) }} {{ __('app.rial') }}</span>
-                        </div>
-                        <div class="flex justify-between text-teal-600">
-                            <span>{{ __('app.last_sale_price') }}:</span>
-                            <span class="font-medium">{{ number_format($this->selectedItem['last_sale_price']) }} {{ __('app.rial') }}</span>
-                        </div>
-
-                        <flux:button variant="filled" color="teal" class="w-full mt-2" icon="plus" wire:click="addLink">
-                            {{ __('app.add_product_link') }}
-                        </flux:button>
+            @if ($this->selectedItem)
+                <flux:card class="space-y-2 text-sm">
+                    <flux:heading size="sm">{{ __('app.item_details') }}: {{ $this->selectedItem['name'] }}</flux:heading>
+                    <div class="flex justify-between border-b border-zinc-100 dark:border-zinc-800 pb-1">
+                        <span class="text-zinc-500">{{ __('app.item_stock') }}:</span>
+                        <span class="font-medium">{{ number_format($this->selectedItem['stock']) }}</span>
                     </div>
-                @endif
-            </flux:card>
+                    <div class="flex justify-between border-b border-zinc-100 dark:border-zinc-800 pb-1 text-orange-600">
+                        <span>{{ __('app.last_purchase_price') }}:</span>
+                        <span class="font-medium">{{ number_format($this->selectedItem['last_purchase_price']) }} {{ __('app.rial') }}</span>
+                    </div>
+                    <div class="flex justify-between text-teal-600">
+                        <span>{{ __('app.last_sale_price') }}:</span>
+                        <span class="font-medium">{{ number_format($this->selectedItem['last_sale_price']) }} {{ __('app.rial') }}</span>
+                    </div>
+                </flux:card>
+            @endif
 
             <flux:textarea
                 wire:model="message"
                 :label="__('app.sms_message')"
-                rows="8"
+                rows="10"
                 class="w-full"
             />
 
