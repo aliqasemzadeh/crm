@@ -2,19 +2,25 @@
     {{ __('common.calls_dashboard') }}
 </x-slot>
 
-<div class="space-y-6">
+<div x-data="{ showFilters: false }" class="space-y-6">
     <div class="flex items-start justify-between gap-4">
         <flux:heading size="lg">{{ __('common.calls_dashboard') }}</flux:heading>
-        <flux:tooltip content="{{ __('common.settings') }}">
-            <flux:button type="button" variant="ghost" icon="cog-6-tooth" icon:variant="outline" />
+        <flux:tooltip content="{{ __('app.call_filter_settings') }}">
+            <flux:button
+                type="button"
+                variant="ghost"
+                icon="cog-6-tooth"
+                icon:variant="outline"
+                x-on:click="showFilters = !showFilters"
+            />
         </flux:tooltip>
     </div>
 
     @if ($this->isAdministrator)
-        <flux:card>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <flux:card x-show="showFilters" x-cloak>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <flux:select
-                    wire:model.live="userFilter"
+                    wire:model.defer="userFilter"
                     searchable
                     placeholder="{{ __('app.filter_calls_by_user') }}"
                 >
@@ -25,7 +31,8 @@
                 </flux:select>
 
                 <flux:select
-                    wire:model.live="directionFilter"
+                    wire:model.defer="directionFilter"
+                    searchable
                     placeholder="{{ __('app.filter_calls_by_direction') }}"
                 >
                     <option value="">{{ __('app.all_directions') }}</option>
@@ -34,18 +41,30 @@
                     <option value="internal">{{ __('app.call_direction_internal_only') }}</option>
                 </flux:select>
 
-                <flux:text class="md:col-span-3 text-sm text-zinc-500">
-                    {{ __('app.admin_can_view_all_calls') }}
-                </flux:text>
+                <div class="flex gap-2 md:justify-start">
+                    <flux:tooltip content="{{ __('app.apply_filters') }}">
+                        <flux:button
+                            type="button"
+                            size="sm"
+                            variant="primary"
+                            color="teal"
+                            icon="filter"
+                            icon:variant="outline"
+                            wire:click="$refresh"
+                            class="w-full md:w-auto"
+                        />
+                    </flux:tooltip>
+                </div>
             </div>
         </flux:card>
     @endif
 
     @unless ($this->isAdministrator)
-        <flux:card>
-            <div class="grid grid-cols-1 gap-3">
+        <flux:card x-show="showFilters" x-cloak>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <flux:select
-                    wire:model.live="directionFilter"
+                    wire:model.defer="directionFilter"
+                    searchable
                     placeholder="{{ __('app.filter_calls_by_direction') }}"
                 >
                     <option value="">{{ __('app.all_directions') }}</option>
@@ -53,6 +72,21 @@
                     <option value="outgoing">{{ __('app.call_direction_outgoing_only') }}</option>
                     <option value="internal">{{ __('app.call_direction_internal_only') }}</option>
                 </flux:select>
+
+                <div class="md:col-span-2 flex gap-2 md:justify-start">
+                    <flux:tooltip content="{{ __('app.apply_filters') }}">
+                        <flux:button
+                            type="button"
+                            size="sm"
+                            variant="primary"
+                            color="teal"
+                            icon="filter"
+                            icon:variant="outline"
+                            wire:click="$refresh"
+                            class="w-full md:w-auto"
+                        />
+                    </flux:tooltip>
+                </div>
             </div>
         </flux:card>
     @endunless
@@ -132,7 +166,7 @@
 
                             <flux:text class="inline-flex min-w-0 flex-wrap items-start gap-x-1 gap-y-1 text-sm text-zinc-600 dark:text-zinc-400">
                                 <span class="shrink-0 font-medium text-zinc-700 dark:text-zinc-300">{{ __('app.call_route') }}</span>
-                                <span class="inline-flex max-w-full flex-wrap items-center gap-x-1 gap-y-1">
+                                <span class="inline-flex max-w-full min-w-0 flex-wrap items-center gap-x-1 gap-y-1">
                                     <x-crm.call-route-party :party="$call['route_from_party'] ?? []" />
                                     <span class="mx-0.5 font-normal text-zinc-400">→</span>
                                     <x-crm.call-route-party :party="$call['route_to_party'] ?? []" />

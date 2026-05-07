@@ -11,7 +11,7 @@
 @if (! empty($party['is_internal_user']))
     @if ($tooltipContent !== null)
         <flux:tooltip content="{{ $tooltipContent }}">
-            <span class="inline-flex max-w-full min-w-0 cursor-default items-center gap-2 outline-none" tabindex="0">
+            <span class="inline-flex max-w-full min-w-0 cursor-default items-center gap-2 rounded-full bg-zinc-100 px-2 py-0.5 outline-none dark:bg-zinc-700/70" tabindex="0">
                 @if (! empty($party['avatar_url']))
                     <flux:avatar src="{{ $party['avatar_url'] }}" size="xs" />
                 @else
@@ -21,7 +21,7 @@
             </span>
         </flux:tooltip>
     @else
-        <span class="inline-flex max-w-full min-w-0 items-center gap-2">
+        <span class="inline-flex max-w-full min-w-0 items-center gap-2 rounded-full bg-zinc-100 px-2 py-0.5 dark:bg-zinc-700/70">
             @if (! empty($party['avatar_url']))
                 <flux:avatar src="{{ $party['avatar_url'] }}" size="xs" />
             @else
@@ -33,9 +33,13 @@
 @else
     @if ($tooltipContent !== null)
         <flux:tooltip content="{{ $tooltipContent }}">
-            <span dir="ltr" class="cursor-default font-medium text-zinc-800 outline-none dark:text-zinc-200" tabindex="0">{{ $party['display'] }}</span>
+            <span dir="ltr" class="inline-flex max-w-full min-w-0 cursor-default items-center rounded-full bg-zinc-100 px-2 py-0.5 text-sm font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200" tabindex="0">
+                <span class="truncate">{{ $party['display'] }}</span>
+            </span>
         </flux:tooltip>
     @else
-        <span dir="ltr" class="font-medium text-zinc-800 dark:text-zinc-200">{{ $party['display'] }}</span>
+        <span dir="ltr" class="inline-flex max-w-full min-w-0 items-center rounded-full bg-zinc-100 px-2 py-0.5 text-sm font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
+            <span class="truncate">{{ $party['display'] }}</span>
+        </span>
     @endif
 @endif
