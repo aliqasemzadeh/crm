@@ -101,7 +101,7 @@ new class extends Component
 
             <div class="space-y-2">
                 <flux:text size="sm" weight="medium">{{ __('app.search_item') }}</flux:text>
-                <flux:text size="xs" color="zinc">{{ __('app.search_item_description') }}</flux:text>
+                <flux:text size="xs">{{ __('app.search_item_description') }}</flux:text>
 
                 <flux:select wire:model.live="selectedItemId" variant="combobox" :filter="false" :placeholder="__('app.search_placeholder')">
                     <x-slot name="input">
