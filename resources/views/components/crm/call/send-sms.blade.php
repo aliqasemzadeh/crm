@@ -32,8 +32,9 @@ new class extends Component
     {
         if (strlen($this->search) < 2) return [];
 
-        return Item::where('ItemName', 'like', '%' . $this->search . '%')
-            ->orWhere('ItemCode', 'like', '%' . $this->search . '%')
+        return Item::where('Title', 'like', '%' . $this->search . '%')
+            ->orWhere('Title_En', 'like', '%' . $this->search . '%')
+            ->orWhere('Code', 'like', '%' . $this->search . '%')
             ->limit(10)
             ->get();
     }
@@ -52,7 +53,7 @@ new class extends Component
 
         return [
             'id' => $item->ItemID,
-            'name' => $item->ItemName,
+            'name' => $item->Title,
             'iran_code' => $item->IranCode,
             'stock' => $stock,
             'last_purchase_price' => $lastPurchasePrice,
@@ -83,7 +84,7 @@ new class extends Component
             'message' => 'required',
         ]);
 
-        // Logic for sending SMS would go here
+        \App\Jobs\Notification\SendSmsMessageJob::dispatch($this->phone, $this->message);
 
         $this->modal('send-sms-modal')->close();
         Flux::toast(__('app.sms_sent_successfully'));
@@ -110,7 +111,7 @@ new class extends Component
 
                     @foreach ($this->items as $item)
                         <flux:select.option value="{{ $item->ItemID }}" wire:key="item-{{ $item->ItemID }}">
-                            {{ $item->ItemName }} ({{ $item->ItemCode }})
+                            {{ $item->Title }} ({{ $item->Code }})
                         </flux:select.option>
                     @endforeach
                 </flux:select>
