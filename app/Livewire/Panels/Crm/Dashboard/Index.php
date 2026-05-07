@@ -264,7 +264,7 @@ class Index extends Component
             return false;
         }
 
-        return $user->hasRole('Administrator');
+        return $user->hasRole('administrator');
     }
 
     /**
