@@ -12,7 +12,6 @@ use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Throwable;
 
 new class extends Component
 {
@@ -54,20 +53,59 @@ new class extends Component
     #[Computed]
     public function parties()
     {
-        if (Str::length($this->partySearch) < 2) {
+        $term = trim((string) $this->partySearch);
+        if (Str::length($term) < 2) {
             return collect();
         }
 
-        $term = $this->partySearch;
+        $digitsOnly = preg_replace('/\D+/u', '', $term) ?? '';
 
+        // جستجوی شماره: فقط PartyPhone (سبک‌تر)، بدون LIKE روی کل Party
+        $looksLikePhoneQuery = $digitsOnly !== ''
+            && strlen($digitsOnly) >= 4
+            && preg_match('/^[\d\s\-+().]+$/u', $term) === 1;
+
+        if ($looksLikePhoneQuery) {
+            $partyIds = Cache::remember(
+                'crm.sepidar.party_ids_by_phone.'.md5($digitsOnly),
+                120,
+                function () use ($digitsOnly) {
+                    return PartyPhone::query()
+                        ->select('PartyRef')
+                        ->where('Phone', 'like', '%'.$digitsOnly.'%')
+                        ->distinct()
+                        ->orderBy('PartyRef')
+                        ->limit(80)
+                        ->pluck('PartyRef')
+                        ->all();
+                }
+            );
+
+            if ($partyIds === []) {
+                return collect();
+            }
+
+            return Party::query()
+                ->select(['PartyId', 'Name', 'LastName', 'Name_En', 'LastName_En'])
+                ->whereIn('PartyId', $partyIds)
+                ->orderBy('PartyId')
+                ->limit(25)
+                ->get();
+        }
+
+        // جستجوی نام: فقط Party، بدون subquery روی PartyPhone
         return Party::query()
+            ->select(['PartyId', 'Name', 'LastName', 'Name_En', 'LastName_En'])
             ->where(function ($q) use ($term) {
                 $q->where('Name', 'like', '%'.$term.'%')
-                    ->orWhere('LastName', 'like', '%'.$term.'%');
+                    ->orWhere('LastName', 'like', '%'.$term.'%')
+                    ->orWhere('Name_En', 'like', '%'.$term.'%')
+                    ->orWhere('LastName_En', 'like', '%'.$term.'%')
+                    ->orWhereRaw("(ISNULL([Name], '') + ' ' + ISNULL([LastName], '')) LIKE ?", ['%'.$term.'%']);
             })
             ->orderBy('PartyId')
             ->limit(25)
-            ->get(['PartyId', 'Name', 'LastName']);
+            ->get();
     }
 
     #[Computed]
@@ -124,7 +162,8 @@ new class extends Component
                 $nameLatin = Str::title(is_string($spaced) ? $spaced : '');
             }
 
-            $sepidarPhone = IranPhoneNumberNormalizer::formatForSepidar($normalized);
+            // Sepidar GNR.PartyPhone.Phone is varchar(20)
+            $sepidarPhone = substr(IranPhoneNumberNormalizer::formatForSepidar($normalized), 0, 20);
 
             $partyPhone = PartyPhone::query()
                 ->where('PartyRef', $party->PartyId)
@@ -135,6 +174,9 @@ new class extends Component
                 $partyPhone = PartyPhone::create([
                     'PartyRef' => $party->PartyId,
                     'Phone' => $sepidarPhone,
+                    'IsMain' => 0,
+                    'Type' => $this->guessSepidarPhoneType($normalized),
+                    'Version' => 1,
                 ]);
             }
 
@@ -149,13 +191,15 @@ new class extends Component
                 ]
             );
 
+            $this->forgetCachedPartyPhoneLookups($normalized, $sepidarPhone);
+
             Cache::forget(CrmDashboardIndex::VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY);
 
             $this->modal('crm-link-phone-modal')->close();
             Flux::toast(__('app.phone_linked_to_party_success'));
 
             $this->redirect(route('panels.crm.dashboard.index'), navigate: false);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             report($e);
             Flux::toast(__('app.phone_link_failed'), variant: 'danger');
         }
@@ -193,7 +237,7 @@ new class extends Component
             Flux::toast(__('app.manual_phone_saved_success'));
 
             $this->redirect(route('panels.crm.dashboard.index'), navigate: false);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             report($e);
             Flux::toast(__('app.phone_link_failed'), variant: 'danger');
         }
@@ -207,6 +251,26 @@ new class extends Component
         ], static fn (string $p): bool => $p !== '');
 
         return trim(implode(' ', $parts));
+    }
+
+    private function forgetCachedPartyPhoneLookups(string $normalized, string $sepidarPhone): void
+    {
+        $digitVariants = array_unique(array_filter([
+            preg_replace('/\D+/u', '', $normalized) ?? '',
+            preg_replace('/\D+/u', '', $sepidarPhone) ?? '',
+        ], static fn (string $d): bool => $d !== ''));
+
+        foreach ($digitVariants as $digits) {
+            Cache::forget('crm.sepidar.party_ids_by_phone.'.md5($digits));
+        }
+    }
+
+    /**
+     * Sepidar PartyPhone.Type heuristic: 1 (mobile) for 9xxxxxxxxx, otherwise 2 (landline).
+     */
+    private function guessSepidarPhoneType(string $normalized): int
+    {
+        return (strlen($normalized) === 10 && str_starts_with($normalized, '9')) ? 1 : 2;
     }
 };
 ?>
@@ -263,14 +327,25 @@ new class extends Component
                             <flux:select.input wire:model.live.debounce.400ms="partySearch" />
                         </x-slot>
 
-                        @foreach ($this->parties as $party)
+                        @forelse ($this->parties as $party)
+                            @php
+                                $faName = trim(($party->Name ?? '').' '.($party->LastName ?? ''));
+                                $enName = trim(($party->Name_En ?? '').' '.($party->LastName_En ?? ''));
+                            @endphp
                             <flux:select.option value="{{ $party->PartyId }}" wire:key="party-opt-{{ $party->PartyId }}">
-                                <div class="text-sm">
-                                    {{ trim(($party->Name ?? '').' '.($party->LastName ?? '')) ?: __('app.no_name') }}
-                                    <span class="text-xs text-zinc-500">#{{ $party->PartyId }}</span>
+                                <div class="flex flex-col">
+                                    <span class="text-sm">{{ $faName !== '' ? $faName : __('app.no_name') }}</span>
+                                    @if ($enName !== '')
+                                        <span class="text-xs text-zinc-500" dir="ltr">{{ $enName }}</span>
+                                    @endif
+                                    <span class="text-[10px] text-zinc-400">PartyId #{{ $party->PartyId }}</span>
                                 </div>
                             </flux:select.option>
-                        @endforeach
+                        @empty
+                            @if (Str::length(trim((string) $partySearch)) >= 2)
+                                <div class="px-3 py-2 text-xs text-zinc-500">{{ __('app.search_party_no_results') }}</div>
+                            @endif
+                        @endforelse
                     </flux:select>
                 </div>
 

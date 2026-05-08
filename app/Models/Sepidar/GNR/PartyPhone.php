@@ -19,8 +19,20 @@ class PartyPhone extends Model
 
     protected $fillable = [
         'PartyRef',
+        'IsMain',
+        'Type',
         'Phone',
+        'Version',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'IsMain' => 'integer',
+            'Type' => 'integer',
+            'Version' => 'integer',
+        ];
+    }
 
     public function party(): BelongsTo
     {
