@@ -99,6 +99,8 @@ new class extends Component
             'message' => 'required',
         ]);
 
+        dd($this->phone, $this->message);
+
         \App\Jobs\Notification\SendSmsMessageJob::dispatch($this->phone, $this->message);
 
         $this->modal('send-sms-modal')->close();
