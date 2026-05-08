@@ -17,7 +17,12 @@ class PartyPhone extends Model
 
     public $timestamps = false;
 
+    public $incrementing = false;
+
+    protected $keyType = 'int';
+
     protected $fillable = [
+        'PartyPhoneId',
         'PartyRef',
         'IsMain',
         'Type',

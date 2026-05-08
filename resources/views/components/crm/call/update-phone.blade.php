@@ -8,6 +8,7 @@ use App\Support\IranPhoneNumberNormalizer;
 use App\Support\PersianFinglishConverter;
 use Flux\Flux;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -171,13 +172,11 @@ new class extends Component
                 ->first();
 
             if ($partyPhone === null) {
-                $partyPhone = PartyPhone::create([
-                    'PartyRef' => $party->PartyId,
-                    'Phone' => $sepidarPhone,
-                    'IsMain' => 0,
-                    'Type' => $this->guessSepidarPhoneType($normalized),
-                    'Version' => 1,
-                ]);
+                $partyPhone = $this->createSepidarPartyPhone(
+                    partyId: (int) $party->PartyId,
+                    phone: $sepidarPhone,
+                    type: $this->guessSepidarPhoneType($normalized),
+                );
             }
 
             Phone::query()->updateOrCreate(
@@ -272,6 +271,40 @@ new class extends Component
     {
         return (strlen($normalized) === 10 && str_starts_with($normalized, '9')) ? 1 : 2;
     }
+
+    /**
+     * Insert a row in [GNR].[PartyPhone] with manual PK (column is NOT NULL and not Identity).
+     * Retries on PK collisions to mitigate concurrent inserts.
+     */
+    private function createSepidarPartyPhone(int $partyId, string $phone, int $type): PartyPhone
+    {
+        $attempts = 0;
+        $maxAttempts = 5;
+
+        while (true) {
+            $attempts++;
+
+            try {
+                return DB::connection('sqlsrv')->transaction(function () use ($partyId, $phone, $type) {
+                    $nextId = (int) (PartyPhone::query()->max('PartyPhoneId') ?? 0) + 1;
+
+                    return PartyPhone::create([
+                        'PartyPhoneId' => $nextId,
+                        'PartyRef' => $partyId,
+                        'IsMain' => 0,
+                        'Type' => $type,
+                        'Phone' => $phone,
+                        'Version' => 1,
+                    ]);
+                });
+            } catch (\Illuminate\Database\QueryException $e) {
+                if ($attempts >= $maxAttempts) {
+                    throw $e;
+                }
+                usleep(150_000);
+            }
+        }
+    }
 };
 ?>
 
@@ -331,11 +364,16 @@ new class extends Component
                             @php
                                 $faName = trim(($party->Name ?? '').' '.($party->LastName ?? ''));
                                 $enName = trim(($party->Name_En ?? '').' '.($party->LastName_En ?? ''));
+                                $displayName = $faName !== '' ? $faName : ($enName !== '' ? $enName : __('app.no_name'));
                             @endphp
-                            <flux:select.option value="{{ $party->PartyId }}" wire:key="party-opt-{{ $party->PartyId }}">
+                            <flux:select.option
+                                value="{{ $party->PartyId }}"
+                                display="{{ $displayName }}"
+                                wire:key="party-opt-{{ $party->PartyId }}"
+                            >
                                 <div class="flex flex-col">
-                                    <span class="text-sm">{{ $faName !== '' ? $faName : __('app.no_name') }}</span>
-                                    @if ($enName !== '')
+                                    <span class="text-sm">{{ $displayName }}</span>
+                                    @if ($enName !== '' && $enName !== $displayName)
                                         <span class="text-xs text-zinc-500" dir="ltr">{{ $enName }}</span>
                                     @endif
                                     <span class="text-[10px] text-zinc-400">PartyId #{{ $party->PartyId }}</span>
