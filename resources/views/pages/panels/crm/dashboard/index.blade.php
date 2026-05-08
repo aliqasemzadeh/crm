@@ -13,8 +13,7 @@ use Livewire\Component;
 use Morilog\Jalali\Jalalian;
 use Throwable;
 
-#[Layout('layouts.panels.crm')]
-new class extends Component
+return new #[Layout('layouts.panels.crm')] class extends Component
 {
     public array $calls = [];
 
