@@ -30,11 +30,14 @@ new class extends Component
     #[Computed]
     public function items()
     {
-        if (strlen($this->search) < 2) return [];
+        if (strlen($this->search) < 3) return [];
 
-        return Item::where('Title', 'like', '%' . $this->search . '%')
-            ->orWhere('Title_En', 'like', '%' . $this->search . '%')
-            ->orWhere('Code', 'like', '%' . $this->search . '%')
+        return Item::with('image')
+            ->where(function($query) {
+                $query->where('Title', 'like', '%' . $this->search . '%')
+                    ->orWhere('Title_En', 'like', '%' . $this->search . '%')
+                    ->orWhere('Code', 'like', '%' . $this->search . '%');
+            })
             ->limit(10)
             ->get();
     }
@@ -44,7 +47,7 @@ new class extends Component
     {
         if (!$this->selectedItemId) return null;
 
-        $item = Item::find($this->selectedItemId);
+        $item = Item::with('image')->find($this->selectedItemId);
         if (!$item) return null;
 
         $stock = ItemStockSummary::where('ItemRef', $item->ItemID)->sum('Quantity') ?? 0;
@@ -58,14 +61,13 @@ new class extends Component
             'stock' => $stock,
             'last_purchase_price' => $lastPurchasePrice,
             'last_sale_price' => $lastSalePrice,
+            'image' => $item->image?->Thumbnail ?? $item->image?->Image,
         ];
     }
 
     public function updatedSelectedItemId($value)
     {
-        if ($value) {
-            $this->addLink();
-        }
+        // Auto-add removed as per request
     }
 
     public function addLink()
@@ -73,7 +75,15 @@ new class extends Component
         $item = $this->selectedItem();
         if ($item && $item['iran_code']) {
             $link = "https://setaregan.co/Product/" . $item['iran_code'];
-            $this->message .= ($this->message ? "\n" : "") . $link;
+
+            // Append if not already in message, or just append as requested
+            if ($this->message && !str_ends_with($this->message, "\n")) {
+                $this->message .= "\n";
+            }
+
+            $this->message .= $link;
+
+            Flux::toast(__('app.link_added_to_message'));
         }
     }
 
@@ -111,7 +121,17 @@ new class extends Component
 
                     @foreach ($this->items as $item)
                         <flux:select.option value="{{ $item->ItemID }}" wire:key="item-{{ $item->ItemID }}">
-                            {{ $item->Title }} ({{ $item->Code }})
+                            <div class="flex items-center gap-2">
+                                @if($item->image?->Thumbnail || $item->image?->Image)
+                                    <img src="data:image/jpeg;base64,{{ base64_encode($item->image?->Thumbnail ?? $item->image?->Image) }}" class="size-6 rounded object-cover" />
+                                @else
+                                    <flux:icon.package variant="mini" class="text-zinc-400" />
+                                @endif
+                                <div>
+                                    <div class="text-sm">{{ $item->Title }}</div>
+                                    <div class="text-xs text-zinc-500">{{ $item->Code }}</div>
+                                </div>
+                            </div>
                         </flux:select.option>
                     @endforeach
                 </flux:select>
@@ -119,7 +139,12 @@ new class extends Component
 
             @if ($this->selectedItem)
                 <flux:card class="space-y-2 text-sm">
-                    <flux:heading size="sm">{{ __('app.item_details') }}: {{ $this->selectedItem['name'] }}</flux:heading>
+                    <div class="flex items-center gap-3">
+                        @if($this->selectedItem['image'])
+                            <img src="data:image/jpeg;base64,{{ base64_encode($this->selectedItem['image']) }}" class="size-12 rounded border border-zinc-200 dark:border-zinc-700 object-cover" />
+                        @endif
+                        <flux:heading size="sm">{{ __('app.item_details') }}: {{ $this->selectedItem['name'] }}</flux:heading>
+                    </div>
                     <div class="flex justify-between border-b border-zinc-100 dark:border-zinc-800 pb-1">
                         <span class="text-zinc-500">{{ __('app.item_stock') }}:</span>
                         <span class="font-medium">{{ number_format($this->selectedItem['stock']) }}</span>
@@ -133,6 +158,10 @@ new class extends Component
                         <span class="font-medium">{{ number_format($this->selectedItem['last_sale_price']) }} {{ __('app.rial') }}</span>
                     </div>
                 </flux:card>
+
+                <flux:button variant="primary" color="green" icon="plus" class="w-full" wire:click="addLink">
+                    {{ __('app.add_to_text') }}
+                </flux:button>
             @endif
 
             <flux:textarea
@@ -143,7 +172,7 @@ new class extends Component
             />
 
             <div class="flex gap-2">
-                <flux:button variant="primary" color="blue" class="w-full" wire:click="send">
+                <flux:button variant="primary" color="blue" class="w-full" wire:click="send" wire:confirm="{{ __('app.are_you_sure_to_send_sms') }}">
                     {{ __('app.send_sms') }}
                 </flux:button>
             </div>
