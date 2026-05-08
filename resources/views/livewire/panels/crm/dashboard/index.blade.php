@@ -157,11 +157,31 @@
                                 </flux:badge>
                                 @php
                                     $isMobile = false;
-                                    $phone = $call['phone_display'] ?? '';
-                                    if (preg_match('/^(09|9|00989|\+989)/', $phone)) {
-                                        $isMobile = true;
+                                    // بررسی شماره‌های مختلف برای یافتن شماره موبایل
+                                    $mobilePhone = null;
+                                    $candidatePhones = [
+                                        $call['phone_display'] ?? '',
+                                        $call['heading_party']['display'] ?? '',
+                                        $call['caller_tooltip_number'] ?? '',
+                                        $call['route_from_party']['display'] ?? '',
+                                        $call['route_to_party']['display'] ?? '',
+                                        $call['route_from_party']['tooltip_number'] ?? '',
+                                        $call['route_to_party']['tooltip_number'] ?? '',
+                                    ];
+
+                                    foreach ($candidatePhones as $cp) {
+                                        if (empty($cp)) continue;
+                                        // حذف کاراکترهای غیر عددی به جز + در ابتدا
+                                        $clean = preg_replace('/[^\d+]/', '', $cp);
+                                        if (preg_match('/^(09|9|00989|\+989)\d{9}$/', $clean)) {
+                                            $mobilePhone = $clean;
+                                            $isMobile = true;
+                                            break;
+                                        }
                                     }
-                                    $recipientName = $headingParty['display'] ?? $phone;
+
+                                    $phone = $mobilePhone ?? $call['phone_display'] ?? '';
+                                    $recipientName = $call['heading_party']['display'] ?? $phone;
                                 @endphp
                                 @if ($isMobile)
                                     <flux:tooltip content="{{ __('app.send_sms') }}">
