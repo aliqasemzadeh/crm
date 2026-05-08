@@ -21,8 +21,8 @@ class ContactController extends Controller
         return trim(($party->Name ?? "") . " " . ($party->LastName ?? ""));
     }
 
-    public function log(Request $request)
+    public function call(Request $request)
     {
-        \Log::info('Log request', $request->all());
+        \Log::info('Log Call', $request->all());
     }
 }
