@@ -10,6 +10,11 @@ use Flux\Flux;
 
 new class extends Component
 {
+
+
+
+
+
     public $phone = '';
     public $recipientName = '';
     public $message = '';
@@ -102,8 +107,7 @@ new class extends Component
 };
 ?>
 
-<div>
-    <flux:modal name="send-sms-modal" flyout position="right" class="space-y-6 min-w-[450px]">
+<flux:modal name="send-sms-modal" flyout position="right" class="space-y-6 min-w-[450px]">
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('app.send_sms') }}</flux:heading>
@@ -178,4 +182,3 @@ new class extends Component
             </div>
         </div>
     </flux:modal>
-</div>
