@@ -11,7 +11,6 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
-use Throwable;
 
 return new #[Layout('layouts.panels.crm')] class extends Component
 {
@@ -149,7 +148,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             $this->cursorUniqueid = $last->uniqueid;
 
             $this->hasMore = $rows->count() === self::PAGE_SIZE;
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             report($e);
             $this->loadError = __('app.call_history_load_failed');
             $this->hasMore = false;
