@@ -12,7 +12,7 @@ Route::livewire('/forget-password', 'pages::auth.forget-password')->name('forget
 Route::livewire('/change-password/{token}', 'pages::auth.change-password')->name('change-password');
 
 Route::middleware(['auth'])->group( function () {
-    Route::livewire('/panels/crm/dashboard/index', \App\Livewire\Panels\Crm\Dashboard\Index::class)->name('panels.crm.dashboard.index');
+    Route::livewire('/panels/crm/dashboard/index', 'pages::panels.crm.dashboard.index')->name('panels.crm.dashboard.index');
 
     Route::livewire('/', 'pages::panels.user.dashboard.index')->name('home');
     Route::livewire('/panels/user/dashboard/index', 'pages::panels.user.dashboard.index')->name('panels.user.dashboard.index');
