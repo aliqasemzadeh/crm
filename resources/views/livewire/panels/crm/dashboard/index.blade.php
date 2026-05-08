@@ -101,6 +101,7 @@
         <flux:text class="text-zinc-500">{{ __('app.call_history_empty') }}</flux:text>
     @else
         <livewire:crm.call.send-sms :key="'send-sms-modal'" />
+        <livewire:crm.call.update-phone :key="'crm-update-phone'" />
 
         <flux:timeline class="[--flux-timeline-item-gap:1rem]">
             @foreach ($calls as $call)
@@ -192,6 +193,18 @@
                                             icon="message-square-text"
                                             icon:variant="outline"
                                             wire:click="$dispatch('panels.crm.dashboard.index.send-sms', { phone: '{{ $phone }}', name: '{{ $recipientName }}' })"
+                                        />
+                                    </flux:tooltip>
+                                @endif
+                                @if (! empty($call['can_link_unknown_phone']))
+                                    <flux:tooltip content="{{ __('app.link_unknown_phone_tooltip') }}">
+                                        <flux:button
+                                            size="xs"
+                                            variant="primary"
+                                            color="teal"
+                                            icon="link"
+                                            icon:variant="outline"
+                                            wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $call['heading_raw']]) }})"
                                         />
                                     </flux:tooltip>
                                 @endif
