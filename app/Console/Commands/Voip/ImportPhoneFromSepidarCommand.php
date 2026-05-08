@@ -13,7 +13,7 @@ class ImportPhoneFromSepidarCommand extends Command
 {
     protected $signature = 'app:voip:import-phones-from-sepidar';
 
-    protected $description = 'Import PartyPhone records from Sepidar (SQL Server) into MySQL phones with normalized numbers and Finglish names.';
+    protected $description = 'Import PartyPhone records from Sepidar (SQL Server) into MySQL phones with normalized numbers and Finglish names. Manual phones (is_manual=true) are preserved.';
 
     public function handle(): int
     {
@@ -21,11 +21,18 @@ class ImportPhoneFromSepidarCommand extends Command
         $now = Carbon::now();
         $imported = 0;
         $skipped = 0;
+        $preserved = 0;
+
+        $manualNumbers = Phone::query()
+            ->where('is_manual', true)
+            ->pluck('number')
+            ->all();
+        $manualSet = array_flip($manualNumbers);
 
         PartyPhone::query()
             ->with(['party' => static fn ($q) => $q->select(['PartyId', 'Name', 'LastName'])])
             ->orderBy('PartyPhoneId')
-            ->chunkById(500, function ($partyPhones) use ($converter, $now, &$imported, &$skipped) {
+            ->chunkById(500, function ($partyPhones) use ($converter, $now, $manualSet, &$imported, &$skipped, &$preserved) {
                 $rows = [];
 
                 foreach ($partyPhones as $partyPhone) {
@@ -38,6 +45,15 @@ class ImportPhoneFromSepidarCommand extends Command
                         continue;
                     }
 
+                    if (isset($manualSet[$normalized])) {
+                        $preserved++;
+
+                        continue;
+                    }
+
+                    $partyId = $partyPhone->PartyRef ?? ($partyPhone->party->PartyId ?? null);
+                    $partyPhoneId = $partyPhone->PartyPhoneId ?? null;
+
                     $name = $this->buildPartyDisplayName($partyPhone->party);
                     $nameLatin = '';
                     if ($name !== '') {
@@ -47,6 +63,9 @@ class ImportPhoneFromSepidarCommand extends Command
                     }
 
                     $rows[] = [
+                        'party_id' => $partyId,
+                        'party_phone_id' => $partyPhoneId,
+                        'is_manual' => false,
                         'number' => $normalized,
                         'name' => $name,
                         'name_latin' => $nameLatin,
@@ -61,20 +80,20 @@ class ImportPhoneFromSepidarCommand extends Command
                     Phone::query()->upsert(
                         $rows,
                         ['number'],
-                        ['name', 'name_latin', 'updated_at']
+                        ['party_id', 'party_phone_id', 'name', 'name_latin', 'updated_at']
                     );
                     $imported += count($rows);
                 }
             }, 'PartyPhoneId');
 
-        $this->info("Upserted {$imported} phone row(s); skipped {$skipped} invalid or empty number(s).");
+        $this->info("Upserted {$imported} phone row(s); preserved {$preserved} manual number(s); skipped {$skipped} invalid or empty number(s).");
 
         return self::SUCCESS;
     }
 
     /**
-     * @param  array<int, array{number: string, name: string, name_latin: string, created_at: Carbon, updated_at: Carbon}>  $rows
-     * @return array<int, array{number: string, name: string, name_latin: string, created_at: Carbon, updated_at: Carbon}>
+     * @param  array<int, array{party_id: int|null, party_phone_id: int|null, is_manual: bool, number: string, name: string, name_latin: string, created_at: Carbon, updated_at: Carbon}>  $rows
+     * @return array<int, array{party_id: int|null, party_phone_id: int|null, is_manual: bool, number: string, name: string, name_latin: string, created_at: Carbon, updated_at: Carbon}>
      */
     private function uniqueRowsByNumber(array $rows): array
     {
