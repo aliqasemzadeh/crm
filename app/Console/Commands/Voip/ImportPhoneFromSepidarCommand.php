@@ -4,6 +4,7 @@ namespace App\Console\Commands\Voip;
 
 use App\Models\Sepidar\GNR\PartyPhone;
 use App\Models\Voip\Phone;
+use App\Support\IranPhoneNumberNormalizer;
 use App\Support\PersianFinglishConverter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -37,7 +38,7 @@ class ImportPhoneFromSepidarCommand extends Command
 
                 foreach ($partyPhones as $partyPhone) {
                     $raw = (string) ($partyPhone->Phone ?? '');
-                    $normalized = $this->normalizeIranPhoneNumber($raw);
+                    $normalized = IranPhoneNumberNormalizer::normalize($raw);
 
                     if ($normalized === null) {
                         $skipped++;
@@ -118,28 +119,5 @@ class ImportPhoneFromSepidarCommand extends Command
         ], static fn (string $p): bool => $p !== '');
 
         return trim(implode(' ', $parts));
-    }
-
-    private function normalizeIranPhoneNumber(string $raw): ?string
-    {
-        $digits = preg_replace('/\D+/', '', $raw) ?? '';
-
-        if ($digits === '' || strlen($digits) < 5) {
-            return null;
-        }
-
-        if (str_starts_with($digits, '09')) {
-            return substr($digits, 1);
-        }
-
-        if (str_starts_with($digits, '071')) {
-            return substr($digits, 3);
-        }
-
-        if (str_starts_with($digits, '0')) {
-            return substr($digits, 1);
-        }
-
-        return $digits;
     }
 }

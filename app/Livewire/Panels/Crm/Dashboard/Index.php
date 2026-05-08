@@ -6,6 +6,7 @@ use App\Models\Issabel\Cdr;
 use App\Models\Issabel\Device;
 use App\Models\User;
 use App\Models\Voip\Phone;
+use App\Support\IranPhoneNumberNormalizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
@@ -43,7 +44,8 @@ class Index extends Component
 
     private const PAGE_SIZE = 50;
 
-    private const PHONES_CACHE_KEY = 'crm.voip_phones_number_to_name';
+    /** Cache key for VoIP phone book labels (clear after linking numbers). */
+    public const VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY = 'crm.voip_phones_number_to_name';
 
     private const DEVICES_CACHE_KEY = 'crm.issabel_devices_user_to_description';
 
@@ -180,6 +182,7 @@ class Index extends Component
             if ($this->userFilter === null) {
                 // Admin viewing "all calls": there is no single user context for call direction.
                 $this->scopedExtensionKeys = [];
+
                 return;
             }
 
@@ -290,7 +293,7 @@ class Index extends Component
     private function phoneNumberToNameMap(): array
     {
         return Cache::remember(
-            self::PHONES_CACHE_KEY,
+            self::VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY,
             self::PHONES_CACHE_TTL_SECONDS,
             fn (): array => Phone::query()->pluck('name', 'number')->all()
         );
@@ -467,6 +470,12 @@ class Index extends Component
 
         $headingRaw = $cnum !== '' ? $cnum : (string) $row->src;
         $headingParty = $this->partyPresentation($headingRaw, $phoneDisplay, $internalProfiles);
+        $normalizedVoip = IranPhoneNumberNormalizer::normalize($headingRaw);
+        $matchedVoip = $normalizedVoip !== null && isset($phoneMap[$normalizedVoip]);
+        $canLinkUnknownPhone = ! $headingParty['is_internal_user']
+            && $normalizedVoip !== null
+            && strlen($normalizedVoip) >= 8
+            && ! $matchedVoip;
         $callerTooltipNumber = $this->callerTooltipNumber($headingRaw, $headingParty['display']);
 
         $routeFromParty = $this->partyPresentation((string) $row->dst, $routeFromLabel, $internalProfiles);
@@ -487,6 +496,8 @@ class Index extends Component
             'phone_display' => $headingParty['display'],
             'caller_tooltip_number' => $callerTooltipNumber,
             'heading_party' => $headingParty,
+            'heading_raw' => $headingRaw,
+            'can_link_unknown_phone' => $canLinkUnknownPhone,
             'route_from_party' => $routeFromParty,
             'route_to_party' => $routeToParty,
             'duration_display' => $this->formatBillsec($billsec),

@@ -15,6 +15,13 @@ class PartyPhone extends Model
 
     public $primaryKey = 'PartyPhoneId';
 
+    public $timestamps = false;
+
+    protected $fillable = [
+        'PartyRef',
+        'Phone',
+    ];
+
     public function party(): BelongsTo
     {
         return $this->belongsTo(Party::class, 'PartyRef', 'PartyId');
