@@ -1067,6 +1067,7 @@ return [
     'party_payment_cheques_section' => 'چک‌های پرداختی',
     'voucher_ref' => 'شناسه سند',
     'voucher_number' => 'شماره سند',
+    'voucher_description' => 'شرح سند',
     'cheque_state' => 'وضعیت چک',
     'receipt_cheque_state_1' => 'نزد صندوق',
     'receipt_cheque_state_5' => 'عودتی',

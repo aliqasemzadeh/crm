@@ -141,6 +141,7 @@ class Party extends Component
                     'vi.Credit',
                     'v.Date as voucher_date',
                     'v.Number as voucher_number',
+                    'v.Description as voucher_description',
                 ])
                 ->paginate(25, ['*'], 'voucherLines');
         }
@@ -158,6 +159,7 @@ class Party extends Component
                 'vi.Credit',
                 'v.Date as voucher_date',
                 'v.Number as voucher_number',
+                'v.Description as voucher_description',
             ])
             ->paginate(25, ['*'], 'voucherLines');
     }
