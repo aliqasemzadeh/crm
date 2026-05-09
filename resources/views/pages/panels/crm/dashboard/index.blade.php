@@ -436,6 +436,106 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     }
 
     /**
+     * آیا این پایهٔ CDR همان داخلی کاربر جاری است (با همان کلیدهای scoped که برای فیلتر جهت استفاده می‌شود).
+     */
+    private function cdrLegMatchesScopedExtension(string $leg): bool
+    {
+        if ($leg === '' || $this->scopedExtensionKeys === []) {
+            return false;
+        }
+
+        $trim = trim($leg);
+        if ($trim === '') {
+            return false;
+        }
+
+        if (in_array($trim, $this->scopedExtensionKeys, true)) {
+            return true;
+        }
+
+        foreach ($this->partyLookupKeys($trim) as $key) {
+            if (in_array($key, $this->scopedExtensionKeys, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * تشخیص احتمالی پایهٔ داخلی کوتاه (بدون زمینهٔ کاربر) برای حالت «همه تماس‌ها» ادمین.
+     */
+    private function looksLikeShortExtensionLeg(string $leg): bool
+    {
+        $trim = trim($leg);
+        if ($trim === '') {
+            return false;
+        }
+
+        $norm = $this->normalizeExtensionCandidate($trim);
+        if ($norm !== '' && preg_match('/^\d{1,6}$/', $norm) === 1) {
+            return strlen($norm) <= 5;
+        }
+
+        $digits = preg_replace('/\D+/', '', $trim) ?? '';
+
+        return $digits !== '' && strlen($digits) <= 5;
+    }
+
+    /**
+     * طرف تماس «نام‌گذاری / ثبت ناشناس»: ورودی → معمولاً src؛ خروجی → معمولاً dst؛ قبلاً فقط cnum/src بود و خروجی بی‌خبر می‌ماند.
+     */
+    private function resolvePrimaryPartyRawForCard(Cdr $row): string
+    {
+        $cnum = trim((string) $row->cnum);
+        $src = trim((string) $row->src);
+        $dst = trim((string) $row->dst);
+        $fallback = $cnum !== '' ? $cnum : $src;
+
+        if ($this->scopedExtensionKeys !== []) {
+            $srcScoped = $this->cdrLegMatchesScopedExtension($src);
+            $dstScoped = $this->cdrLegMatchesScopedExtension($dst);
+
+            if ($srcScoped && ! $dstScoped && $dst !== '') {
+                $norm = IranPhoneNumberNormalizer::normalize($dst);
+
+                if ($norm !== null && strlen($norm) >= 8) {
+                    return $dst;
+                }
+
+                return $fallback;
+            }
+
+            if ($dstScoped && ! $srcScoped && $src !== '') {
+                $norm = IranPhoneNumberNormalizer::normalize($src);
+
+                if ($norm !== null && strlen($norm) >= 8) {
+                    return $src;
+                }
+
+                return $fallback;
+            }
+
+            return $fallback;
+        }
+
+        $srcNorm = IranPhoneNumberNormalizer::normalize($src);
+        $dstNorm = IranPhoneNumberNormalizer::normalize($dst);
+
+        if ($this->looksLikeShortExtensionLeg($src) && $dstNorm !== null && strlen($dstNorm) >= 8
+            && ($srcNorm === null || strlen($srcNorm) < 8)) {
+            return $dst;
+        }
+
+        if ($this->looksLikeShortExtensionLeg($dst) && $srcNorm !== null && strlen($srcNorm) >= 8
+            && ($dstNorm === null || strlen($dstNorm) < 8)) {
+            return $src;
+        }
+
+        return $fallback;
+    }
+
+    /**
      * @param  array<string, string>  $phoneMap
      * @param  array<string, string>  $deviceMap
      * @param  array<string, array{name: string, avatar_url: ?string}>  $internalProfiles
@@ -443,7 +543,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
      */
     private function mapRow(Cdr $row, array $phoneMap, array $deviceMap, array $internalProfiles): array
     {
-        $cnum = trim((string) $row->cnum);
         $appearance = $this->dispositionAppearance((string) $row->disposition);
         $billsec = (int) $row->billsec;
 
@@ -454,7 +553,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         $routeToLabel = $this->resolvePartyLabel((string) $row->src, $deviceMap, $phoneMap);
 
         // عنوان کارت: نام واقعی (devices / CRM)؛ اگر هنوز فقط شمارهٔ کوتاه بود از طرف‌های مسیر کمک بگیر
-        $primaryPartyRaw = $cnum !== '' ? $cnum : (string) $row->src;
+        $primaryPartyRaw = $this->resolvePrimaryPartyRawForCard($row);
         $phoneDisplay = $this->resolveHeadingDisplay(
             $primaryPartyRaw,
             (string) $row->src,
@@ -465,7 +564,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             $routeFromLabel
         );
 
-        $headingRaw = $cnum !== '' ? $cnum : (string) $row->src;
+        $headingRaw = $primaryPartyRaw;
         $headingParty = $this->partyPresentation($headingRaw, $phoneDisplay, $internalProfiles);
         $normalizedVoip = IranPhoneNumberNormalizer::normalize($headingRaw);
         $matchedVoip = $normalizedVoip !== null && isset($phoneMap[$normalizedVoip]);
@@ -516,8 +615,8 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         $src = trim((string) $row->src);
         $dst = trim((string) $row->dst);
 
-        $isOutgoing = $src !== '' && in_array($src, $this->scopedExtensionKeys, true);
-        $isIncoming = $dst !== '' && in_array($dst, $this->scopedExtensionKeys, true);
+        $isOutgoing = $src !== '' && $this->cdrLegMatchesScopedExtension($src);
+        $isIncoming = $dst !== '' && $this->cdrLegMatchesScopedExtension($dst);
 
         // Most common cases:
         if ($isOutgoing && ! $isIncoming) {
