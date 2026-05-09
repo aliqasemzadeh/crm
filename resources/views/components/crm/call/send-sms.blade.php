@@ -5,31 +5,113 @@ use Livewire\Attributes\On;
 use Livewire\Attributes\Computed;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
-use App\Models\Sepidar\SLS\PriceNoteItem;
+use App\Models\Sepidar\GNR\PartyAddress;
+use App\Models\Sepidar\GNR\PartyPhone;
+use App\Support\IranPhoneNumberNormalizer;
 use Flux\Flux;
+use Illuminate\Support\Collection;
 
 new class extends Component
 {
-
-
-
-
-
     public $phone = '';
+
     public $recipientName = '';
+
     public $message = '';
+
     public $search = '';
+
     public $selectedItemId = null;
+
+    public ?int $smsPartyId = null;
 
     #[On('panels.crm.dashboard.index.send-sms')]
     public function show($phone, $name = '')
     {
+        $this->smsPartyId = null;
         $this->phone = $phone;
         $this->recipientName = $name;
         $this->message = '';
         $this->search = '';
         $this->selectedItemId = null;
         $this->modal('send-sms-modal')->show();
+    }
+
+    #[On('panels.accounting.full-report.send-sms')]
+    public function showDebtReminder(?int $partyId = null, string $recipientName = '', string $debtAmount = ''): void
+    {
+        $this->smsPartyId = $partyId;
+        $this->recipientName = $recipientName;
+        $this->search = '';
+        $this->selectedItemId = null;
+        $this->message = __('app.full_report_debt_sms_body', [
+            'name' => $recipientName !== '' ? $recipientName : __('app.customer'),
+            'amount' => $debtAmount,
+        ]);
+
+        $options = $this->buildPartyPhoneOptions($partyId);
+        $this->phone = $options->first()['value'] ?? '';
+
+        $this->modal('send-sms-modal')->show();
+    }
+
+    protected function buildPartyPhoneOptions(?int $partyId): Collection
+    {
+        if (! $partyId) {
+            return collect();
+        }
+
+        $byNorm = [];
+
+        foreach (PartyPhone::query()->where('PartyRef', $partyId)->orderByDesc('IsMain')->orderBy('PartyPhoneId')->cursor() as $pp) {
+            $raw = trim((string) $pp->Phone);
+            if ($raw === '') {
+                continue;
+            }
+            $norm = IranPhoneNumberNormalizer::normalize($raw);
+            $key = $norm ?? mb_strtolower($raw);
+
+            $suffix = ((int) ($pp->IsMain ?? 0)) === 1
+                ? ' ('.__('app.phone_label_main').')'
+                : '';
+
+            $byNorm[$key] = [
+                'value' => $raw,
+                'label' => $raw.' — '.__('app.sms_phone_source_party_phone').$suffix,
+            ];
+        }
+
+        foreach (PartyAddress::query()->where('PartyRef', $partyId)->cursor() as $addr) {
+            $text = (string) ($addr->Address ?? '');
+            if ($text === '') {
+                continue;
+            }
+            if (preg_match_all('/09\d{9}/', $text, $matches)) {
+                foreach ($matches[0] as $rawFound) {
+                    $norm = IranPhoneNumberNormalizer::normalize($rawFound);
+                    if (! $norm) {
+                        continue;
+                    }
+                    $key = $norm;
+                    if (isset($byNorm[$key])) {
+                        continue;
+                    }
+                    $display = IranPhoneNumberNormalizer::displayForUi($norm);
+                    $byNorm[$key] = [
+                        'value' => $display,
+                        'label' => $display.' — '.__('app.sms_phone_source_address_text'),
+                    ];
+                }
+            }
+        }
+
+        return collect(array_values($byNorm));
+    }
+
+    #[Computed]
+    public function partySmsPhoneOptions(): Collection
+    {
+        return $this->buildPartyPhoneOptions($this->smsPartyId);
     }
 
     #[Computed]
@@ -101,6 +183,7 @@ new class extends Component
 
         \App\Jobs\Notification\SendSmsMessageJob::dispatch($this->phone, $this->message);
 
+        $this->smsPartyId = null;
         $this->modal('send-sms-modal')->close();
         Flux::toast(__('app.sms_sent_successfully'));
     }
@@ -111,8 +194,27 @@ new class extends Component
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('app.send_sms') }}</flux:heading>
-                <flux:subheading>{{ __('app.recipient') }}: {{ $recipientName ?: $phone }} ({{ $phone }})</flux:subheading>
+                @if ($smsPartyId)
+                    <flux:subheading>{{ __('app.recipient') }}: {{ $recipientName ?: __('app.customer') }}</flux:subheading>
+                @else
+                    <flux:subheading>{{ __('app.recipient') }}: {{ $recipientName ?: $phone }} ({{ $phone }})</flux:subheading>
+                @endif
             </div>
+
+            @if ($smsPartyId)
+                <div class="space-y-2">
+                    @if ($this->partySmsPhoneOptions->isNotEmpty())
+                        <flux:select wire:model.live="phone" :label="__('app.select_phone_for_sms')" searchable>
+                            @foreach ($this->partySmsPhoneOptions as $opt)
+                                <flux:select.option value="{{ $opt['value'] }}" wire:key="sms-phone-{{ $loop->index }}">{{ $opt['label'] }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    @else
+                        <flux:input wire:model="phone" :label="__('app.phone')" />
+                        <flux:text size="sm" class="text-amber-600 dark:text-amber-400">{{ __('app.full_report_no_party_phones_hint') }}</flux:text>
+                    @endif
+                </div>
+            @endif
 
             <div class="space-y-2">
                 <flux:text size="sm" weight="medium">{{ __('app.search_item') }}</flux:text>

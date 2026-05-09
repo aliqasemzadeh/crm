@@ -151,6 +151,7 @@
 <flux:main>
     {{ $slot }}
 </flux:main>
+<livewire:crm.call.send-sms :key="'panels-accounting-send-sms'" />
 @include('partials.foot')
 </body>
 </html>
