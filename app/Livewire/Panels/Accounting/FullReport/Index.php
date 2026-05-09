@@ -42,6 +42,11 @@ class Index extends Component
         $this->resetPage();
     }
 
+    public function openDebtReminderSms(int $partyId, string $recipientName, string $debtAmount): void
+    {
+        $this->dispatch('panels.accounting.full-report.send-sms', $partyId, $recipientName, $debtAmount);
+    }
+
     private function partyReportBaseQuery()
     {
         $fiscalYearRef = config('sepidar.FiscalYearRef');

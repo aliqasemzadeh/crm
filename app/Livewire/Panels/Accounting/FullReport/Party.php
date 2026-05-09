@@ -26,6 +26,23 @@ class Party extends Component
         $this->party = $party;
     }
 
+    public function openDebtReminderSms(): void
+    {
+        $summary = $this->summary;
+        $finalBalance = (float) ($summary['final_balance'] ?? 0);
+
+        if ($finalBalance <= 0) {
+            return;
+        }
+
+        $this->dispatch(
+            'panels.accounting.full-report.send-sms',
+            (int) $this->party->PartyId,
+            trim($this->party->Name.' '.$this->party->LastName),
+            number_format($finalBalance),
+        );
+    }
+
     public function receiptChequeStateLabel(?int $state): string
     {
         return match ($state) {

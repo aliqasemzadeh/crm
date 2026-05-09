@@ -87,13 +87,6 @@
                                     />
                                 </flux:tooltip>
                                 @if($finalBalance > 0)
-                                    @php
-                                        $debtSmsPayload = [
-                                            'partyId' => $party->PartyId,
-                                            'recipientName' => trim($party->Name.' '.$party->LastName),
-                                            'debtAmount' => number_format($finalBalance),
-                                        ];
-                                    @endphp
                                     <flux:tooltip content="{{ __('app.full_report_send_debt_reminder_sms') }}">
                                         <flux:button
                                             size="xs"
@@ -101,7 +94,7 @@
                                             color="orange"
                                             icon="message-square-text"
                                             icon:variant="outline"
-                                            wire:click='$dispatch("panels.accounting.full-report.send-sms", @json($debtSmsPayload))'
+                                            wire:click="openDebtReminderSms({{ $party->PartyId }}, {{ \Illuminate\Support\Js::from(trim($party->Name.' '.$party->LastName)) }}, {{ \Illuminate\Support\Js::from(number_format($finalBalance)) }})"
                                         />
                                     </flux:tooltip>
                                 @endif
