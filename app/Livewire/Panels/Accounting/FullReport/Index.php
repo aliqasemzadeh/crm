@@ -20,8 +20,7 @@ class Index extends Component
         $this->resetPage();
     }
 
-    #[Computed]
-    public function parties()
+    private function partyReportBaseQuery()
     {
         $fiscalYearRef = config('sepidar.FiscalYearRef');
 
@@ -50,11 +49,42 @@ class Index extends Component
             ])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('GNR.Party.Name', 'like', '%' . $this->search . '%')
-                        ->orWhere('GNR.Party.LastName', 'like', '%' . $this->search . '%');
+                    $q->where('GNR.Party.Name', 'like', '%'.$this->search.'%')
+                        ->orWhere('GNR.Party.LastName', 'like', '%'.$this->search.'%');
                 });
-            })
-            ->paginate(250);
+            });
+    }
+
+    #[Computed]
+    public function parties()
+    {
+        return $this->partyReportBaseQuery()->paginate(250);
+    }
+
+    #[Computed]
+    public function finalBalanceSplits(): array
+    {
+        $debtorTotal = 0.0;
+        $creditorTotal = 0.0;
+
+        foreach ($this->partyReportBaseQuery()->cursor() as $party) {
+            $debit = (float) ($party->debit ?? 0);
+            $credit = (float) ($party->credit ?? 0);
+            $uncashedReceipts = (float) ($party->uncashed_receipts ?? 0);
+            $uncashedPayments = (float) ($party->uncashed_payments ?? 0);
+            $final = ($debit + $uncashedPayments) - ($credit + $uncashedReceipts);
+
+            if ($final > 0) {
+                $debtorTotal += $final;
+            } elseif ($final < 0) {
+                $creditorTotal += abs($final);
+            }
+        }
+
+        return [
+            'debtor_total' => $debtorTotal,
+            'creditor_total' => $creditorTotal,
+        ];
     }
 
     #[Computed]
@@ -67,8 +97,8 @@ class Index extends Component
             ->leftJoin('ACC.DL', 'GNR.Party.DLRef', '=', 'ACC.DL.DLId')
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
-                    $q->where('GNR.Party.Name', 'like', '%' . $this->search . '%')
-                        ->orWhere('GNR.Party.LastName', 'like', '%' . $this->search . '%');
+                    $q->where('GNR.Party.Name', 'like', '%'.$this->search.'%')
+                        ->orWhere('GNR.Party.LastName', 'like', '%'.$this->search.'%');
                 });
             });
 

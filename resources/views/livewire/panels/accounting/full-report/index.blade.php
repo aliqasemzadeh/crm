@@ -15,30 +15,22 @@
             <flux:text class="text-green-600 dark:text-green-400 font-bold">{{ __('app.credit') }}</flux:text>
             <flux:heading size="lg">{{ number_format($this->totals['credit']) }} {{ __('app.rial') }}</flux:heading>
         </flux:card>
-        @php
-            $totalsBalance = $this->totals['debit'] - $this->totals['credit'];
-            $totalsFinalBalance = ($this->totals['debit'] + $this->totals['uncashed_payments']) - ($this->totals['credit'] + $this->totals['uncashed_receipts']);
-        @endphp
-        <flux:card class="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-950/20">
-            <flux:text class="text-blue-600 dark:text-blue-400 font-bold">{{ __('app.balance') }}</flux:text>
-            <flux:heading size="lg">
-                @if($totalsBalance < 0)
-                    ({{ number_format(abs($totalsBalance)) }})
-                @else
-                    {{ number_format($totalsBalance) }}
-                @endif
-                {{ __('app.rial') }}
+        <flux:card class="flex flex-col items-center justify-center gap-1 p-4 bg-red-50 dark:bg-red-950/20">
+            <flux:text class="text-red-600 dark:text-red-400 font-bold">{{ __('app.aggregate_debtor_balance_label') }}</flux:text>
+            <flux:text size="sm" class="text-red-600/80 dark:text-red-400/80 text-center">{{ __('app.aggregate_debtor_balance_hint') }}</flux:text>
+            <flux:heading size="lg" class="text-red-700 dark:text-red-300">
+                {{ number_format($this->finalBalanceSplits['debtor_total']) }} {{ __('app.rial') }}
             </flux:heading>
         </flux:card>
-        <flux:card class="flex flex-col items-center justify-center p-4 bg-amber-50 dark:bg-amber-950/20">
-            <flux:text class="text-amber-600 dark:text-amber-400 font-bold">{{ __('app.final_balance') }}</flux:text>
-            <flux:heading size="lg">
-                @if($totalsFinalBalance < 0)
-                    ({{ number_format(abs($totalsFinalBalance)) }})
+        <flux:card class="flex flex-col items-center justify-center gap-1 p-4 bg-green-50 dark:bg-green-950/20">
+            <flux:text class="text-green-600 dark:text-green-400 font-bold">{{ __('app.aggregate_creditor_balance_label') }}</flux:text>
+            <flux:text size="sm" class="text-green-600/80 dark:text-green-400/80 text-center">{{ __('app.aggregate_creditor_balance_hint') }}</flux:text>
+            <flux:heading size="lg" class="text-green-700 dark:text-green-300">
+                @if($this->finalBalanceSplits['creditor_total'] > 0)
+                    ({{ number_format($this->finalBalanceSplits['creditor_total']) }}) {{ __('app.rial') }}
                 @else
-                    {{ number_format($totalsFinalBalance) }}
+                    {{ number_format(0) }} {{ __('app.rial') }}
                 @endif
-                {{ __('app.rial') }}
             </flux:heading>
         </flux:card>
     </div>
