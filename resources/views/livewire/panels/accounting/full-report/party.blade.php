@@ -132,6 +132,7 @@
                 <flux:table.column>{{ __('app.voucher_number') }}</flux:table.column>
                 <flux:table.column>{{ __('app.voucher_ref') }}</flux:table.column>
                 <flux:table.column>{{ __('app.date') }}</flux:table.column>
+                <flux:table.column>{{ __('app.voucher_description') }}</flux:table.column>
                 <flux:table.column>{{ __('app.debit') }}</flux:table.column>
                 <flux:table.column>{{ __('app.credit') }}</flux:table.column>
             </flux:table.columns>
@@ -141,6 +142,9 @@
                     <flux:table.cell class="font-mono">{{ $line->VoucherRef }}</flux:table.cell>
                     <flux:table.cell>
                         {{ $line->voucher_date ? \Morilog\Jalali\Jalalian::fromDateTime($line->voucher_date)->format('%Y-%m-%d') : '-' }}
+                    </flux:table.cell>
+                    <flux:table.cell class="max-w-md">
+                        <flux:text class="line-clamp-2 whitespace-normal text-zinc-700 dark:text-zinc-300">{{ $line->voucher_description ?: '—' }}</flux:text>
                     </flux:table.cell>
                     <flux:table.cell>{{ number_format((float) ($line->Debit ?? 0)) }}</flux:table.cell>
                     <flux:table.cell>{{ number_format((float) ($line->Credit ?? 0)) }}</flux:table.cell>
