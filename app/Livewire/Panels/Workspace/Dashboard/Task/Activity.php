@@ -9,6 +9,7 @@ use App\Models\Workspace\TaskChecklist;
 use App\Models\Workspace\TaskReport;
 use App\Models\Workspace\TaskFile;
 use Flux\Flux;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
 
@@ -52,7 +53,7 @@ class Activity extends Component
 
         $report = TaskReport::create([
             'task_id' => $this->task->id,
-            'user_id' => auth()->id(),
+            'user_id' => Auth::id(),
             'type' => 'worklog',
             'body' => $this->body,
         ]);
@@ -63,7 +64,7 @@ class Activity extends Component
                 TaskFile::create([
                     'task_id' => $this->task->id,
                     'task_report_id' => $report->id,
-                    'user_id' => auth()->id(),
+                    'user_id' => Auth::id(),
                     'path' => $path,
                     'original_name' => $file->getClientOriginalName(),
                     'mime' => $file->getMimeType(),
@@ -182,7 +183,7 @@ class Activity extends Component
         $checklist->update([
             'is_done' => $isDone,
             'done_at' => $isDone ? now() : null,
-            'done_by' => $isDone ? auth()->id() : null,
+            'done_by' => $isDone ? Auth::id() : null,
         ]);
 
         $this->task->load(['reports.user', 'reports.files', 'checklists.doneBy']);
