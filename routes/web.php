@@ -62,6 +62,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/payment-cheque/index', \App\Livewire\Panels\Accounting\PaymentCheque\Index::class)->name('panels.accounting.payment-cheque.index');
     Route::livewire('/panels/accounting/account/index', \App\Livewire\Panels\Accounting\Account\Index::class)->name('panels.accounting.account.index');
     Route::livewire('/panels/accounting/full-report/index', \App\Livewire\Panels\Accounting\FullReport\Index::class)->name('panels.accounting.full-report.index');
+    Route::livewire('/panels/accounting/full-report/party/{party}', \App\Livewire\Panels\Accounting\FullReport\Party::class)->name('panels.accounting.full-report.party.show');
     Route::livewire('/panels/accounting/tax/index', \App\Livewire\Panels\Accounting\Tax\Index::class)->name('panels.accounting.tax.index');
 
     Route::get('/item-image/{itemId}', function ($itemId) {

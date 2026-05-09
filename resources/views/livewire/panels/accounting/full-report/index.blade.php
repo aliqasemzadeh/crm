@@ -56,6 +56,7 @@
     <flux:card class="p-0">
         <flux:table>
             <flux:table.columns>
+                <flux:table.column class="w-1 whitespace-nowrap">{{ __('app.options') }}</flux:table.column>
                 <flux:table.column>{{ __('app.name') }}</flux:table.column>
                 <flux:table.column>{{ __('app.debit') }}</flux:table.column>
                 <flux:table.column>{{ __('app.credit') }}</flux:table.column>
@@ -72,6 +73,19 @@
                         $finalBalance = ($party->debit + $party->uncashed_payments) - ($party->credit + $party->uncashed_receipts);
                     @endphp
                     <flux:table.row :key="$party->PartyId">
+                        <flux:table.cell class="w-1 whitespace-nowrap">
+                            <flux:tooltip content="{{ __('app.full_report_open_party_detail') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="sky"
+                                    icon="clipboard-list"
+                                    icon:variant="outline"
+                                    :href="route('panels.accounting.full-report.party.show', $party->PartyId)"
+                                    wire:navigate
+                                />
+                            </flux:tooltip>
+                        </flux:table.cell>
                         <flux:table.cell>
                             <div class="font-medium text-zinc-900 dark:text-white">{{ $party->Name }} {{ $party->LastName }}</div>
                         </flux:table.cell>
