@@ -1,8 +1,26 @@
 <div class="space-y-6">
-    <div class="flex justify-between items-center">
+    <div class="flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-end">
         <flux:heading size="xl">{{ __('app.full_account_report') }}</flux:heading>
-        <div class="w-1/3">
-            <flux:input wire:model.live="search" icon="calculator" placeholder="{{ __('app.search_placeholder') }}" />
+        <div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <div class="w-full sm:w-56">
+                <flux:input wire:model.live="search" icon="calculator" placeholder="{{ __('app.search_placeholder') }}" />
+            </div>
+            <div class="w-full sm:w-52">
+                <flux:select wire:model.live="sortColumn" label="{{ __('app.sort_by') }}" searchable>
+                    <flux:select.option value="final_balance">{{ __('app.final_balance') }}</flux:select.option>
+                    <flux:select.option value="balance">{{ __('app.balance') }}</flux:select.option>
+                    <flux:select.option value="debit">{{ __('app.debit') }}</flux:select.option>
+                    <flux:select.option value="credit">{{ __('app.credit') }}</flux:select.option>
+                    <flux:select.option value="uncashed_receipts">{{ __('app.uncashed_receipts') }}</flux:select.option>
+                    <flux:select.option value="uncashed_payments">{{ __('app.uncashed_payments') }}</flux:select.option>
+                </flux:select>
+            </div>
+            <div class="w-full sm:w-52">
+                <flux:select wire:model.live="sortDirection" label="{{ __('app.full_report_sort_direction') }}" searchable>
+                    <flux:select.option value="asc">{{ __('app.sort_amount_low_high') }}</flux:select.option>
+                    <flux:select.option value="desc">{{ __('app.sort_amount_high_low') }}</flux:select.option>
+                </flux:select>
+            </div>
         </div>
     </div>
 
