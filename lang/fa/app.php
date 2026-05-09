@@ -1072,6 +1072,7 @@ return [
     'manual_phone_saved_success' => 'شماره به صورت دستی ذخیره شد.',
     'phone_link_failed' => 'ذخیره انجام نشد. دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.',
     'link_unknown_phone_tooltip' => 'ثبت شماره ناشناس',
+    'link_unknown_phone_call_label' => 'در این تماس به صورت:',
     'addresses' => 'آدرس ها',
     'addresses_description' => 'آدرس های مشتری',
     'economic_code' => 'کد اقتصادی',

@@ -436,6 +436,38 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     }
 
     /**
+     * آیا این پایهٔ خام CDR را می‌توان به مخاطب وصل کرد (غیر داخلی، شمارهٔ واقعی، هنوز در دفترچه نیست).
+     *
+     * @param  array<string, string>  $deviceMap
+     * @param  array<string, string>  $phoneMap
+     * @param  array<string, array{name: string, avatar_url: ?string}>  $internalProfiles
+     * @return array{can: bool, display: string}
+     */
+    private function linkUnknownPhoneMetaForRaw(
+        string $raw,
+        array $deviceMap,
+        array $phoneMap,
+        array $internalProfiles,
+    ): array {
+        $trim = trim($raw);
+        if ($trim === '') {
+            return ['can' => false, 'display' => ''];
+        }
+
+        $phoneDisplay = $this->resolvePartyLabel($trim, $deviceMap, $phoneMap);
+        $partyMeta = $this->partyPresentation($trim, $phoneDisplay, $internalProfiles);
+        $normalizedVoip = IranPhoneNumberNormalizer::normalize($trim);
+        $matchedVoip = $normalizedVoip !== null && isset($phoneMap[$normalizedVoip]);
+
+        $can = ! $partyMeta['is_internal_user']
+            && $normalizedVoip !== null
+            && strlen($normalizedVoip) >= 8
+            && ! $matchedVoip;
+
+        return ['can' => $can, 'display' => $partyMeta['display']];
+    }
+
+    /**
      * آیا این پایهٔ CDR همان داخلی کاربر جاری است (با همان کلیدهای scoped که برای فیلتر جهت استفاده می‌شود).
      */
     private function cdrLegMatchesScopedExtension(string $leg): bool
@@ -566,19 +598,42 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
         $headingRaw = $primaryPartyRaw;
         $headingParty = $this->partyPresentation($headingRaw, $phoneDisplay, $internalProfiles);
-        $normalizedVoip = IranPhoneNumberNormalizer::normalize($headingRaw);
-        $matchedVoip = $normalizedVoip !== null && isset($phoneMap[$normalizedVoip]);
-        $canLinkUnknownPhone = ! $headingParty['is_internal_user']
-            && $normalizedVoip !== null
-            && strlen($normalizedVoip) >= 8
-            && ! $matchedVoip;
         $callerTooltipNumber = $this->callerTooltipNumber($headingRaw, $headingParty['display']);
 
         $routeFromParty = $this->partyPresentation((string) $row->dst, $routeFromLabel, $internalProfiles);
         $routeFromParty['tooltip_number'] = $this->callerTooltipNumber((string) $row->dst, $routeFromParty['display']);
+        $fromLinkMeta = $this->linkUnknownPhoneMetaForRaw((string) $row->dst, $deviceMap, $phoneMap, $internalProfiles);
+        $routeFromParty['can_link_unknown_phone'] = $fromLinkMeta['can'];
+        $routeFromParty['link_raw'] = trim((string) $row->dst);
+        $routeFromParty['link_display_name'] = $fromLinkMeta['display'];
 
         $routeToParty = $this->partyPresentation((string) $row->src, $routeToLabel, $internalProfiles);
         $routeToParty['tooltip_number'] = $this->callerTooltipNumber((string) $row->src, $routeToParty['display']);
+        $toLinkMeta = $this->linkUnknownPhoneMetaForRaw((string) $row->src, $deviceMap, $phoneMap, $internalProfiles);
+        $routeToParty['can_link_unknown_phone'] = $toLinkMeta['can'];
+        $routeToParty['link_raw'] = trim((string) $row->src);
+        $routeToParty['link_display_name'] = $toLinkMeta['display'];
+
+        $headingLinkMeta = $this->linkUnknownPhoneMetaForRaw($headingRaw, $deviceMap, $phoneMap, $internalProfiles);
+        $primaryLinkRaw = '';
+        $primaryLinkDisplayName = '';
+        if ($headingLinkMeta['can']) {
+            $primaryLinkRaw = trim($headingRaw);
+            $primaryLinkDisplayName = $headingLinkMeta['display'];
+        } else {
+            foreach ([trim((string) $row->src), trim((string) $row->dst)] as $leg) {
+                if ($leg === '') {
+                    continue;
+                }
+                $legMeta = $this->linkUnknownPhoneMetaForRaw($leg, $deviceMap, $phoneMap, $internalProfiles);
+                if ($legMeta['can']) {
+                    $primaryLinkRaw = $leg;
+                    $primaryLinkDisplayName = $legMeta['display'];
+                    break;
+                }
+            }
+        }
+        $canLinkUnknownPhone = $primaryLinkRaw !== '';
 
         return [
             'uniqueid' => $row->uniqueid,
@@ -594,6 +649,8 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             'heading_party' => $headingParty,
             'heading_raw' => $headingRaw,
             'can_link_unknown_phone' => $canLinkUnknownPhone,
+            'link_unknown_raw' => $primaryLinkRaw,
+            'link_unknown_display_name' => $primaryLinkDisplayName,
             'route_from_party' => $routeFromParty,
             'route_to_party' => $routeToParty,
             'duration_display' => $this->formatBillsec($billsec),
@@ -1056,7 +1113,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                             color="teal"
                                             icon="link"
                                             icon:variant="outline"
-                                            wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $call['heading_raw']]) }})"
+                                            wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $call['link_unknown_raw'] ?? $call['heading_raw'], 'name' => $call['link_unknown_display_name'] ?? '']) }})"
                                         />
                                     </flux:tooltip>
                                 @endif
@@ -1087,18 +1144,32 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                                 ? (string) $fromParty['tooltip_number']
                                                 : null;
                                         @endphp
-                                        @if ($fromTooltip)
-                                            <flux:tooltip content="{{ $fromTooltip }}">
-                                                <span class="inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200"
-                                                      tabindex="0">
+                                        <span class="inline-flex min-w-0 max-w-full items-center gap-1">
+                                            @if ($fromTooltip)
+                                                <flux:tooltip content="{{ $fromTooltip }}">
+                                                    <span class="inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200"
+                                                          tabindex="0">
+                                                        <span class="truncate">{{ $fromParty['display'] ?? '' }}</span>
+                                                    </span>
+                                                </flux:tooltip>
+                                            @else
+                                                <span class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
                                                     <span class="truncate">{{ $fromParty['display'] ?? '' }}</span>
                                                 </span>
-                                            </flux:tooltip>
-                                        @else
-                                            <span class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
-                                                <span class="truncate">{{ $fromParty['display'] ?? '' }}</span>
-                                            </span>
-                                        @endif
+                                            @endif
+                                            @if (! empty($fromParty['can_link_unknown_phone']))
+                                                <flux:tooltip content="{{ __('app.link_unknown_phone_tooltip') }}">
+                                                    <flux:button
+                                                        size="xs"
+                                                        variant="primary"
+                                                        color="teal"
+                                                        icon="link"
+                                                        icon:variant="outline"
+                                                        wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $fromParty['link_raw'] ?? '', 'name' => $fromParty['link_display_name'] ?? ($fromParty['display'] ?? '')]) }})"
+                                                    />
+                                                </flux:tooltip>
+                                            @endif
+                                        </span>
                                     @endif
 
                                     <flux:icon.arrow-right variant="micro" class="size-3.5 shrink-0 text-zinc-400" />
@@ -1109,18 +1180,32 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                                 ? (string) $toParty['tooltip_number']
                                                 : null;
                                         @endphp
-                                        @if ($toTooltip)
-                                            <flux:tooltip content="{{ $toTooltip }}">
-                                                <span class="inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200"
-                                                      tabindex="0">
+                                        <span class="inline-flex min-w-0 max-w-full items-center gap-1">
+                                            @if ($toTooltip)
+                                                <flux:tooltip content="{{ $toTooltip }}">
+                                                    <span class="inline-flex min-w-0 max-w-full cursor-default items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 outline-none dark:bg-zinc-700/70 dark:text-zinc-200"
+                                                          tabindex="0">
+                                                        <span class="truncate">{{ $toParty['display'] ?? '' }}</span>
+                                                    </span>
+                                                </flux:tooltip>
+                                            @else
+                                                <span class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
                                                     <span class="truncate">{{ $toParty['display'] ?? '' }}</span>
                                                 </span>
-                                            </flux:tooltip>
-                                        @else
-                                            <span class="inline-flex min-w-0 max-w-full items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-800 dark:bg-zinc-700/70 dark:text-zinc-200">
-                                                <span class="truncate">{{ $toParty['display'] ?? '' }}</span>
-                                            </span>
-                                        @endif
+                                            @endif
+                                            @if (! empty($toParty['can_link_unknown_phone']))
+                                                <flux:tooltip content="{{ __('app.link_unknown_phone_tooltip') }}">
+                                                    <flux:button
+                                                        size="xs"
+                                                        variant="primary"
+                                                        color="teal"
+                                                        icon="link"
+                                                        icon:variant="outline"
+                                                        wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $toParty['link_raw'] ?? '', 'name' => $toParty['link_display_name'] ?? ($toParty['display'] ?? '')]) }})"
+                                                    />
+                                                </flux:tooltip>
+                                            @endif
+                                        </span>
                                     @endif
                                 </div>
                             </div>
