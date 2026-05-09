@@ -15,8 +15,30 @@ class Index extends Component
 
     public string $search = '';
 
-    public function updatedSearch()
+    public string $sortColumn = 'final_balance';
+
+    public string $sortDirection = 'desc';
+
+    public function updatedSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedSortColumn(): void
+    {
+        $allowed = ['final_balance', 'balance', 'debit', 'credit', 'uncashed_receipts', 'uncashed_payments'];
+        if (! in_array($this->sortColumn, $allowed, true)) {
+            $this->sortColumn = 'final_balance';
+        }
+        $this->resetPage();
+    }
+
+    public function updatedSortDirection(): void
+    {
+        $dir = strtolower($this->sortDirection);
+        if (! in_array($dir, ['asc', 'desc'], true)) {
+            $this->sortDirection = 'desc';
+        }
         $this->resetPage();
     }
 
@@ -55,10 +77,34 @@ class Index extends Component
             });
     }
 
+    private function sortAmountSqlExpression(): string
+    {
+        return match ($this->sortColumn) {
+            'balance' => '(ISNULL(debit, 0) - ISNULL(credit, 0))',
+            'debit' => 'ISNULL(debit, 0)',
+            'credit' => 'ISNULL(credit, 0)',
+            'uncashed_receipts' => 'ISNULL(uncashed_receipts, 0)',
+            'uncashed_payments' => 'ISNULL(uncashed_payments, 0)',
+            default => '(ISNULL(debit, 0) + ISNULL(uncashed_payments, 0) - ISNULL(credit, 0) - ISNULL(uncashed_receipts, 0))',
+        };
+    }
+
+    private function validatedSortDirectionSql(): string
+    {
+        return strtolower($this->sortDirection) === 'asc' ? 'ASC' : 'DESC';
+    }
+
     #[Computed]
     public function parties()
     {
-        return $this->partyReportBaseQuery()->paginate(250);
+        $baseQuery = $this->partyReportBaseQuery();
+        $direction = $this->validatedSortDirectionSql();
+
+        return Party::query()
+            ->fromSub($baseQuery, 'party_report')
+            ->orderByRaw($this->sortAmountSqlExpression().' '.$direction)
+            ->orderBy('party_report.PartyId')
+            ->paginate(250);
     }
 
     #[Computed]
