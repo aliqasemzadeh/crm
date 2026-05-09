@@ -54,7 +54,7 @@ class Index extends Component
                         ->orWhere('GNR.Party.LastName', 'like', '%' . $this->search . '%');
                 });
             })
-            ->paginate(50);
+            ->paginate(250);
     }
 
     #[Computed]
