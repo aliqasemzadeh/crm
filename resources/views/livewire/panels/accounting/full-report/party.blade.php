@@ -15,20 +15,13 @@
         </div>
         <div class="flex flex-shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
             @if(($s['final_balance'] ?? 0) > 0)
-                @php
-                    $partyDebtSmsPayload = [
-                        'partyId' => $party->PartyId,
-                        'recipientName' => trim($party->Name.' '.$party->LastName),
-                        'debtAmount' => number_format($s['final_balance']),
-                    ];
-                @endphp
                 <flux:tooltip content="{{ __('app.full_report_send_debt_reminder_sms') }}">
                     <flux:button
                         variant="primary"
                         color="orange"
                         icon="message-square-text"
                         icon:variant="outline"
-                        wire:click='$dispatch("panels.accounting.full-report.send-sms", @json($partyDebtSmsPayload))'
+                        wire:click="openDebtReminderSms"
                     >
                         {{ __('app.send_sms') }}
                     </flux:button>
