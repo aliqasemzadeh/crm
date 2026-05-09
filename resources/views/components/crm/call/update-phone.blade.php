@@ -20,6 +20,9 @@ new class extends Component
 
     public string $headingRaw = '';
 
+    /** برچسب فعلی این طرف تماس در کارت (مثل نام مخاطب یا شماره خام). */
+    public string $linkContextName = '';
+
     public string $normalizedPhone = '';
 
     public string $partySearch = '';
@@ -34,11 +37,12 @@ new class extends Component
     public string $manualNameLatin = '';
 
     #[On('panels.crm.dashboard.index.link-phone')]
-    public function open(string $raw = ''): void
+    public function open(string $raw = '', string $name = ''): void
     {
-        $this->reset(['partySearch', 'selectedPartyId', 'mode', 'manualNameFa', 'manualNameLatin']);
+        $this->reset(['partySearch', 'selectedPartyId', 'mode', 'manualNameFa', 'manualNameLatin', 'linkContextName']);
         $this->mode = 'party';
         $this->headingRaw = $raw;
+        $this->linkContextName = trim((string) $name);
 
         $normalized = IranPhoneNumberNormalizer::normalize($raw);
 
@@ -319,6 +323,12 @@ new class extends Component
                     {{ __('app.normalized_phone_key') }}:
                     <span dir="ltr" class="font-mono font-medium">{{ \App\Support\IranPhoneNumberNormalizer::displayForUi($normalizedPhone) }}</span>
                 </flux:subheading>
+                @if ($linkContextName !== '')
+                    <flux:text size="sm" class="mt-2 text-zinc-600 dark:text-zinc-400">
+                        {{ __('app.link_unknown_phone_call_label') }}
+                        <span class="font-medium text-zinc-800 dark:text-zinc-200">{{ $linkContextName }}</span>
+                    </flux:text>
+                @endif
                 @if ($headingRaw !== '')
                     <flux:text size="sm" class="mt-2 text-zinc-500">
                         {{ __('app.raw_channel_value') }}:
