@@ -19,7 +19,6 @@ class GenerateRecurringTasksCommand extends Command
         $now = now();
 
         $templates = Task::query()
-            ->whereNull('generated_from_task_id')
             ->whereIn('repeat_type', ['daily', 'weekly', 'monthly'])
             ->where(function ($query) use ($now) {
                 $query->whereNull('next_repeat_at')->orWhere('next_repeat_at', '<=', $now);
@@ -32,6 +31,8 @@ class GenerateRecurringTasksCommand extends Command
             if (! $nextDay) {
                 continue;
             }
+
+            $nextScheduled = $this->resolveNextRepeatAt($template, $nextDay);
 
             $dayStart = $nextDay->copy()->startOfDay();
             $startsAt = $dayStart->copy()->setTime(8, 0);
@@ -52,6 +53,7 @@ class GenerateRecurringTasksCommand extends Command
                 'repeat_weekday' => $template->repeat_weekday,
                 'repeat_monthday' => $template->repeat_monthday,
                 'generated_from_task_id' => $template->id,
+                'next_repeat_at' => $nextScheduled,
                 'is_locked' => $template->is_locked,
                 'locked_by' => $template->locked_by,
                 'locked_at' => $template->locked_at,
@@ -101,8 +103,11 @@ class GenerateRecurringTasksCommand extends Command
             }
 
             $template->update([
+                'repeat_type' => 'none',
+                'repeat_weekday' => null,
+                'repeat_monthday' => null,
                 'last_repeated_at' => $now,
-                'next_repeat_at' => $this->resolveNextRepeatAt($template, $nextDay),
+                'next_repeat_at' => null,
             ]);
         }
 
