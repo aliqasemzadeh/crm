@@ -31,6 +31,7 @@ class Task extends Model
 
         // Meta
         'priority',          // low | medium | high | urgent
+        'starts_at',
         'due_at',
         'done_at',
 
@@ -42,12 +43,14 @@ class Task extends Model
         'repeat_monthday',   // 1..31
         'last_repeated_at',
         'next_repeat_at',
+        'generated_from_task_id',
         'is_locked',
         'locked_by',
         'locked_at',
     ];
 
     protected $casts = [
+        'starts_at'   => 'datetime',
         'due_at'      => 'datetime',
         'done_at'     => 'datetime',
         'approved_at' => 'datetime',
@@ -89,6 +92,16 @@ class Task extends Model
     public function locker(): BelongsTo
     {
         return $this->belongsTo(User::class, 'locked_by');
+    }
+
+    public function generatedFrom(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'generated_from_task_id');
+    }
+
+    public function generatedTasks()
+    {
+        return $this->hasMany(self::class, 'generated_from_task_id');
     }
 
     public function users(): BelongsToMany
