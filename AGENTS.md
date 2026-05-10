@@ -11,8 +11,11 @@ This is a Persian/Iranian CRM & ERP panel ("Setaregan CRM") built with Laravel 1
 - **Node.js 22** (via nvm, pre-installed).
 - **Flux UI Pro license**: `composer install` requires HTTP-basic auth for `composer.fluxui.dev`. Without credentials, a stub is used (see below).
 
-### Flux UI Pro stub workaround
-Because the `livewire/flux-pro` package requires a paid license key, the update script creates a minimal stub at `/tmp/flux-pro-stub` and temporarily modifies `composer.json` to use it as a path repository. After `composer install`, the original `composer.json` and `composer.lock` are restored from git. This lets the app boot and tests pass, but Flux Pro components render without full styling/JS. If the `FLUX_LICENSE_EMAIL` and `FLUX_LICENSE_KEY` secrets are provided, the update script will use them instead.
+### Flux UI Pro license
+The `livewire/flux-pro` package requires HTTP-basic auth for `composer.fluxui.dev`. The secrets `FLUX_LICENSE_EMAIL` and `FLUX_LICENSE_KEY` must be configured in the Cursor Cloud environment. The update script runs `composer config http-basic.composer.fluxui.dev` with these values before `composer install`. If these secrets are missing, the update script falls back to a local stub that lets the app boot but renders Flux Pro components without full styling/JS.
+
+### Locale
+Set `APP_LOCALE=fa` and `APP_FALLBACK_LOCALE=fa` in `.env` for proper Farsi translations and RTL layout.
 
 ### Running the dev servers
 Use `composer dev` (defined in `composer.json` scripts) to start all services concurrently:
