@@ -1,13 +1,16 @@
 <?php
 
+use App\Models\CurrencyRate;
 use App\Models\Sepidar\GNR\Grouping;
 use App\Models\Sepidar\INV\Item;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -53,6 +56,16 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     private function lastPurchaseDateSql(): string
     {
         return '(SELECT MAX(rec.[Date]) FROM [INV].[InventoryReceiptItem] AS ri INNER JOIN [INV].[InventoryReceipt] AS rec ON rec.[InventoryReceiptID] = ri.[InventoryReceiptRef] WHERE ri.[ItemRef] = [INV].[Item].[ItemID] AND rec.[IsReturn] = 0)';
+    }
+
+    private function lastPurchaseFeeSubquerySql(): string
+    {
+        return '(SELECT TOP 1 ri.[Fee] FROM [INV].[InventoryReceiptItem] AS ri INNER JOIN [INV].[InventoryReceipt] AS rec ON rec.[InventoryReceiptID] = ri.[InventoryReceiptRef] AND rec.[IsReturn] = 0 WHERE ri.[ItemRef] = [INV].[Item].[ItemID] ORDER BY ri.[InventoryReceiptItemID] DESC)';
+    }
+
+    private function lastPurchaseDateByLineSubquerySql(): string
+    {
+        return '(SELECT TOP 1 rec.[Date] FROM [INV].[InventoryReceiptItem] AS ri INNER JOIN [INV].[InventoryReceipt] AS rec ON rec.[InventoryReceiptID] = ri.[InventoryReceiptRef] AND rec.[IsReturn] = 0 WHERE ri.[ItemRef] = [INV].[Item].[ItemID] ORDER BY ri.[InventoryReceiptItemID] DESC)';
     }
 
     private function stockQuantitySubquerySql(): string
@@ -200,6 +213,57 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         };
     }
 
+    /**
+     * @return array{then: ?float, now: ?float}
+     */
+    public function lastPurchaseUsdtValues(Item $item): array
+    {
+        $fee = (float) ($item->warehouse_last_purchase_fee ?? 0);
+        $dateRaw = $item->warehouse_last_purchase_date ?? null;
+        if ($fee <= 0 || empty($dateRaw)) {
+            return ['then' => null, 'now' => null];
+        }
+
+        $purchaseDate = Carbon::parse($dateRaw);
+        $rateThen = CurrencyRate::getRate($purchaseDate);
+        $rateNow = CurrencyRate::getRate(now());
+        $tomanPerUsdtThen = $rateThen ? (float) $rateThen / 10 : 0.0;
+        $tomanPerUsdtNow = $rateNow ? (float) $rateNow / 10 : 0.0;
+
+        $then = $tomanPerUsdtThen > 0 ? $fee / $tomanPerUsdtThen : null;
+        $now = $tomanPerUsdtNow > 0 ? $fee / $tomanPerUsdtNow : null;
+
+        return ['then' => $then, 'now' => $now];
+    }
+
+    public function formatUsdtDisplay(?float $usdt): string
+    {
+        if ($usdt === null || $usdt <= 0) {
+            return '—';
+        }
+
+        if ($usdt < 1000) {
+            return number_format($usdt, 2, '.', ',').' USDT';
+        }
+
+        $thousands = $usdt / 1000;
+        if (abs($thousands - round($thousands)) < 0.05) {
+            return (string) (int) round($thousands).'K USDT';
+        }
+
+        $formatted = number_format($thousands, 1, '.', '');
+        $formatted = rtrim(rtrim($formatted, '0'), '.');
+
+        return $formatted.'K USDT';
+    }
+
+    public function formatSignedUsdtSummary(float $value): string
+    {
+        $sign = $value > 0 ? '+' : ($value < 0 ? '-' : '');
+
+        return $sign.number_format(abs($value), 2, '.', ',').' USDT';
+    }
+
     #[Computed]
     public function groupings(): Collection
     {
@@ -212,12 +276,13 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         });
     }
 
-    #[Computed]
-    public function items()
+    private function historyItemsBaseQuery(bool $withRelations = true): Builder
     {
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
         $saleSql = $this->lastSaleDateSql();
         $purchaseSql = $this->lastPurchaseDateSql();
+        $feeSql = $this->lastPurchaseFeeSubquerySql();
+        $purchaseLineDateSql = $this->lastPurchaseDateByLineSubquerySql();
         $itemTable = (new Item)->getTable();
 
         return Item::query()
@@ -225,11 +290,15 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             ->addSelect([
                 DB::raw("{$saleSql} AS last_sale_date"),
                 DB::raw("{$purchaseSql} AS last_purchase_date"),
+                DB::raw("{$feeSql} AS warehouse_last_purchase_fee"),
+                DB::raw("{$purchaseLineDateSql} AS warehouse_last_purchase_date"),
             ])
-            ->with([
-                'grouping:GroupingID,Title',
-                'image:ItemRef,Thumbnail',
-            ])
+            ->when($withRelations, function (Builder $q) {
+                $q->with([
+                    'grouping:GroupingID,Title',
+                    'image:ItemRef,Thumbnail',
+                ]);
+            })
             ->withSum([
                 'stockSummaries as stock_quantity' => function ($query) use ($fiscalYearRef) {
                     $query->where('FiscalYearRef', $fiscalYearRef);
@@ -240,8 +309,40 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             ->tap(fn (Builder $q) => $this->applyStockFilter($q, $fiscalYearRef))
             ->tap(fn (Builder $q) => $this->applyStaleSaleFilter($q))
             ->tap(fn (Builder $q) => $this->applyStalePurchaseFilter($q))
-            ->tap(fn (Builder $q) => $this->applySort($q))
-            ->paginate(20);
+            ->tap(fn (Builder $q) => $this->applySort($q));
+    }
+
+    #[Computed]
+    public function items()
+    {
+        return $this->historyItemsBaseQuery()->paginate(100);
+    }
+
+    /**
+     * @return array{total: float, lines: int}
+     */
+    #[Computed]
+    public function purchaseFxPnlUsdtSummary(): array
+    {
+        $total = 0.0;
+        $lines = 0;
+
+        foreach ($this->historyItemsBaseQuery(false)->orderBy('ItemID')->cursor() as $item) {
+            $qty = (float) ($item->stock_quantity ?? 0);
+            if ($qty <= 0) {
+                continue;
+            }
+
+            $usdt = $this->lastPurchaseUsdtValues($item);
+            if ($usdt['then'] === null || $usdt['now'] === null) {
+                continue;
+            }
+
+            $total += ($usdt['now'] - $usdt['then']) * $qty;
+            $lines++;
+        }
+
+        return ['total' => $total, 'lines' => $lines];
     }
 
     public function clearFilters(): void
@@ -289,6 +390,18 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public function updatingNoPurchaseMonths(): void
     {
         $this->resetPage();
+    }
+
+    #[On('panels.warehouse.item.edit-site.saved')]
+    public function refreshAfterSiteCodeUpdate(): void
+    {
+        unset($this->items, $this->purchaseFxPnlUsdtSummary);
+    }
+
+    #[On('panels.warehouse.item.upload-image.saved')]
+    public function refreshAfterItemImageUpload(): void
+    {
+        unset($this->items, $this->purchaseFxPnlUsdtSummary);
     }
 };
 ?>
@@ -400,7 +513,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
         <flux:table :paginate="$this->items">
             <flux:table.columns>
-                <flux:table.column>{{ __('app.image') }}</flux:table.column>
+                <flux:table.column>{{ __('app.warehouse_item_site_and_media_column') }}</flux:table.column>
                 <flux:table.column>{{ __('app.code') }}</flux:table.column>
                 <flux:table.column>{{ __('app.title') }}</flux:table.column>
                 <flux:table.column
@@ -421,24 +534,65 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                     :sorted="$this->sortColumnIsActive('last_purchase')"
                     :direction="$this->sortColumnDirectionFor('last_purchase')"
                     wire:click="sortTable('last_purchase')"
-                >{{ __('app.warehouse_history_last_purchase') }}</flux:table.column>
+                >{{ __('app.warehouse_item_last_purchase_fee') }}</flux:table.column>
             </flux:table.columns>
 
             <flux:table.rows>
                 @foreach($this->items as $item)
                     <flux:table.row :key="$item->ItemID">
-                        <flux:table.cell>
-                            @if($item->image?->Thumbnail)
-                                <img
-                                    src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
-                                    alt="{{ $item->Title }}"
-                                    class="w-12 h-12 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
-                                />
-                            @else
-                                <div class="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
-                                    <flux:icon icon="image-off" class="text-zinc-400" />
+                        <flux:table.cell class="align-top max-w-[16rem]">
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-start gap-2">
+                                    @if($item->image?->Thumbnail)
+                                        <img
+                                            src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
+                                            alt="{{ $item->Title }}"
+                                            class="w-12 h-12 shrink-0 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
+                                        />
+                                    @else
+                                        <div class="w-12 h-12 shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
+                                            <flux:icon icon="image-off" class="text-zinc-400" />
+                                        </div>
+                                    @endif
+                                    <div class="flex flex-col gap-1.5 min-w-0">
+                                        <div class="flex flex-wrap gap-1">
+                                            <flux:badge color="{{ $item->image?->Thumbnail ? 'emerald' : 'zinc' }}">
+                                                {{ $item->image?->Thumbnail ? __('app.warehouse_item_image_badge_set') : __('app.warehouse_item_image_badge_missing') }}
+                                            </flux:badge>
+                                            <flux:badge color="{{ $item->IranCode ? 'sky' : 'rose' }}">
+                                                {{ $item->IranCode ? __('app.warehouse_item_site_code_badge_set') : __('app.warehouse_item_site_code_badge_missing') }}
+                                            </flux:badge>
+                                        </div>
+                                        @if($item->IranCode)
+                                            <span class="text-xs text-zinc-800 dark:text-zinc-100 break-all">{{ $item->IranCode }}</span>
+                                        @endif
+                                        <div class="flex flex-wrap gap-1">
+                                            <flux:tooltip content="{{ __('app.warehouse_item_tooltip_edit_site') }}">
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="primary"
+                                                    color="sky"
+                                                    icon="pencil"
+                                                    icon:variant="outline"
+                                                    type="button"
+                                                    wire:click="$dispatch('panels.warehouse.item.edit-site.assign-data', { id: {{ $item->ItemID }} }})"
+                                                />
+                                            </flux:tooltip>
+                                            <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="primary"
+                                                    color="teal"
+                                                    icon="upload"
+                                                    icon:variant="outline"
+                                                    type="button"
+                                                    wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} }})"
+                                                />
+                                            </flux:tooltip>
+                                        </div>
+                                    </div>
                                 </div>
-                            @endif
+                            </div>
                         </flux:table.cell>
 
                         <flux:table.cell class="whitespace-nowrap">{{ $item->Code }}</flux:table.cell>
@@ -454,9 +608,37 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                             @endif
                         </flux:table.cell>
 
-                        <flux:table.cell class="whitespace-nowrap">
-                            @if($item->last_purchase_date)
-                                {{ \Morilog\Jalali\Jalalian::fromDateTime($item->last_purchase_date)->format('%Y-%m-%d') }}
+                        @php
+                            $feeRial = (float) ($item->warehouse_last_purchase_fee ?? 0);
+                            $purchaseDateRaw = $item->warehouse_last_purchase_date ?? null;
+                            $usdt = $this->lastPurchaseUsdtValues($item);
+                        @endphp
+                        <flux:table.cell class="align-top text-xs leading-relaxed max-w-[14rem]">
+                            @if($feeRial > 0 && $purchaseDateRaw)
+                                <div class="space-y-1">
+                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">
+                                        {{ \Morilog\Jalali\Jalalian::fromDateTime(\Carbon\Carbon::parse($purchaseDateRaw))->format('%Y-%m-%d') }}
+                                    </div>
+                                    <div>
+                                        {{ number_format($feeRial / 10) }}
+                                        <span class="text-zinc-500 dark:text-zinc-400">{{ __('app.toman') }}</span>
+                                    </div>
+                                    <div class="text-zinc-600 dark:text-zinc-300">
+                                        <span class="text-zinc-500 dark:text-zinc-400">{{ __('app.warehouse_item_last_purchase_usdt_then') }}:</span>
+                                        {{ $this->formatUsdtDisplay($usdt['then']) }}
+                                    </div>
+                                    <div class="text-zinc-600 dark:text-zinc-300">
+                                        <span class="text-zinc-500 dark:text-zinc-400">{{ __('app.warehouse_item_last_purchase_usdt_now') }}:</span>
+                                        {{ $this->formatUsdtDisplay($usdt['now']) }}
+                                    </div>
+                                </div>
+                            @elseif($item->last_purchase_date)
+                                <div class="space-y-1">
+                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">
+                                        {{ \Morilog\Jalali\Jalalian::fromDateTime($item->last_purchase_date)->format('%Y-%m-%d') }}
+                                    </div>
+                                    <flux:badge color="zinc">{{ __('app.warehouse_item_last_purchase_no_record') }}</flux:badge>
+                                </div>
                             @else
                                 <flux:badge color="zinc">{{ __('app.warehouse_history_never_purchased') }}</flux:badge>
                             @endif
@@ -466,4 +648,21 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             </flux:table.rows>
         </flux:table>
     </div>
+
+    @php
+        $pnl = $this->purchaseFxPnlUsdtSummary;
+    @endphp
+    <flux:card class="mt-4">
+        <flux:heading size="md" class="mb-1">{{ __('app.warehouse_purchase_fx_pnl_usdt_title') }}</flux:heading>
+        <flux:text class="text-sm text-zinc-600 dark:text-zinc-400 mb-3">{{ __('app.warehouse_purchase_fx_pnl_usdt_hint') }}</flux:text>
+        <div class="flex flex-wrap items-baseline gap-2">
+            <flux:heading size="xl" class="{{ $pnl['total'] >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
+                {{ $this->formatSignedUsdtSummary($pnl['total']) }}
+            </flux:heading>
+            <flux:badge color="zinc">{{ __('app.warehouse_purchase_fx_pnl_lines', ['count' => number_format($pnl['lines'])]) }}</flux:badge>
+        </div>
+    </flux:card>
+
+    <livewire:panels.warehouse.item.edit-site />
+    <livewire:panels.warehouse.item.upload-image />
 </div>
