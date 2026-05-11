@@ -1,10 +1,13 @@
 <?php
 
+use App\Models\CurrencyRate;
 use App\Models\Sepidar\GNR\Grouping;
 use App\Models\Sepidar\INV\Item;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -119,6 +122,60 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     }
 
     #[Computed]
+    public function showAdministratorPurchaseInsights(): bool
+    {
+        return auth()->user()?->hasRole('administrator') ?? false;
+    }
+
+    /**
+     * @return array{then: ?float, now: ?float}
+     */
+    public function administratorPurchaseUsdtValues(Item $item): array
+    {
+        if (! $this->showAdministratorPurchaseInsights) {
+            return ['then' => null, 'now' => null];
+        }
+
+        $fee = (float) ($item->warehouse_last_purchase_fee ?? 0);
+        $dateRaw = $item->warehouse_last_purchase_date ?? null;
+        if ($fee <= 0 || empty($dateRaw)) {
+            return ['then' => null, 'now' => null];
+        }
+
+        $purchaseDate = Carbon::parse($dateRaw);
+        $rateThen = CurrencyRate::getRate($purchaseDate);
+        $rateNow = CurrencyRate::getRate(now());
+        $tomanPerUsdtThen = $rateThen ? (float) $rateThen / 10 : 0.0;
+        $tomanPerUsdtNow = $rateNow ? (float) $rateNow / 10 : 0.0;
+
+        $then = $tomanPerUsdtThen > 0 ? $fee / $tomanPerUsdtThen : null;
+        $now = $tomanPerUsdtNow > 0 ? $fee / $tomanPerUsdtNow : null;
+
+        return ['then' => $then, 'now' => $now];
+    }
+
+    public function formatUsdtDisplay(?float $usdt): string
+    {
+        if ($usdt === null || $usdt <= 0) {
+            return '—';
+        }
+
+        if ($usdt < 1000) {
+            return number_format($usdt, 2, '.', ',').' USDT';
+        }
+
+        $thousands = $usdt / 1000;
+        if (abs($thousands - round($thousands)) < 0.05) {
+            return (string) (int) round($thousands).'K USDT';
+        }
+
+        $formatted = number_format($thousands, 1, '.', '');
+        $formatted = rtrim(rtrim($formatted, '0'), '.');
+
+        return $formatted.'K USDT';
+    }
+
+    #[Computed]
     public function groupings(): Collection
     {
         return Cache::remember('warehouse_item_groupings', now()->addHours(1), function () {
@@ -183,6 +240,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
 
+        $lastPurchaseFeeSql = '(SELECT TOP 1 ri.[Fee] FROM [INV].[InventoryReceiptItem] AS ri INNER JOIN [INV].[InventoryReceipt] AS rec ON rec.[InventoryReceiptID] = ri.[InventoryReceiptRef] AND rec.[IsReturn] = 0 WHERE ri.[ItemRef] = [INV].[Item].[ItemID] ORDER BY ri.[InventoryReceiptItemID] DESC)';
+        $lastPurchaseDateSql = '(SELECT TOP 1 rec.[Date] FROM [INV].[InventoryReceiptItem] AS ri INNER JOIN [INV].[InventoryReceipt] AS rec ON rec.[InventoryReceiptID] = ri.[InventoryReceiptRef] AND rec.[IsReturn] = 0 WHERE ri.[ItemRef] = [INV].[Item].[ItemID] ORDER BY ri.[InventoryReceiptItemID] DESC)';
+
         return Item::query()
             ->with([
                 'grouping:GroupingID,Title',
@@ -193,6 +253,12 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                     $query->where('FiscalYearRef', $fiscalYearRef);
                 },
             ], 'Quantity')
+            ->when($this->showAdministratorPurchaseInsights, function (Builder $q) use ($lastPurchaseFeeSql, $lastPurchaseDateSql) {
+                $q->addSelect([
+                    DB::raw("{$lastPurchaseFeeSql} AS warehouse_last_purchase_fee"),
+                    DB::raw("{$lastPurchaseDateSql} AS warehouse_last_purchase_date"),
+                ]);
+            })
             ->tap(fn (Builder $query) => $this->applyCommonFilters($query, $fiscalYearRef))
             ->tap(fn (Builder $query) => $this->applySort($query, $fiscalYearRef))
             ->paginate(50);
@@ -361,6 +427,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             <flux:table.column>{{ __('app.title') }}</flux:table.column>
             <flux:table.column>{{ __('app.grouping') }}</flux:table.column>
             <flux:table.column>{{ __('app.stock') }}</flux:table.column>
+            @if($this->showAdministratorPurchaseInsights)
+                <flux:table.column>{{ __('app.warehouse_item_last_purchase_fee') }}</flux:table.column>
+            @endif
             <flux:table.column>{{ __('app.irancode') }}</flux:table.column>
             <flux:table.column>{{ __('app.created_at') }}</flux:table.column>
         </flux:table.columns>
@@ -369,29 +438,34 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             @foreach($this->items as $item)
                 <flux:table.row :key="$item->ItemID">
                     <flux:table.cell>
-                        <div class="flex items-center gap-2">
-                            @if($item->image?->Thumbnail)
-                                <img
-                                    src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
-                                    alt="{{ $item->Title }}"
-                                    class="w-12 h-12 shrink-0 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
-                                />
-                            @else
-                                <div class="w-12 h-12 shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
-                                    <flux:icon icon="image-off" class="text-zinc-400" />
-                                </div>
-                            @endif
-                            <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
-                                <flux:button
-                                    size="xs"
-                                    variant="primary"
-                                    color="teal"
-                                    icon="upload"
-                                    icon:variant="outline"
-                                    type="button"
-                                    wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} })"
-                                />
-                            </flux:tooltip>
+                        <div class="flex flex-col gap-2">
+                            <flux:badge color="{{ $item->image?->Thumbnail ? 'emerald' : 'zinc' }}">
+                                {{ $item->image?->Thumbnail ? __('app.warehouse_item_image_badge_set') : __('app.warehouse_item_image_badge_missing') }}
+                            </flux:badge>
+                            <div class="flex items-center gap-2">
+                                @if($item->image?->Thumbnail)
+                                    <img
+                                        src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
+                                        alt="{{ $item->Title }}"
+                                        class="w-12 h-12 shrink-0 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
+                                    />
+                                @else
+                                    <div class="w-12 h-12 shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
+                                        <flux:icon icon="image-off" class="text-zinc-400" />
+                                    </div>
+                                @endif
+                                <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
+                                    <flux:button
+                                        size="xs"
+                                        variant="primary"
+                                        color="teal"
+                                        icon="upload"
+                                        icon:variant="outline"
+                                        type="button"
+                                        wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} })"
+                                    />
+                                </flux:tooltip>
+                            </div>
                         </div>
                     </flux:table.cell>
 
@@ -400,24 +474,57 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                     <flux:table.cell>{{ $item->grouping->Title ?? '-' }}</flux:table.cell>
                     <flux:table.cell>{{ number_format((float) $item->stock_quantity, 2) }}</flux:table.cell>
 
+                    @if($this->showAdministratorPurchaseInsights)
+                        @php
+                            $feeRial = (float) ($item->warehouse_last_purchase_fee ?? 0);
+                            $purchaseDateRaw = $item->warehouse_last_purchase_date ?? null;
+                            $usdt = $this->administratorPurchaseUsdtValues($item);
+                        @endphp
+                        <flux:table.cell class="align-top text-xs leading-relaxed max-w-[14rem]">
+                            @if($feeRial > 0 && $purchaseDateRaw)
+                                <div class="space-y-1">
+                                    <div class="font-medium text-zinc-800 dark:text-zinc-100">
+                                        {{ \Morilog\Jalali\Jalalian::fromDateTime(\Carbon\Carbon::parse($purchaseDateRaw))->format('%Y-%m-%d') }}
+                                    </div>
+                                    <div>
+                                        {{ number_format($feeRial / 10) }}
+                                        <span class="text-zinc-500 dark:text-zinc-400">{{ __('app.toman') }}</span>
+                                    </div>
+                                    <div class="text-zinc-600 dark:text-zinc-300">
+                                        <span class="text-zinc-500 dark:text-zinc-400">{{ __('app.warehouse_item_last_purchase_usdt_then') }}:</span>
+                                        {{ $this->formatUsdtDisplay($usdt['then']) }}
+                                    </div>
+                                    <div class="text-zinc-600 dark:text-zinc-300">
+                                        <span class="text-zinc-500 dark:text-zinc-400">{{ __('app.warehouse_item_last_purchase_usdt_now') }}:</span>
+                                        {{ $this->formatUsdtDisplay($usdt['now']) }}
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-zinc-400">{{ __('app.warehouse_item_last_purchase_no_record') }}</span>
+                            @endif
+                        </flux:table.cell>
+                    @endif
+
                     <flux:table.cell>
-                        @if($item->IranCode)
-                            {{ $item->IranCode }}
-                        @else
-                            <div class="flex flex-wrap items-center gap-2">
-                                <flux:badge color="rose">{{ __('app.without_irancode') }}</flux:badge>
-                                <flux:tooltip content="{{ __('app.irancode_not_set') }}">
-                                    <flux:button
-                                        size="xs"
-                                        variant="primary"
-                                        color="sky"
-                                        icon="pencil"
-                                        icon:variant="outline"
-                                        wire:click="$dispatch('panels.warehouse.item.edit-site.assign-data', { id: {{ $item->ItemID }} })"
-                                    />
-                                </flux:tooltip>
-                            </div>
-                        @endif
+                        <div class="flex flex-col gap-2">
+                            <flux:badge color="{{ $item->IranCode ? 'sky' : 'rose' }}">
+                                {{ $item->IranCode ? __('app.warehouse_item_site_code_badge_set') : __('app.warehouse_item_site_code_badge_missing') }}
+                            </flux:badge>
+                            @if($item->IranCode)
+                                <span class="text-sm text-zinc-800 dark:text-zinc-100">{{ $item->IranCode }}</span>
+                            @endif
+                            <flux:tooltip content="{{ __('app.warehouse_item_tooltip_edit_site') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="sky"
+                                    icon="pencil"
+                                    icon:variant="outline"
+                                    type="button"
+                                    wire:click="$dispatch('panels.warehouse.item.edit-site.assign-data', { id: {{ $item->ItemID }} })"
+                                />
+                            </flux:tooltip>
+                        </div>
                     </flux:table.cell>
 
                     <flux:table.cell class="whitespace-nowrap">
