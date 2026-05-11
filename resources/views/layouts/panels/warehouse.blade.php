@@ -10,8 +10,12 @@
     <flux:sidebar.search placeholder="Search..." />
 
     <flux:sidebar.nav>
-        <flux:sidebar.item icon="home" href="{{ route('panels.warehouse.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="boxes" href="{{ route('panels.warehouse.item.index') }}" wire:navigate>{{ __('app.items') }}</flux:sidebar.item>
+        @can('warehouse_dashboard_index')
+            <flux:sidebar.item icon="home" href="{{ route('panels.warehouse.dashboard.index') }}" :current="request()->routeIs('panels.warehouse.dashboard.*')" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
+        @endcan
+        @can('warehouse_item_index')
+            <flux:sidebar.item icon="boxes" href="{{ route('panels.warehouse.item.index') }}" :current="request()->routeIs('panels.warehouse.item.*')" wire:navigate>{{ __('app.items') }}</flux:sidebar.item>
+        @endcan
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
