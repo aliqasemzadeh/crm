@@ -89,6 +89,10 @@ return [
         'administrator_api_faq_index' => 'فهرست پرسش‌های متداول (API)',
         'administrator_api_faq_show' => 'نمایش پرسش متداول (API)',
         'administrator_api_faq_search' => 'جستجوی پرسش‌های متداول (API)',
+
+        'warehouse_access' => 'دسترسی انبار',
+        'warehouse_dashboard_index' => 'داشبورد انبار',
+        'warehouse_item_index' => 'فهرست کالاهای انبار',
     ],
 
     'crm' => [
@@ -209,6 +213,11 @@ return [
         'workspace_review_user_task_assign' => 'تخصیص وظیفه بررسی وظایف',
     ],
 
+    'warehouse' => [
+        'warehouse_access' => 'دسترسی انبار',
+        'warehouse_dashboard_index' => 'داشبورد انبار',
+        'warehouse_item_index' => 'فهرست کالاهای انبار',
+    ],
 
     'sales' => [
         'sales_access' => 'فروش',

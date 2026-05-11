@@ -16,6 +16,10 @@
     <flux:sidebar.item icon="cpu" href="{{ route('panels.service-center.dashboard.index') }}" :current="request()->routeIs('panels.service-center.*')" wire:navigate>{{ __('app.service_center') }}</flux:sidebar.item>
     @endcan
 
+    @can('warehouse_access')
+        <flux:sidebar.item icon="package" href="{{ route('panels.warehouse.dashboard.index') }}" :current="request()->routeIs('panels.warehouse.*')" wire:navigate>{{ __('app.warehouse') }}</flux:sidebar.item>
+    @endcan
+
     @can('crm_access')
     <flux:sidebar.item icon="handshake" href="{{ route('panels.crm.dashboard.index') }}" :current="request()->routeIs('panels.crm.*')" wire:navigate>{{ __('app.crm') }}</flux:sidebar.item>
     @endcan
