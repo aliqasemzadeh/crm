@@ -65,15 +65,59 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $query
             ->when($this->search !== '', function (Builder $q) {
                 $search = '%'.$this->search.'%';
-                $q->where(function (Builder $inner) use ($search) {
-                    $inner->where('Code', 'like', $search)
-                        ->orWhere('Title', 'like', $search)
-                        ->orWhere('IranCode', 'like', $search);
-                });
+                $q->where('Title', 'like', $search);
             })
             ->when($this->groupingFilter !== '', function (Builder $q) {
                 $q->where('CodingGroupRef', $this->groupingFilter);
             });
+    }
+
+    private function groupingTitleSubquerySql(): string
+    {
+        return '(SELECT TOP 1 g.[Title] FROM [GNR].[Grouping] AS g WHERE g.[GroupingID] = [INV].[Item].[CodingGroupRef])';
+    }
+
+    public function sortColumnIsActive(string $column): bool
+    {
+        return match ($column) {
+            'last_sale' => str_starts_with($this->sortBy, 'last_sale'),
+            'last_purchase' => str_starts_with($this->sortBy, 'last_purchase'),
+            'grouping' => str_starts_with($this->sortBy, 'grouping'),
+            default => false,
+        };
+    }
+
+    public function sortColumnDirectionFor(string $column): string
+    {
+        if (! $this->sortColumnIsActive($column)) {
+            return 'desc';
+        }
+
+        return str_ends_with($this->sortBy, '_asc') ? 'asc' : 'desc';
+    }
+
+    public function sortTable(string $column): void
+    {
+        match ($column) {
+            'last_sale' => $this->sortBy = match ($this->sortBy) {
+                'last_sale_desc' => 'last_sale_asc',
+                'last_sale_asc' => 'last_sale_desc',
+                default => 'last_sale_desc',
+            },
+            'last_purchase' => $this->sortBy = match ($this->sortBy) {
+                'last_purchase_desc' => 'last_purchase_asc',
+                'last_purchase_asc' => 'last_purchase_desc',
+                default => 'last_purchase_desc',
+            },
+            'grouping' => $this->sortBy = match ($this->sortBy) {
+                'grouping_desc' => 'grouping_asc',
+                'grouping_asc' => 'grouping_desc',
+                default => 'grouping_asc',
+            },
+            default => null,
+        };
+
+        $this->resetPage();
     }
 
     private function applyImageFilter(Builder $query): void
@@ -125,6 +169,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         $saleSql = $this->lastSaleDateSql();
         $purchaseSql = $this->lastPurchaseDateSql();
+        $groupingTitleSql = $this->groupingTitleSubquerySql();
 
         match ($this->sortBy) {
             'last_sale_desc' => $query
@@ -142,6 +187,14 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'last_purchase_asc' => $query
                 ->orderByRaw("CASE WHEN {$purchaseSql} IS NULL THEN 1 ELSE 0 END ASC")
                 ->orderByRaw("{$purchaseSql} ASC")
+                ->orderByDesc('ItemID'),
+            'grouping_asc' => $query
+                ->orderByRaw("CASE WHEN {$groupingTitleSql} IS NULL THEN 1 ELSE 0 END ASC")
+                ->orderByRaw("{$groupingTitleSql} ASC")
+                ->orderByDesc('ItemID'),
+            'grouping_desc' => $query
+                ->orderByRaw("CASE WHEN {$groupingTitleSql} IS NULL THEN 1 ELSE 0 END ASC")
+                ->orderByRaw("{$groupingTitleSql} DESC")
                 ->orderByDesc('ItemID'),
             default => $query->orderBy('CreationDate', 'desc')->orderByDesc('ItemID'),
         };
@@ -290,6 +343,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                 <option value="last_sale_asc">{{ __('app.warehouse_history_sort_last_sale_asc') }}</option>
                 <option value="last_purchase_desc">{{ __('app.warehouse_history_sort_last_purchase_desc') }}</option>
                 <option value="last_purchase_asc">{{ __('app.warehouse_history_sort_last_purchase_asc') }}</option>
+                <option value="grouping_asc">{{ __('app.warehouse_history_sort_grouping_asc') }}</option>
+                <option value="grouping_desc">{{ __('app.warehouse_history_sort_grouping_desc') }}</option>
                 <option value="created_desc">{{ __('app.warehouse_history_sort_created_desc') }}</option>
             </flux:select>
 
@@ -334,56 +389,81 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </div>
     </flux:card>
 
-    <flux:table :paginate="$this->items">
-        <flux:table.columns>
-            <flux:table.column>{{ __('app.image') }}</flux:table.column>
-            <flux:table.column>{{ __('app.code') }}</flux:table.column>
-            <flux:table.column>{{ __('app.title') }}</flux:table.column>
-            <flux:table.column>{{ __('app.grouping') }}</flux:table.column>
-            <flux:table.column>{{ __('app.stock') }}</flux:table.column>
-            <flux:table.column>{{ __('app.warehouse_history_last_sale') }}</flux:table.column>
-            <flux:table.column>{{ __('app.warehouse_history_last_purchase') }}</flux:table.column>
-        </flux:table.columns>
+    <div class="relative min-h-[16rem]">
+        <div
+            wire:loading.delay.shortest
+            class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm"
+        >
+            <flux:icon icon="loading" class="size-9 text-teal-600 dark:text-teal-400" />
+            <flux:text class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{{ __('app.loading') }}</flux:text>
+        </div>
 
-        <flux:table.rows>
-            @foreach($this->items as $item)
-                <flux:table.row :key="$item->ItemID">
-                    <flux:table.cell>
-                        @if($item->image?->Thumbnail)
-                            <img
-                                src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
-                                alt="{{ $item->Title }}"
-                                class="w-12 h-12 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
-                            />
-                        @else
-                            <div class="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
-                                <flux:icon icon="image-off" class="text-zinc-400" />
-                            </div>
-                        @endif
-                    </flux:table.cell>
+        <flux:table :paginate="$this->items">
+            <flux:table.columns>
+                <flux:table.column>{{ __('app.image') }}</flux:table.column>
+                <flux:table.column>{{ __('app.code') }}</flux:table.column>
+                <flux:table.column>{{ __('app.title') }}</flux:table.column>
+                <flux:table.column
+                    sortable
+                    :sorted="$this->sortColumnIsActive('grouping')"
+                    :direction="$this->sortColumnDirectionFor('grouping')"
+                    wire:click="sortTable('grouping')"
+                >{{ __('app.grouping') }}</flux:table.column>
+                <flux:table.column>{{ __('app.stock') }}</flux:table.column>
+                <flux:table.column
+                    sortable
+                    :sorted="$this->sortColumnIsActive('last_sale')"
+                    :direction="$this->sortColumnDirectionFor('last_sale')"
+                    wire:click="sortTable('last_sale')"
+                >{{ __('app.warehouse_history_last_sale') }}</flux:table.column>
+                <flux:table.column
+                    sortable
+                    :sorted="$this->sortColumnIsActive('last_purchase')"
+                    :direction="$this->sortColumnDirectionFor('last_purchase')"
+                    wire:click="sortTable('last_purchase')"
+                >{{ __('app.warehouse_history_last_purchase') }}</flux:table.column>
+            </flux:table.columns>
 
-                    <flux:table.cell class="whitespace-nowrap">{{ $item->Code }}</flux:table.cell>
-                    <flux:table.cell>{{ $item->Title }}</flux:table.cell>
-                    <flux:table.cell>{{ $item->grouping->Title ?? '-' }}</flux:table.cell>
-                    <flux:table.cell>{{ number_format((float) $item->stock_quantity, 2) }}</flux:table.cell>
+            <flux:table.rows>
+                @foreach($this->items as $item)
+                    <flux:table.row :key="$item->ItemID">
+                        <flux:table.cell>
+                            @if($item->image?->Thumbnail)
+                                <img
+                                    src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
+                                    alt="{{ $item->Title }}"
+                                    class="w-12 h-12 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
+                                />
+                            @else
+                                <div class="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
+                                    <flux:icon icon="image-off" class="text-zinc-400" />
+                                </div>
+                            @endif
+                        </flux:table.cell>
 
-                    <flux:table.cell class="whitespace-nowrap">
-                        @if($item->last_sale_date)
-                            {{ \Morilog\Jalali\Jalalian::fromDateTime($item->last_sale_date)->format('%Y-%m-%d') }}
-                        @else
-                            <flux:badge color="zinc">{{ __('app.warehouse_history_never_sold') }}</flux:badge>
-                        @endif
-                    </flux:table.cell>
+                        <flux:table.cell class="whitespace-nowrap">{{ $item->Code }}</flux:table.cell>
+                        <flux:table.cell>{{ $item->Title }}</flux:table.cell>
+                        <flux:table.cell>{{ $item->grouping->Title ?? '-' }}</flux:table.cell>
+                        <flux:table.cell>{{ number_format((float) $item->stock_quantity, 2) }}</flux:table.cell>
 
-                    <flux:table.cell class="whitespace-nowrap">
-                        @if($item->last_purchase_date)
-                            {{ \Morilog\Jalali\Jalalian::fromDateTime($item->last_purchase_date)->format('%Y-%m-%d') }}
-                        @else
-                            <flux:badge color="zinc">{{ __('app.warehouse_history_never_purchased') }}</flux:badge>
-                        @endif
-                    </flux:table.cell>
-                </flux:table.row>
-            @endforeach
-        </flux:table.rows>
-    </flux:table>
+                        <flux:table.cell class="whitespace-nowrap">
+                            @if($item->last_sale_date)
+                                {{ \Morilog\Jalali\Jalalian::fromDateTime($item->last_sale_date)->format('%Y-%m-%d') }}
+                            @else
+                                <flux:badge color="zinc">{{ __('app.warehouse_history_never_sold') }}</flux:badge>
+                            @endif
+                        </flux:table.cell>
+
+                        <flux:table.cell class="whitespace-nowrap">
+                            @if($item->last_purchase_date)
+                                {{ \Morilog\Jalali\Jalalian::fromDateTime($item->last_purchase_date)->format('%Y-%m-%d') }}
+                            @else
+                                <flux:badge color="zinc">{{ __('app.warehouse_history_never_purchased') }}</flux:badge>
+                            @endif
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+            </flux:table.rows>
+        </flux:table>
+    </div>
 </div>
