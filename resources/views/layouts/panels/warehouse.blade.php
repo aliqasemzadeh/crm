@@ -15,6 +15,7 @@
         @endcan
         @can('warehouse_item_index')
             <flux:sidebar.item icon="boxes" href="{{ route('panels.warehouse.item.index') }}" :current="request()->routeIs('panels.warehouse.item.*')" wire:navigate>{{ __('app.items') }}</flux:sidebar.item>
+            <flux:sidebar.item icon="calendar" href="{{ route('panels.warehouse.history.index') }}" :current="request()->routeIs('panels.warehouse.history.*')" wire:navigate>{{ __('app.warehouse_history_nav') }}</flux:sidebar.item>
         @endcan
     </flux:sidebar.nav>
 
