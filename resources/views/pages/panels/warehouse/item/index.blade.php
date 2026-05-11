@@ -195,7 +195,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             ], 'Quantity')
             ->tap(fn (Builder $query) => $this->applyCommonFilters($query, $fiscalYearRef))
             ->tap(fn (Builder $query) => $this->applySort($query, $fiscalYearRef))
-            ->paginate(20);
+            ->paginate(50);
     }
 
     public function clearFilters(): void

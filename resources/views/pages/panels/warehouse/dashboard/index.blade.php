@@ -58,8 +58,13 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     </div>
 
     @can('warehouse_item_index')
-        <flux:button variant="primary" color="teal" href="{{ route('panels.warehouse.item.index') }}" wire:navigate icon="boxes" icon:variant="outline">
-            {{ __('app.warehouse_open_item_list') }}
-        </flux:button>
+        <div class="flex flex-wrap gap-3">
+            <flux:button variant="primary" color="teal" href="{{ route('panels.warehouse.item.index') }}" wire:navigate icon="boxes" icon:variant="outline">
+                {{ __('app.warehouse_open_item_list') }}
+            </flux:button>
+            <flux:button variant="primary" color="sky" href="{{ route('panels.warehouse.history.index') }}" wire:navigate icon="calendar" icon:variant="outline">
+                {{ __('app.warehouse_history_nav') }}
+            </flux:button>
+        </div>
     @endcan
 </div>
