@@ -33,4 +33,9 @@ class Party extends Model
     {
         return $this->hasMany(PartyPhone::class, 'PartyRef', 'PartyId');
     }
+
+    public function partyRelateds(): HasMany
+    {
+        return $this->hasMany(PartyRelated::class, 'PartyRef', 'PartyId');
+    }
 }

@@ -746,6 +746,12 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             }
         }
 
+        foreach (IranPhoneNumberNormalizer::lookupKeyVariants($trim) as $v) {
+            if ($v !== '' && ! in_array($v, $keys, true)) {
+                $keys[] = $v;
+            }
+        }
+
         return $keys;
     }
 

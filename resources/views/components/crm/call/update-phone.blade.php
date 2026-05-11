@@ -2,6 +2,7 @@
 
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyPhone;
+use App\Models\Sepidar\GNR\PartyRelated;
 use App\Models\Voip\Phone;
 use App\Support\IranPhoneNumberNormalizer;
 use App\Support\PersianFinglishConverter;
@@ -73,18 +74,42 @@ new class extends Component
             && preg_match('/^[\d\s\-+().]+$/u', $term) === 1;
 
         if ($looksLikePhoneQuery) {
+            $searchDigits = IranPhoneNumberNormalizer::digitSearchStringsForQuery($term);
+            if ($searchDigits === []) {
+                return collect();
+            }
+
+            $cacheKey = 'crm.sepidar.party_ids_by_phone.'.md5(implode('|', $searchDigits));
+
             $partyIds = Cache::remember(
-                'crm.sepidar.party_ids_by_phone.'.md5($digitsOnly),
+                $cacheKey,
                 120,
-                function () use ($digitsOnly) {
-                    return PartyPhone::query()
-                        ->select('PartyRef')
-                        ->where('Phone', 'like', '%'.$digitsOnly.'%')
-                        ->distinct()
-                        ->orderBy('PartyRef')
-                        ->limit(80)
-                        ->pluck('PartyRef')
-                        ->all();
+                function () use ($searchDigits) {
+                    $ids = [];
+                    foreach ($searchDigits as $dig) {
+                        if ($dig === '') {
+                            continue;
+                        }
+                        $like = '%'.$dig.'%';
+                        $ids = array_merge(
+                            $ids,
+                            PartyPhone::query()
+                                ->where('Phone', 'like', $like)
+                                ->pluck('PartyRef')
+                                ->all()
+                        );
+                        $ids = array_merge(
+                            $ids,
+                            PartyRelated::query()
+                                ->where('Phone', 'like', $like)
+                                ->pluck('PartyRef')
+                                ->all()
+                        );
+                    }
+
+                    $ids = array_values(array_unique(array_filter($ids)));
+
+                    return array_slice($ids, 0, 80);
                 }
             );
 
@@ -190,6 +215,7 @@ new class extends Component
                 [
                     'party_id' => $party->PartyId,
                     'party_phone_id' => $partyPhone->PartyPhoneId,
+                    'party_related_id' => null,
                     'name' => $name,
                     'name_latin' => $nameLatin,
                     'is_manual' => false,
@@ -230,6 +256,7 @@ new class extends Component
                 [
                     'party_id' => null,
                     'party_phone_id' => null,
+                    'party_related_id' => null,
                     'name' => trim($this->manualNameFa),
                     'name_latin' => trim($this->manualNameLatin),
                     'is_manual' => true,
@@ -260,13 +287,24 @@ new class extends Component
 
     private function forgetCachedPartyPhoneLookups(string $normalized, string $sepidarPhone): void
     {
-        $digitVariants = array_unique(array_filter([
-            preg_replace('/\D+/u', '', $normalized) ?? '',
-            preg_replace('/\D+/u', '', $sepidarPhone) ?? '',
-        ], static fn (string $d): bool => $d !== ''));
+        $terms = array_unique(array_filter([
+            $normalized,
+            $sepidarPhone,
+            IranPhoneNumberNormalizer::formatForSepidar($normalized),
+        ], static fn (string $s): bool => $s !== ''));
 
-        foreach ($digitVariants as $digits) {
-            Cache::forget('crm.sepidar.party_ids_by_phone.'.md5($digits));
+        $seen = [];
+        foreach ($terms as $t) {
+            $searchDigits = IranPhoneNumberNormalizer::digitSearchStringsForQuery($t);
+            if ($searchDigits === []) {
+                continue;
+            }
+            $cacheKey = 'crm.sepidar.party_ids_by_phone.'.md5(implode('|', $searchDigits));
+            if (isset($seen[$cacheKey])) {
+                continue;
+            }
+            $seen[$cacheKey] = true;
+            Cache::forget($cacheKey);
         }
     }
 

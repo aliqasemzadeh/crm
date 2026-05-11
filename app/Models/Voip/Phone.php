@@ -4,6 +4,7 @@ namespace App\Models\Voip;
 
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyPhone;
+use App\Models\Sepidar\GNR\PartyRelated;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -14,6 +15,7 @@ class Phone extends Model
     protected $fillable = [
         'party_id',
         'party_phone_id',
+        'party_related_id',
         'is_manual',
         'number',
         'name',
@@ -35,5 +37,10 @@ class Phone extends Model
     public function partyPhone(): BelongsTo
     {
         return $this->belongsTo(PartyPhone::class, 'party_phone_id', 'PartyPhoneId');
+    }
+
+    public function partyRelated(): BelongsTo
+    {
+        return $this->belongsTo(PartyRelated::class, 'party_related_id', 'PartyRelatedId');
     }
 }
