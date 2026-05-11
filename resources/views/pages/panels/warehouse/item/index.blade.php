@@ -389,7 +389,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                     icon="upload"
                                     icon:variant="outline"
                                     type="button"
-                                    wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} }})"
+                                    wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} })"
                                 />
                             </flux:tooltip>
                         </div>
