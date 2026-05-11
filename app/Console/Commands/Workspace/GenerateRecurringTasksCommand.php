@@ -44,9 +44,13 @@ class GenerateRecurringTasksCommand extends Command
                 'status' => 'planning',
                 'order' => 0,
                 'approval_status' => 'none',
+                'approved_by' => null,
+                'approved_at' => null,
+                'review_note' => null,
                 'priority' => $template->priority,
                 'starts_at' => $startsAt,
                 'due_at' => $dueAt,
+                'done_at' => null,
                 'created_by' => $template->created_by,
                 'source' => 'system',
                 'repeat_type' => $template->repeat_type,
@@ -54,9 +58,9 @@ class GenerateRecurringTasksCommand extends Command
                 'repeat_monthday' => $template->repeat_monthday,
                 'generated_from_task_id' => $template->id,
                 'next_repeat_at' => $nextScheduled,
-                'is_locked' => $template->is_locked,
-                'locked_by' => $template->locked_by,
-                'locked_at' => $template->locked_at,
+                'is_locked' => false,
+                'locked_by' => null,
+                'locked_at' => null,
             ]);
 
             if ($template->users->isNotEmpty()) {
@@ -78,12 +82,11 @@ class GenerateRecurringTasksCommand extends Command
                     $rows[] = [
                         'task_id' => $task->id,
                         'title' => $checklist->title,
-                        // Keep template ordering; don't renumber on copy.
                         'order' => (int) ($checklist->order ?? 0),
-                        // New task: checklist starts as not-done.
                         'is_done' => false,
                         'done_at' => null,
                         'done_by' => null,
+                        'deleted_at' => null,
                         'created_at' => $ts,
                         'updated_at' => $ts,
                     ];
