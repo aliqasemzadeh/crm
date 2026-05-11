@@ -1385,7 +1385,7 @@ return [
     'sort_by_date_asc' => 'تاریخ (قدیم به جدید)',
     'sort_without_image_first' => 'ابتدا کالاهای بدون عکس',
 
-    'warehouse' => 'انبار',
+    'warehouse' => 'مدیریت انبار',
     'warehouse_dashboard_title' => 'داشبورد انبار',
     'warehouse_dashboard_subtitle' => 'خلاصه وضعیت کالاها و دسترسی سریع به فهرست.',
     'warehouse_open_item_list' => 'فهرست کالاها',
