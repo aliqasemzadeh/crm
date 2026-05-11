@@ -123,22 +123,25 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     private function applySort(Builder $query): void
     {
+        $saleSql = $this->lastSaleDateSql();
+        $purchaseSql = $this->lastPurchaseDateSql();
+
         match ($this->sortBy) {
             'last_sale_desc' => $query
-                ->orderByRaw('CASE WHEN last_sale_date IS NULL THEN 1 ELSE 0 END ASC')
-                ->orderByDesc('last_sale_date')
+                ->orderByRaw("CASE WHEN {$saleSql} IS NULL THEN 1 ELSE 0 END ASC")
+                ->orderByRaw("{$saleSql} DESC")
                 ->orderByDesc('ItemID'),
             'last_sale_asc' => $query
-                ->orderByRaw('CASE WHEN last_sale_date IS NULL THEN 1 ELSE 0 END ASC')
-                ->orderBy('last_sale_date', 'asc')
+                ->orderByRaw("CASE WHEN {$saleSql} IS NULL THEN 1 ELSE 0 END ASC")
+                ->orderByRaw("{$saleSql} ASC")
                 ->orderByDesc('ItemID'),
             'last_purchase_desc' => $query
-                ->orderByRaw('CASE WHEN last_purchase_date IS NULL THEN 1 ELSE 0 END ASC')
-                ->orderByDesc('last_purchase_date')
+                ->orderByRaw("CASE WHEN {$purchaseSql} IS NULL THEN 1 ELSE 0 END ASC")
+                ->orderByRaw("{$purchaseSql} DESC")
                 ->orderByDesc('ItemID'),
             'last_purchase_asc' => $query
-                ->orderByRaw('CASE WHEN last_purchase_date IS NULL THEN 1 ELSE 0 END ASC')
-                ->orderBy('last_purchase_date', 'asc')
+                ->orderByRaw("CASE WHEN {$purchaseSql} IS NULL THEN 1 ELSE 0 END ASC")
+                ->orderByRaw("{$purchaseSql} ASC")
                 ->orderByDesc('ItemID'),
             default => $query->orderBy('CreationDate', 'desc')->orderByDesc('ItemID'),
         };
@@ -162,8 +165,10 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
         $saleSql = $this->lastSaleDateSql();
         $purchaseSql = $this->lastPurchaseDateSql();
+        $itemTable = (new Item)->getTable();
 
         return Item::query()
+            ->select($itemTable.'.*')
             ->addSelect([
                 DB::raw("{$saleSql} AS last_sale_date"),
                 DB::raw("{$purchaseSql} AS last_purchase_date"),
