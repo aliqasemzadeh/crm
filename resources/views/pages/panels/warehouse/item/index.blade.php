@@ -81,12 +81,17 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         }
     }
 
+    private function stockQuantitySubquerySql(): string
+    {
+        return '(SELECT COALESCE(SUM(CAST(s.[Quantity] AS DECIMAL(18,4))), 0) FROM [INV].[ItemStockSummary] s WHERE s.[ItemRef] = [INV].[Item].[ItemID] AND s.[FiscalYearRef] = ?)';
+    }
+
     private function applyStockFilter(Builder $query, string $fiscalYearRef): void
     {
-        $sql = '(SELECT COALESCE(SUM(CAST(s.[Quantity] AS DECIMAL(18,4))), 0) FROM [INV].[ItemStockSummary] s WHERE s.[ItemRef] = [INV].[Item].[ItemID] AND s.[FiscalYearRef] = ?)';
+        $sql = $this->stockQuantitySubquerySql();
 
         match ($this->stockFilter) {
-            'in_stock' => $query->whereRaw("{$sql} > 0", [$fiscalYearRef]),
+            'in_stock' => $query->whereInStock($fiscalYearRef),
             'out_of_stock' => $query->whereRaw("{$sql} <= 0", [$fiscalYearRef]),
             'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, $fiscalYearRef, 10]),
             default => null,
@@ -95,20 +100,16 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     private function applySort(Builder $query, string $fiscalYearRef): void
     {
+        $sql = $this->stockQuantitySubquerySql();
+
         match ($this->sortBy) {
             'created_asc' => $query->orderBy('CreationDate', 'asc'),
             'title_asc' => $query->orderBy('Title', 'asc'),
             'title_desc' => $query->orderBy('Title', 'desc'),
             'code_asc' => $query->orderBy('Code', 'asc'),
             'code_desc' => $query->orderBy('Code', 'desc'),
-            'stock_desc' => $query->orderByRaw(
-                '(SELECT COALESCE(SUM(CAST(s.[Quantity] AS DECIMAL(18,4))), 0) FROM [INV].[ItemStockSummary] s WHERE s.[ItemRef] = [INV].[Item].[ItemID] AND s.[FiscalYearRef] = ?) DESC',
-                [$fiscalYearRef]
-            )->orderBy('ItemID', 'desc'),
-            'stock_asc' => $query->orderByRaw(
-                '(SELECT COALESCE(SUM(CAST(s.[Quantity] AS DECIMAL(18,4))), 0) FROM [INV].[ItemStockSummary] s WHERE s.[ItemRef] = [INV].[Item].[ItemID] AND s.[FiscalYearRef] = ?) ASC',
-                [$fiscalYearRef]
-            ),
+            'stock_desc' => $query->orderByRaw("{$sql} DESC", [$fiscalYearRef])->orderBy('ItemID', 'desc'),
+            'stock_asc' => $query->orderByRaw("{$sql} ASC", [$fiscalYearRef]),
             'without_image_first' => $query
                 ->orderByRaw('CASE WHEN EXISTS (SELECT 1 FROM [INV].[ItemImage] WHERE [INV].[ItemImage].[ItemRef] = [INV].[Item].[ItemID]) THEN 1 ELSE 0 END ASC')
                 ->orderBy('CreationDate', 'desc'),
@@ -133,7 +134,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
 
-        $baseQuery = Item::query();
+        $baseQuery = Item::query()->whereInStock($fiscalYearRef);
         $this->applyCommonFilters($baseQuery, $fiscalYearRef);
 
         $total = (clone $baseQuery)->count();
@@ -145,7 +146,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         return collect([
             [
                 'key' => '',
-                'label' => __('app.all_items'),
+                'label' => __('app.warehouse_stats_in_stock_total'),
                 'value' => $total,
                 'icon' => 'boxes',
                 'frame' => 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-400 dark:hover:border-zinc-500',

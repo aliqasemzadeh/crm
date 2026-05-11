@@ -4,6 +4,7 @@ namespace App\Models\Sepidar\INV;
 
 use App\Models\Sepidar\FMK\User;
 use App\Models\Sepidar\GNR\Grouping;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,6 +17,17 @@ class Item extends Model
     public $primaryKey = 'ItemID';
     public $timestamps = false;
     protected $fillable = ['IranCode'];
+
+    /**
+     * @param  Builder<Item>  $query
+     * @return Builder<Item>
+     */
+    public function scopeWhereInStock(Builder $query, string $fiscalYearRef): Builder
+    {
+        $sql = '(SELECT COALESCE(SUM(CAST(s.[Quantity] AS DECIMAL(18,4))), 0) FROM [INV].[ItemStockSummary] s WHERE s.[ItemRef] = [INV].[Item].[ItemID] AND s.[FiscalYearRef] = ?)';
+
+        return $query->whereRaw("{$sql} > 0", [$fiscalYearRef]);
+    }
 
     public function grouping(): BelongsTo
     {
