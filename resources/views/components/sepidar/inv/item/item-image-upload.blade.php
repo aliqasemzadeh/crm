@@ -1,13 +1,1 @@
-<?php
-
-use Livewire\Component;
-
-new class extends Component
-{
-    //
-};
-?>
-
-<div>
-    {{-- Well begun is half done. - Aristotle --}}
-</div>
+{{-- Sepidar item image UI lives in Livewire: panels.warehouse.item.upload-image --}}

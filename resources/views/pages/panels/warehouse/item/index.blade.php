@@ -250,6 +250,12 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         unset($this->items, $this->stats);
     }
+
+    #[On('panels.warehouse.item.upload-image.saved')]
+    public function refreshAfterItemImageUpload(): void
+    {
+        unset($this->items, $this->stats);
+    }
 };
 ?>
 
@@ -363,17 +369,30 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             @foreach($this->items as $item)
                 <flux:table.row :key="$item->ItemID">
                     <flux:table.cell>
-                        @if($item->image?->Thumbnail)
-                            <img
-                                src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
-                                alt="{{ $item->Title }}"
-                                class="w-12 h-12 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
-                            />
-                        @else
-                            <div class="w-12 h-12 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
-                                <flux:icon icon="image-off" class="text-zinc-400" />
-                            </div>
-                        @endif
+                        <div class="flex items-center gap-2">
+                            @if($item->image?->Thumbnail)
+                                <img
+                                    src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
+                                    alt="{{ $item->Title }}"
+                                    class="w-12 h-12 shrink-0 rounded-md object-cover border border-zinc-200 dark:border-zinc-700"
+                                />
+                            @else
+                                <div class="w-12 h-12 shrink-0 bg-zinc-100 dark:bg-zinc-800 rounded-md flex items-center justify-center">
+                                    <flux:icon icon="image-off" class="text-zinc-400" />
+                                </div>
+                            @endif
+                            <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="teal"
+                                    icon="upload"
+                                    icon:variant="outline"
+                                    type="button"
+                                    wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} }})"
+                                />
+                            </flux:tooltip>
+                        </div>
                     </flux:table.cell>
 
                     <flux:table.cell class="whitespace-nowrap">{{ $item->Code }}</flux:table.cell>
@@ -414,4 +433,5 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     </flux:table>
 
     <livewire:panels.warehouse.item.edit-site />
+    <livewire:panels.warehouse.item.upload-image />
 </div>
