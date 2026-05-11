@@ -16,11 +16,13 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     #[Computed]
     public function overview(): array
     {
-        return Cache::remember('warehouse_dashboard_overview', now()->addMinutes(10), function () {
+        $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
+
+        return Cache::remember('warehouse_dashboard_overview_in_stock_'.$fiscalYearRef, now()->addMinutes(10), function () use ($fiscalYearRef) {
             return [
-                'total' => Item::query()->count(),
-                'without_image' => Item::query()->doesntHave('image')->count(),
-                'without_irancode' => Item::query()->where(function ($q) {
+                'total' => Item::query()->whereInStock($fiscalYearRef)->count(),
+                'without_image' => Item::query()->whereInStock($fiscalYearRef)->doesntHave('image')->count(),
+                'without_irancode' => Item::query()->whereInStock($fiscalYearRef)->where(function ($q) {
                     $q->whereNull('IranCode')->orWhere('IranCode', '=', '');
                 })->count(),
             ];
