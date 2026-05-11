@@ -7,6 +7,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -243,6 +244,12 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         $this->resetPage();
     }
+
+    #[On('panels.warehouse.item.edit-site.saved')]
+    public function refreshAfterSiteCodeUpdate(): void
+    {
+        unset($this->items, $this->stats);
+    }
 };
 ?>
 
@@ -378,7 +385,19 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                         @if($item->IranCode)
                             {{ $item->IranCode }}
                         @else
-                            <flux:badge color="rose">{{ __('app.without_irancode') }}</flux:badge>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <flux:badge color="rose">{{ __('app.without_irancode') }}</flux:badge>
+                                <flux:tooltip content="{{ __('app.irancode_not_set') }}">
+                                    <flux:button
+                                        size="xs"
+                                        variant="primary"
+                                        color="sky"
+                                        icon="pencil"
+                                        icon:variant="outline"
+                                        wire:click="$dispatch('panels.warehouse.item.edit-site.assign-data', { id: {{ $item->ItemID }} })"
+                                    />
+                                </flux:tooltip>
+                            </div>
                         @endif
                     </flux:table.cell>
 
@@ -393,4 +412,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             @endforeach
         </flux:table.rows>
     </flux:table>
+
+    <livewire:panels.warehouse.item.edit-site />
 </div>
