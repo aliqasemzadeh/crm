@@ -327,7 +327,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $total = 0.0;
         $lines = 0;
 
-        foreach ($this->historyItemsBaseQuery(false)->orderBy('ItemID')->cursor() as $item) {
+        foreach ($this->historyItemsBaseQuery(false)->reorder('ItemID')->cursor() as $item) {
             $qty = (float) ($item->stock_quantity ?? 0);
             if ($qty <= 0) {
                 continue;
