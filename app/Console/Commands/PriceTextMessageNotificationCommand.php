@@ -30,7 +30,7 @@ class PriceTextMessageNotificationCommand extends Command
     public function handle()
     {
         $phones = [
-            "09177886099", "09177114358"
+            "09177886099", "09177114358", "09372263131"
         ];
         $symbols = [
             'USDT' => [
