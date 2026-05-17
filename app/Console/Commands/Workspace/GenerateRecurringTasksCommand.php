@@ -101,7 +101,10 @@ class GenerateRecurringTasksCommand extends Command
                 }
                 SendSmsMessageJob::dispatch(
                     $assignee->mobile,
-                    __('app.task.notifications.recurring_created_sms', ['title' => $task->title])
+                    __('app.task.notifications.recurring_created_sms', [
+                        'name' => $assignee->name,
+                        'title' => $task->title,
+                    ])
                 );
             }
 
