@@ -37,7 +37,7 @@ class UploadImage extends Component
         $this->item_title = (string) $item->Title;
         $this->photos = [];
 
-        $this->dispatch('modal-show', name: 'panels.warehouse.item.upload-image.modal');
+        Flux::modal('panels.warehouse.item.upload-image.modal')->show();
     }
 
     public function store(): void
@@ -75,7 +75,7 @@ class UploadImage extends Component
         }
 
         $this->photos = [];
-        $this->dispatch('modal-close', name: 'panels.warehouse.item.upload-image.modal');
+        Flux::modal('panels.warehouse.item.upload-image.modal')->close();
 
         $message = $selectedCount > 1
             ? __('app.warehouse_item_image_saved_first_only', ['count' => $selectedCount])
