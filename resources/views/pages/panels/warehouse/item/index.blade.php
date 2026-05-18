@@ -380,6 +380,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         <flux:separator variant="subtle" />
     </div>
 
+    <livewire:panels.warehouse.item.edit-site />
+    <livewire:panels.warehouse.item.upload-image />
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         @foreach($this->stats as $stat)
             <button
@@ -587,7 +590,4 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             <flux:badge color="zinc">{{ __('app.warehouse_purchase_fx_pnl_lines', ['count' => number_format($pnl['lines'])]) }}</flux:badge>
         </div>
     </flux:card>
-
-    <livewire:panels.warehouse.item.edit-site />
-    <livewire:panels.warehouse.item.upload-image />
 </div>
