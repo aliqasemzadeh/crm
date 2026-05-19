@@ -26,7 +26,7 @@ class EditSite extends Component
             $this->iran_code = $item->IranCode ?? '';
             $this->item_title = $item->Title;
 
-            Flux::modal('panels.warehouse.item.edit-site.modal')->show();
+            $this->modal('panels.warehouse.item.edit-site.modal')->show();
         }
     }
 
@@ -43,7 +43,7 @@ class EditSite extends Component
             $item->IranCode = $this->iran_code;
             $item->save();
 
-            Flux::modal('panels.warehouse.item.edit-site.modal')->close();
+            $this->modal('panels.warehouse.item.edit-site.modal')->close();
             Flux::toast(text: __('app.updated_successfully'), variant: 'success');
             $this->dispatch('panels.warehouse.item.edit-site.saved');
         }
