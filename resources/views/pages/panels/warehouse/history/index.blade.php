@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Panels\Warehouse\Item\EditSite;
+use App\Livewire\Panels\Warehouse\Item\UploadImage;
 use App\Models\CurrencyRate;
 use App\Models\Sepidar\GNR\Grouping;
 use App\Models\Sepidar\INV\Item;
@@ -392,6 +394,18 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $this->resetPage();
     }
 
+    public function openEditSiteModal(int $id): void
+    {
+        $this->dispatch('panels.warehouse.item.edit-site.assign-data', id: $id)
+            ->to(EditSite::class);
+    }
+
+    public function openUploadImageModal(int $id): void
+    {
+        $this->dispatch('panels.warehouse.item.upload-image.assign-data', id: $id)
+            ->to(UploadImage::class);
+    }
+
     #[On('panels.warehouse.item.edit-site.saved')]
     public function refreshAfterSiteCodeUpdate(): void
     {
@@ -420,6 +434,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </div>
         <flux:separator variant="subtle" />
     </div>
+
+    <livewire:panels.warehouse.item.edit-site wire:ref="warehouse-item-edit-site" />
+    <livewire:panels.warehouse.item.upload-image wire:ref="warehouse-item-upload-image" />
 
     <flux:card class="mb-4">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
@@ -575,7 +592,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                                     icon="pencil"
                                                     icon:variant="outline"
                                                     type="button"
-                                                    wire:click="$dispatch('panels.warehouse.item.edit-site.assign-data', { id: {{ $item->ItemID }} }})"
+                                                    wire:click="openEditSiteModal({{ $item->ItemID }})"
                                                 />
                                             </flux:tooltip>
                                             <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
@@ -586,7 +603,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                                     icon="upload"
                                                     icon:variant="outline"
                                                     type="button"
-                                                    wire:click="$dispatch('panels.warehouse.item.upload-image.assign-data', { id: {{ $item->ItemID }} }})"
+                                                    wire:click="openUploadImageModal({{ $item->ItemID }})"
                                                 />
                                             </flux:tooltip>
                                         </div>
@@ -662,7 +679,4 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             <flux:badge color="zinc">{{ __('app.warehouse_purchase_fx_pnl_lines', ['count' => number_format($pnl['lines'])]) }}</flux:badge>
         </div>
     </flux:card>
-
-    <livewire:panels.warehouse.item.edit-site />
-    <livewire:panels.warehouse.item.upload-image />
 </div>
