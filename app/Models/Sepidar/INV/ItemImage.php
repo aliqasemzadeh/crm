@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use PDO;
-use PDOStatement;
 
 class ItemImage extends Model
 {
@@ -22,7 +21,10 @@ class ItemImage extends Model
 
     public static function upsertBinaryForItem(int $itemRef, string $imageJpeg, string $thumbnailJpeg): void
     {
-        DB::connection('sqlsrv')->transaction(function () use ($itemRef, $imageJpeg, $thumbnailJpeg) {
+        $imageSql = static::sqlBinaryExpression($imageJpeg);
+        $thumbnailSql = static::sqlBinaryExpression($thumbnailJpeg);
+
+        DB::connection('sqlsrv')->transaction(function () use ($itemRef, $imageSql, $thumbnailSql) {
             $existing = static::query()
                 ->where('ItemRef', $itemRef)
                 ->orderByDesc('ItemImageID')
@@ -30,12 +32,10 @@ class ItemImage extends Model
 
             if ($existing !== null) {
                 $stmt = static::pdo()->prepare(
-                    'UPDATE [INV].[ItemImage] SET [Image] = ?, [Thumbnail] = ?, [Version] = ? WHERE [ItemImageID] = ?'
+                    "UPDATE [INV].[ItemImage] SET [Image] = {$imageSql}, [Thumbnail] = {$thumbnailSql}, [Version] = ? WHERE [ItemImageID] = ?"
                 );
-                static::bindBinary($stmt, 1, $imageJpeg);
-                static::bindBinary($stmt, 2, $thumbnailJpeg);
-                $stmt->bindValue(3, ((int) $existing->Version) + 1, PDO::PARAM_INT);
-                $stmt->bindValue(4, (int) $existing->ItemImageID, PDO::PARAM_INT);
+                $stmt->bindValue(1, ((int) $existing->Version) + 1, PDO::PARAM_INT);
+                $stmt->bindValue(2, (int) $existing->ItemImageID, PDO::PARAM_INT);
                 $stmt->execute();
 
                 return;
@@ -44,13 +44,11 @@ class ItemImage extends Model
             $nextId = ((int) static::query()->max('ItemImageID')) + 1;
 
             $stmt = static::pdo()->prepare(
-                'INSERT INTO [INV].[ItemImage] ([ItemImageID], [ItemRef], [Image], [Thumbnail], [Version]) VALUES (?, ?, ?, ?, ?)'
+                "INSERT INTO [INV].[ItemImage] ([ItemImageID], [ItemRef], [Image], [Thumbnail], [Version]) VALUES (?, ?, {$imageSql}, {$thumbnailSql}, ?)"
             );
             $stmt->bindValue(1, $nextId, PDO::PARAM_INT);
             $stmt->bindValue(2, $itemRef, PDO::PARAM_INT);
-            static::bindBinary($stmt, 3, $imageJpeg);
-            static::bindBinary($stmt, 4, $thumbnailJpeg);
-            $stmt->bindValue(5, 1, PDO::PARAM_INT);
+            $stmt->bindValue(3, 1, PDO::PARAM_INT);
             $stmt->execute();
         });
 
@@ -62,14 +60,11 @@ class ItemImage extends Model
         return DB::connection('sqlsrv')->getPdo();
     }
 
-    private static function bindBinary(PDOStatement $stmt, int $param, string $binary): void
+    /**
+     * Embed binary as a SQL Server varbinary literal (safe: bin2hex output is hex digits only).
+     */
+    private static function sqlBinaryExpression(string $binary): string
     {
-        if (defined('PDO::SQLSRV_ENCODING_BINARY')) {
-            $stmt->bindValue($param, $binary, PDO::PARAM_LOB, 0, PDO::SQLSRV_ENCODING_BINARY);
-
-            return;
-        }
-
-        $stmt->bindValue($param, $binary, PDO::PARAM_LOB);
+        return 'CONVERT(varbinary(max), 0x'.bin2hex($binary).')';
     }
 }
