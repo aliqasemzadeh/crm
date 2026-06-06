@@ -254,7 +254,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         <flux:input
                                             type="number"
                                             size="sm"
-                                            label="{{ $item->Title }}"
+                                            label="{{ __('app.day_check.actual_stock') }}"
                                             wire:model.live="item_checks.{{ $item->ItemID }}"
                                         />
                                     </div>
