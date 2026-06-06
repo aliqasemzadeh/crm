@@ -74,6 +74,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     {
         return \App\Models\Sepidar\INV\ItemStockSummary::query()
             ->where('FiscalYearRef', $this->fiscalYearRef)
+            ->where('Quantity', '>', 0)
             ->whereHas('item', function ($query) {
                 $query->where('CodingGroupRef', '!=', 584);
             })

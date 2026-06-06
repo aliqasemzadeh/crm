@@ -26,7 +26,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     public string $statusFilter = '';
 
-    public string $stockFilter = '';
+    public string $stockFilter = 'in_stock';
 
     public string $iranCodeFilter = '';
 
@@ -100,7 +100,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         match ($this->stockFilter) {
             'in_stock' => $query->whereInStock($fiscalYearRef),
             'out_of_stock' => $query->whereRaw("{$sql} <= 0", [$fiscalYearRef]),
-            'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, $fiscalYearRef, 10]),
+            'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, 10]),
             default => null,
         };
     }
@@ -203,7 +203,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
 
         $baseQuery = Item::query()->whereInStock($fiscalYearRef);
-        $this->applyCommonFilters($baseQuery, $fiscalYearRef);
+        // We only want the 584 filter to apply to all stats
+        $baseQuery->where('CodingGroupRef', '!=', 584);
 
         $total = (clone $baseQuery)->count();
         $withoutImage = (clone $baseQuery)->doesntHave('image')->count();
@@ -213,7 +214,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
         return collect([
             [
-                'key' => '',
+                'key' => 'in_stock',
                 'label' => __('app.warehouse_stats_in_stock_total'),
                 'value' => $total,
                 'icon' => 'boxes',
@@ -311,7 +312,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $this->search = '';
         $this->groupingFilter = '';
         $this->statusFilter = '';
-        $this->stockFilter = '';
+        $this->stockFilter = 'in_stock';
         $this->iranCodeFilter = '';
         $this->codePrefix = '';
         $this->sortBy = 'created_desc';
@@ -402,8 +403,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         @foreach($this->stats as $stat)
             <button
                 type="button"
-                wire:click="$set('statusFilter', '{{ $stat['key'] }}')"
-                class="relative w-full text-start cursor-pointer rounded-xl border p-4 bg-white dark:bg-zinc-800 shadow-sm transition-colors {{ $stat['frame'] }} {{ $statusFilter === $stat['key'] ? $stat['selected'] : '' }}"
+                wire:click="$set('stockFilter', '{{ $stat['key'] }}')"
+                class="relative w-full text-start cursor-pointer rounded-xl border p-4 bg-white dark:bg-zinc-800 shadow-sm transition-colors {{ $stat['frame'] }} {{ $stockFilter === $stat['key'] ? $stat['selected'] : '' }}"
             >
                 <flux:subheading size="sm" class="uppercase tracking-wider">{{ $stat['label'] }}</flux:subheading>
                 <div class="flex items-end justify-between mt-2">
