@@ -170,7 +170,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
             <div class="space-y-6 flex-1 overflow-y-auto">
                 @if($this->selectedCheck)
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         @foreach($this->checkItems as $item)
                             @php
                                 $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
@@ -199,8 +199,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         @endif
                                     </div>
                                     <div class="space-y-1">
-                                        <div class="font-bold text-sm truncate">{{ $item->Name }}</div>
-                                        <div class="text-xs text-zinc-500">{{ $item->Number }}</div>
+                                        <flux:field>
+                                            <flux:label>{{ __('app.day_check.item_name') }}</flux:label>
+                                            <div class="font-bold text-sm truncate">{{ $item->Name }}</div>
+                                            <flux:description>{{ $item->Number }}</flux:description>
+                                        </flux:field>
                                         <div class="flex flex-col mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                                             <div class="flex justify-between text-xs">
                                                 <span class="text-zinc-500">{{ __('app.day_check.expected_stock') }}:</span>
