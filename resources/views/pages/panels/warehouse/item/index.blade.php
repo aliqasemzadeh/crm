@@ -33,7 +33,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public string $codePrefix = '';
 
     public string $sortBy = 'created_desc';
-    public int $perPage = 100;
+    public int $perPage = 300;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -43,7 +43,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         'iranCodeFilter' => ['except' => ''],
         'codePrefix' => ['except' => ''],
         'sortBy' => ['except' => 'created_desc'],
-        'perPage' => ['except' => 100],
+        'perPage' => ['except' => 300],
     ];
 
     public function mount(): void
