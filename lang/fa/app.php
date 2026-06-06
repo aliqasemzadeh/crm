@@ -124,6 +124,12 @@ return [
         'submit_check' => 'ثبت و ارسال بررسی',
         'approve_check' => 'تایید بررسی',
         'reject_check' => 'رد بررسی',
+        'admin_check' => [
+            'title' => 'مدیریت بررسی‌های موجودی',
+            'search_placeholder' => 'جستجو در بررسی‌ها...',
+            'view_details' => 'مشاهده جزئیات و تایید/رد',
+            'status_updated' => 'وضعیت بررسی با موفقیت بروزرسانی شد.',
+        ],
         'search_placeholder' => 'جستجوی بررسی‌ها...',
         'image' => 'تصویر کالا',
         'admin_title' => 'مدیریت بررسی‌ها',
