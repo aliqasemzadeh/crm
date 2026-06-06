@@ -20,6 +20,9 @@
         @can('warehouse_item_day_check')
             <flux:sidebar.item icon="clipboard-check" href="{{ route('panels.warehouse.check.index') }}" :current="request()->routeIs('panels.warehouse.check.*')" wire:navigate>{{ __('app.day_check.title') }}</flux:sidebar.item>
         @endcan
+        @can('warehouse_item_day_check_admin')
+            <flux:sidebar.item icon="shield-check" href="{{ route('panels.warehouse.check.index') }}" :current="request()->routeIs('panels.warehouse.check.*')" wire:navigate>{{ __('app.day_check.admin_title') }}</flux:sidebar.item>
+        @endcan
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
