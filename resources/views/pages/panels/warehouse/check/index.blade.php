@@ -31,9 +31,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         $query = DayCheck::with('user')->latest();
 
-        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) {
-             $query->where('user_id', Auth::id());
-        }
+        $query->where('user_id', Auth::id());
 
         if ($this->search) {
             $query->where(function ($q) {
@@ -52,9 +50,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         if (!$this->selectedCheckId) return null;
         $query = DayCheck::query();
-        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) {
-            $query->where('user_id', Auth::id());
-        }
+        $query->where('user_id', Auth::id());
         return $query->find($this->selectedCheckId);
     }
 
@@ -68,9 +64,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public function openCheck($id)
     {
         $query = DayCheck::query();
-        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) {
-            $query->where('user_id', Auth::id());
-        }
+        $query->where('user_id', Auth::id());
         $check = $query->find($id);
 
         if (!$check) {
@@ -129,36 +123,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
         $this->modal('day-check-modal')->close();
         Flux::toast(__('app.saved_successfully', ['name' => __('app.day_check.title')]));
-    }
-
-    public function approve()
-    {
-        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) return;
-
-        $check = DayCheck::find($this->selectedCheckId);
-        $check->update([
-            'status' => 'approve',
-            'admin_comment' => $this->admin_comment,
-            'approve_at' => now(),
-        ]);
-
-        $this->modal('day-check-modal')->close();
-        Flux::toast(__('app.day_check.approve_check'));
-    }
-
-    public function reject()
-    {
-        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) return;
-
-        $check = DayCheck::find($this->selectedCheckId);
-        $check->update([
-            'status' => 'reject',
-            'admin_comment' => $this->admin_comment,
-            'reject_at' => now(),
-        ]);
-
-        $this->modal('day-check-modal')->close();
-        Flux::toast(__('app.day_check.reject_check'));
     }
 };
 ?>
@@ -317,17 +281,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                             <flux:button variant="primary" color="orange" class="w-full" wire:click="submitCheck">
                                 {{ __('app.day_check.submit_check') }}
                             </flux:button>
-                        @endif
-
-                        @if($this->selectedCheck->status === 'send' && Auth::user()->hasPermissionTo('warehouse_item_day_check_admin'))
-                            <div class="flex gap-2 w-full">
-                                <flux:button variant="primary" color="green" class="flex-1" wire:click="approve">
-                                    {{ __('app.day_check.approve_check') }}
-                                </flux:button>
-                                <flux:button variant="primary" color="red" class="flex-1" wire:click="reject">
-                                    {{ __('app.day_check.reject_check') }}
-                                </flux:button>
-                            </div>
                         @endif
                     </div>
                 @endif
