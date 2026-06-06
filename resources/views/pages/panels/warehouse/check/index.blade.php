@@ -1,5 +1,6 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Warehouse\DayCheck;
@@ -124,7 +125,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 ?>
 
 <div>
-    <flux:main>
+    <x-slot name="title">
+        {{ __('app.day_check.title') }}
+    </x-slot>
+
+    <div>
         <div class="flex items-center justify-between mb-6">
             <flux:heading size="xl">{{ __('app.day_check.title') }}</flux:heading>
         </div>
@@ -163,7 +168,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         default => 'zinc'
                                     };
                                 @endphp
-                                <flux:badge color="{{ $color }}" inset="false">
+                                <flux:badge color="{{ $color }}" :inset="false">
                                     {{ __('app.day_check.' . $check->status) }}
                                 </flux:badge>
                             </flux:table.cell>
@@ -186,7 +191,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                 {{ $this->dayChecks->links() }}
             </div>
         </flux:card>
-    </flux:main>
+    </div>
 
     <flux:modal name="day-check-modal" flyout position="right" class="w-[600px]">
         <div class="space-y-6">
