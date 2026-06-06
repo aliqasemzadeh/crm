@@ -7,3 +7,4 @@ Schedule::command('app:price-text-message-notification-command')->hourly()->runI
 Schedule::command('app:sepidar:alert-on-new-invoice-command')->everyFiveMinutes()->runInBackground();
 Schedule::command('app:voip:import-phones-from-sepidar')->dailyAt('00:00')->runInBackground();
 Schedule::command('app:workspace:generate-recurring-tasks')->dailyAt('08:00')->runInBackground();
+Schedule::command('app:day-check-creation-command')->dailyAt('08:00')->runInBackground();

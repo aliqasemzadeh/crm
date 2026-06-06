@@ -4,6 +4,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Warehouse\DayCheck;
+use App\Jobs\UpdateDayCheckItemJob;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemImage;
 use Flux\Flux;
@@ -24,6 +25,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public function updatingSearch()
     {
         $this->resetPage();
+    }
+
+    public function updatedItemChecks()
+    {
+        $this->save();
     }
 
     #[Computed]
@@ -95,10 +101,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         if (!$check) return;
         if ($check->status !== 'check' && $check->status !== 'reject') return;
 
-        $check->update([
-            'item_checks' => $this->item_checks,
-            'user_comment' => $this->user_comment,
-        ]);
+        UpdateDayCheckItemJob::dispatch(
+            (int) $this->selectedCheckId,
+            $this->item_checks,
+            $this->user_comment,
+        );
     }
 
     public function submitCheck()

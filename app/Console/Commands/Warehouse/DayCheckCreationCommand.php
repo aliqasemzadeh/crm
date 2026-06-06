@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Warehouse;
 
+use App\Jobs\Notification\SendSmsMessageJob;
 use Illuminate\Console\Command;
 
 class DayCheckCreationCommand extends Command
@@ -87,6 +88,21 @@ class DayCheckCreationCommand extends Command
             ]);
 
             $this->info("Created DayCheck for user: {$user->name} with " . count($itemIds) . " items.");
+
+            // Send SMS notification with link to the warehouse check page
+            if (!empty($user->mobile)) {
+                $link = route('panels.warehouse.check.index');
+                $text = __('app.day_check.sms_message', [
+                    'website_title' => __('app.website_title'),
+                    'link' => $link,
+                ]);
+
+                SendSmsMessageJob::dispatch($user->mobile, $text);
+
+                $this->info("SMS dispatched for user: {$user->name}");
+            } else {
+                $this->warn("No mobile number for user: {$user->name}");
+            }
         }
     }
 }
