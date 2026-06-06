@@ -78,6 +78,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     private function applySearchAndGrouping(Builder $query): void
     {
         $query
+            ->where('CodingGroupRef', '!=', 584)
             ->when($this->search !== '', function (Builder $q) {
                 $search = '%'.$this->search.'%';
                 $q->where('Title', 'like', $search);
@@ -317,7 +318,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     #[Computed]
     public function items()
     {
-        return $this->historyItemsBaseQuery()->paginate(100);
+        return $this->historyItemsBaseQuery()->paginate(300);
     }
 
     /**
