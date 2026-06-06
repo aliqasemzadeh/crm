@@ -196,7 +196,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </flux:card>
     </div>
 
-    <flux:modal name="day-check-modal" variant="wide" class="w-full h-full" wire:poll.60s="save">
+    <flux:modal name="day-check-modal" flyout position="right" class="w-full max-w-4xl" wire:poll.60s="save">
         <div class="space-y-6 h-full flex flex-col">
             <div>
                 <flux:heading size="lg">{{ __('app.day_check.view_items') }}</flux:heading>
@@ -205,7 +205,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
             <div class="space-y-6 flex-1 overflow-y-auto">
                 @if($this->selectedCheck)
-                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         @foreach($this->checkItems as $item)
                             @php
                                 $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
@@ -234,8 +234,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         @endif
                                     </div>
                                     <div class="flex-1 space-y-1">
-                                        <div class="font-medium text-sm">{{ $item->Name }}</div>
-                                        <div class="text-xs text-zinc-500">{{ $item->Number }}</div>
+                                        <flux:field>
+                                            <flux:label>{{ __('app.day_check.item_name') }}</flux:label>
+                                            <div class="font-medium text-sm">{{ $item->Name }}</div>
+                                            <flux:description>{{ $item->Number }}</flux:description>
+                                        </flux:field>
 
                                         <div class="flex justify-between items-center mt-2">
                                             @if($actual !== null)
