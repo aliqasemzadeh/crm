@@ -236,8 +236,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                     <div class="flex-1 space-y-1">
                                         <flux:field>
                                             <flux:label>{{ __('app.day_check.item_name') }}</flux:label>
-                                            <div class="font-medium text-sm">{{ $item->Name }}</div>
-                                            <flux:description>{{ $item->Number }}</flux:description>
+                                            <div class="font-medium text-sm">{{ $item->Title }}</div>
+                                            <flux:description>{{ $item->Code }}</flux:description>
                                         </flux:field>
 
                                         <div class="flex justify-between items-center mt-2">
@@ -254,7 +254,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         <flux:input
                                             type="number"
                                             size="sm"
-                                            label="{{ __('app.day_check.actual_stock') }}"
+                                            label="{{ $item->Title }}"
                                             wire:model.live="item_checks.{{ $item->ItemID }}"
                                         />
                                     </div>
