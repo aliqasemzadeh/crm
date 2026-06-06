@@ -64,3 +64,23 @@
 35-I want to use signle file livewire component
 36-I use pages:: for livewire page.
 37-If possible, change class base to single file compoenet.
+36-Livewire events use Livewire\Attributes\On; and use $this->dispatch('event-name');
+<?php // resources/views/components/⚡dashboard.blade.php
+ 
+use Livewire\Attributes\On;
+use Livewire\Component;
+ 
+new class extends Component {
+    #[On('post-created')] 
+    public function updatePostList($title)
+    {
+        Flux::toast("New post created: {$title}");
+    }
+};
+37-never use protected $listeners more about events in livewire https://livewire.laravel.com/docs/4.x/events
+38-Control modals in livewire
+     // Control "confirm" modals anywhere on the page...
+        Flux::modal('confirm')->show();
+        Flux::modal('confirm')->close();
+        // Closes all modals on the page...
+        Flux::modals()->close();

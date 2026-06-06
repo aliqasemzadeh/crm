@@ -14,14 +14,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     use WithPagination;
 
     public $search = '';
-    public $showModal = false;
     public $selectedCheckId;
     public $item_checks = [];
     public $user_comment = '';
     public $admin_comment = '';
     public $activeTab = 'items';
-
-    protected $listeners = ['refresh' => '$refresh'];
 
     public function updatingSearch()
     {
@@ -68,7 +65,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $this->item_checks = $check->item_checks ?? array_fill_keys($check->items, '');
         $this->user_comment = $check->user_comment;
         $this->admin_comment = $check->admin_comment;
-        $this->showModal = true;
+        $this->modal('day-check-modal')->show();
     }
 
     public function submitCheck()
@@ -90,7 +87,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'check_at' => now(),
         ]);
 
-        $this->showModal = false;
+        $this->modal('day-check-modal')->close();
         Flux::toast(__('app.saved_successfully', ['name' => __('app.day_check.title')]));
     }
 
@@ -105,7 +102,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'approve_at' => now(),
         ]);
 
-        $this->showModal = false;
+        $this->modal('day-check-modal')->close();
         Flux::toast(__('app.day_check.approve_check'));
     }
 
@@ -120,7 +117,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'reject_at' => now(),
         ]);
 
-        $this->showModal = false;
+        $this->modal('day-check-modal')->close();
         Flux::toast(__('app.day_check.reject_check'));
     }
 };
@@ -174,9 +171,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                 {{ \Morilog\Jalali\Jalalian::fromDateTime($check->created_at)->format('Y/m/d H:i') }}
                             </flux:table.cell>
                             <flux:table.cell>
-                                <flux:tooltip content="{{ __('app.day_check.view_items') }}">
-                                    <flux:button size="xs" variant="primary" color="teal" icon="eye" wire:click="openCheck({{ $check->id }})" />
-                                </flux:tooltip>
+                                <div class="flex items-center gap-2">
+                                    <flux:tooltip content="{{ __('app.day_check.view_items') }}">
+                                        <flux:button size="xs" variant="primary" color="teal" icon="eye" wire:click="openCheck({{ $check->id }})" />
+                                    </flux:tooltip>
+                                </div>
                             </flux:table.cell>
                         </flux:table.row>
                     @endforeach
@@ -189,7 +188,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </flux:card>
     </flux:main>
 
-    <flux:modal wire:model="showModal" flyout position="right" class="w-[600px]">
+    <flux:modal name="day-check-modal" flyout position="right" class="w-[600px]">
         <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('app.day_check.view_items') }}</flux:heading>
@@ -229,7 +228,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                     <flux:input
                                         type="number"
                                         label="{{ __('app.day_check.actual_stock') }}"
-                                        wire:model.defer="item_checks.{{ $item->ItemID }}"
+                                        wire:model="item_checks.{{ $item->ItemID }}"
                                         :disabled="$this->selectedCheck->status !== 'check' && $this->selectedCheck->status !== 'reject'"
                                     />
                                 </div>
@@ -239,14 +238,14 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
                     <flux:textarea
                         label="{{ __('app.day_check.user_comment') }}"
-                        wire:model.defer="user_comment"
+                        wire:model="user_comment"
                         :disabled="$this->selectedCheck->status !== 'check' && $this->selectedCheck->status !== 'reject'"
                     />
 
                     @if(Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || $this->selectedCheck->admin_comment)
                         <flux:textarea
                             label="{{ __('app.day_check.admin_comment') }}"
-                            wire:model.defer="admin_comment"
+                            wire:model="admin_comment"
                             :disabled="!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || in_array($this->selectedCheck->status, ['approve', 'reject'])"
                         />
                     @endif
