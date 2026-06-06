@@ -9,7 +9,7 @@ use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Illuminate\Support\Facades\Auth;
 
-new class extends Component
+new #[Layout('layouts::panels.warehouse')] class extends Component
 {
     use WithPagination;
 
