@@ -72,7 +72,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                 $q->doesntHave('image');
             })
             ->when($this->statusFilter === 'without_irancode', function (Builder $q) {
-                $q->whereNull('IranCode');
+                $q->where(function (Builder $inner) {
+                    $inner->whereNull('IranCode')->orWhere('IranCode', '=', '');
+                });
             })
             ->when($this->iranCodeFilter === 'has', function (Builder $q) {
                 $q->whereNotNull('IranCode')->where('IranCode', '!=', '');
@@ -101,6 +103,10 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'in_stock' => $query->whereInStock($fiscalYearRef),
             'out_of_stock' => $query->whereRaw("{$sql} <= 0", [$fiscalYearRef]),
             'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, 10]),
+            'without_image' => $query->doesntHave('image'),
+            'without_irancode' => $query->where(function (Builder $inner) {
+                $inner->whereNull('IranCode')->orWhere('IranCode', '=', '');
+            }),
             default => null,
         };
     }
