@@ -53,6 +53,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     private function applyCommonFilters(Builder $query, ?string $fiscalYearRef = null): void
     {
         $query
+            ->where('CodingGroupRef', '!=', 584)
             ->when($this->search !== '', function (Builder $q) {
                 $search = '%'.$this->search.'%';
                 $q->where(function (Builder $inner) use ($search) {
@@ -273,7 +274,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     #[Computed]
     public function items()
     {
-        return $this->itemsBaseQuery()->paginate(100);
+        return $this->itemsBaseQuery()->paginate(300);
     }
 
     /**
