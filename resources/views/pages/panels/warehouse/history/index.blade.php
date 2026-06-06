@@ -152,7 +152,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         match ($this->stockFilter) {
             'in_stock' => $query->whereInStock($fiscalYearRef),
             'out_of_stock' => $query->whereRaw("{$sql} <= 0", [$fiscalYearRef]),
-            'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, $fiscalYearRef, 10]),
+            'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, 10]),
+            'without_image' => $query->doesntHave('image'),
+            'without_irancode' => $query->where(function (Builder $inner) {
+                $inner->whereNull('IranCode')->orWhere('IranCode', '=', '');
+            }),
             default => null,
         };
     }
