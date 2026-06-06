@@ -214,7 +214,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                             <img src="data:image/jpeg;base64,{{ base64_encode($image->Thumbnail) }}" class="w-full h-full object-cover">
                                         @else
                                             <div class="w-full h-full flex items-center justify-center text-zinc-400">
-                                                <flux:icon icon="image" size="lg" />
+                                                <flux:icon icon="image-off" size="lg" />
                                             </div>
                                         @endif
                                     </div>
