@@ -33,7 +33,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public int $noSaleMonths = 0;
 
     public int $noPurchaseMonths = 0;
-    public int $perPage = 100;
+    public int $perPage = 300;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -43,7 +43,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         'sortBy' => ['except' => 'last_sale_desc'],
         'noSaleMonths' => ['except' => 0],
         'noPurchaseMonths' => ['except' => 0],
-        'perPage' => ['except' => 100],
+        'perPage' => ['except' => 300],
     ];
 
     public function mount(): void
