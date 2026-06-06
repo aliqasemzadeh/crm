@@ -208,9 +208,10 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         @foreach($this->checkItems as $item)
                             @php
+                                $isAdmin = Auth::user()->hasPermissionTo('warehouse_item_day_check_admin');
                                 $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
                                 $actual = isset($this->item_checks[$item->ItemID]) && $this->item_checks[$item->ItemID] !== '' ? (float)$this->item_checks[$item->ItemID] : null;
-                                $hasDiff = $actual !== null && $actual != $expected;
+                                $hasDiff = $isAdmin && $actual !== null && $actual != $expected;
                             @endphp
                             <flux:card class="p-4 {{ $hasDiff ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : '' }}">
                                 <div class="flex gap-4">
@@ -241,7 +242,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         </flux:field>
 
                                         <div class="flex justify-between items-center mt-2">
-                                            @if($actual !== null)
+                                            @if($actual !== null && $isAdmin)
                                                 <div class="text-xs font-semibold {{ $hasDiff ? 'text-red-600' : 'text-zinc-600' }}">
                                                     {{ __('app.day_check.actual_stock') }}: {{ number_format($actual) }}
                                                 </div>
