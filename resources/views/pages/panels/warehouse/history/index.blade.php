@@ -33,7 +33,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public int $noSaleMonths = 0;
 
     public int $noPurchaseMonths = 0;
-    public int $perPage = 300;
+    public int $perPage = 1000;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -43,7 +43,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         'sortBy' => ['except' => 'last_sale_desc'],
         'noSaleMonths' => ['except' => 0],
         'noPurchaseMonths' => ['except' => 0],
-        'perPage' => ['except' => 300],
     ];
 
     public function mount(): void
@@ -320,13 +319,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             ->tap(fn (Builder $q) => $this->applySort($q));
     }
 
-    public function loadMore(): void
-    {
-        if ($this->perPage < 1000) {
-            $this->perPage += 100;
-        }
-    }
-
     #[Computed]
     public function items()
     {
@@ -369,49 +361,41 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $this->sortBy = 'last_sale_desc';
         $this->noSaleMonths = 0;
         $this->noPurchaseMonths = 0;
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingSearch(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingGroupingFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingStockFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingImageFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingSortBy(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingNoSaleMonths(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingNoPurchaseMonths(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
@@ -540,24 +524,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </div>
     </flux:card>
 
-    <div
-        class="relative min-h-[16rem]"
-        x-data="{
-            observe() {
-                let observer = new IntersectionObserver((entries) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            @this.loadMore()
-                        }
-                    })
-                }, {
-                    rootMargin: '200px',
-                })
-                observer.observe(this.$refs.loadMore)
-            }
-        }"
-        x-init="observe()"
-    >
+    <div class="relative min-h-[16rem]">
         <div
             wire:loading.delay.shortest
             class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm"
@@ -704,13 +671,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                 @endforeach
             </flux:table.rows>
         </flux:table>
-
-        @if ($this->items->hasMorePages() && $this->perPage < 1000)
-            <div x-ref="loadMore" class="flex justify-center py-4">
-                <flux:icon icon="loading" class="size-6 text-teal-600 animate-spin" />
-            </div>
-        @endif
-        </div>
+    </div>
 
     @php
         $pnl = $this->purchaseFxPnlUsdtSummary;
