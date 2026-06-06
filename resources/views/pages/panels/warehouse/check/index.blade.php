@@ -232,16 +232,16 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </flux:card>
     </div>
 
-    <flux:modal name="day-check-modal" flyout position="right" class="w-[30rem] lg:w-[40rem]" wire:poll.60s="save">
-        <div class="space-y-6">
+    <flux:modal name="day-check-modal" variant="wide" class="w-full h-full" wire:poll.60s="save">
+        <div class="space-y-6 h-full flex flex-col">
             <div>
                 <flux:heading size="lg">{{ __('app.day_check.view_items') }}</flux:heading>
                 <flux:subheading>{{ $this->selectedCheck?->user->name }} - {{ $this->selectedCheck ? \Morilog\Jalali\Jalalian::fromDateTime($this->selectedCheck->created_at)->format('Y/m/d') : '' }}</flux:subheading>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-6 flex-1 overflow-y-auto">
                 @if($this->selectedCheck)
-                    <div class="space-y-4">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
                         @foreach($this->checkItems as $item)
                             @php
                                 $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
@@ -274,9 +274,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         <div class="text-xs text-zinc-500">{{ $item->Number }}</div>
 
                                         <div class="flex justify-between items-center mt-2">
-                                            <div class="text-xs font-semibold text-teal-600">
-                                                {{ __('app.day_check.expected_stock') }}: {{ number_format($expected) }}
-                                            </div>
                                             @if($actual !== null)
                                                 <div class="text-xs font-semibold {{ $hasDiff ? 'text-red-600' : 'text-zinc-600' }}">
                                                     {{ __('app.day_check.actual_stock') }}: {{ number_format($actual) }}
@@ -299,19 +296,21 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                         @endforeach
                     </div>
 
-                    <flux:textarea
-                        label="{{ __('app.day_check.user_comment') }}"
-                        wire:model="user_comment"
-                        :disabled="$this->selectedCheck->status !== 'check' && $this->selectedCheck->status !== 'reject'"
-                    />
-
-                    @if(Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || $this->selectedCheck->admin_comment)
+                    <div class="space-y-4">
                         <flux:textarea
-                            label="{{ __('app.day_check.admin_comment') }}"
-                            wire:model="admin_comment"
-                            :disabled="!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || in_array($this->selectedCheck->status, ['approve', 'reject'])"
+                            label="{{ __('app.day_check.user_comment') }}"
+                            wire:model="user_comment"
+                            :disabled="$this->selectedCheck->status !== 'check' && $this->selectedCheck->status !== 'reject'"
                         />
-                    @endif
+
+                        @if(Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || $this->selectedCheck->admin_comment)
+                            <flux:textarea
+                                label="{{ __('app.day_check.admin_comment') }}"
+                                wire:model="admin_comment"
+                                :disabled="!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || in_array($this->selectedCheck->status, ['approve', 'reject'])"
+                            />
+                        @endif
+                    </div>
 
                     <div class="flex flex-col gap-2">
                         @if(($this->selectedCheck->status === 'check' || $this->selectedCheck->status === 'reject') && $this->selectedCheck->user_id === Auth::id())
