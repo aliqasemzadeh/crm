@@ -217,6 +217,7 @@ return [
         'warehouse_access' => 'دسترسی انبار',
         'warehouse_dashboard_index' => 'داشبورد انبار',
         'warehouse_item_index' => 'فهرست کالاهای انبار',
+        'warehouse_item_day_check' => 'بررسی روزانه کالاها',
     ],
 
     'sales' => [
