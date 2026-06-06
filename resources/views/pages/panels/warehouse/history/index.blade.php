@@ -24,7 +24,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     public string $groupingFilter = '';
 
-    public string $stockFilter = '';
+    public string $stockFilter = 'in_stock';
 
     public string $imageFilter = '';
 
@@ -157,7 +157,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'without_irancode' => $query->where(function (Builder $inner) {
                 $inner->whereNull('IranCode')->orWhere('IranCode', '=', '');
             }),
-            default => null,
+            default => $query->whereInStock($fiscalYearRef),
         };
     }
 
@@ -356,7 +356,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         $this->search = '';
         $this->groupingFilter = '';
-        $this->stockFilter = '';
+        $this->stockFilter = 'in_stock';
         $this->imageFilter = '';
         $this->sortBy = 'last_sale_desc';
         $this->noSaleMonths = 0;

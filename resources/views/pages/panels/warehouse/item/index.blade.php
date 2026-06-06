@@ -103,11 +103,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             'in_stock' => $query->whereInStock($fiscalYearRef),
             'out_of_stock' => $query->whereRaw("{$sql} <= 0", [$fiscalYearRef]),
             'low_stock' => $query->whereRaw("{$sql} > 0 AND {$sql} < ?", [$fiscalYearRef, 10]),
-            'without_image' => $query->doesntHave('image'),
-            'without_irancode' => $query->where(function (Builder $inner) {
+            'without_image' => $query->whereInStock($fiscalYearRef)->doesntHave('image'),
+            'without_irancode' => $query->whereInStock($fiscalYearRef)->where(function (Builder $inner) {
                 $inner->whereNull('IranCode')->orWhere('IranCode', '=', '');
             }),
-            default => null,
+            default => $query->whereInStock($fiscalYearRef),
         };
     }
 
@@ -423,7 +423,16 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         @endforeach
     </div>
 
-    <flux:card class="mb-4">
+    <div class="relative min-h-[16rem]">
+        <div
+            wire:loading.delay.shortest
+            class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm"
+        >
+            <flux:icon icon="loading" class="size-9 text-teal-600 dark:text-teal-400" />
+            <flux:text class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{{ __('app.loading') }}</flux:text>
+        </div>
+
+        <flux:card class="mb-4">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
             <flux:input
                 wire:model.live.debounce.400ms="search"
@@ -600,6 +609,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             @endforeach
         </flux:table.rows>
     </flux:table>
+    </div>
 
     @php
         $pnl = $this->purchaseFxPnlUsdtSummary;
