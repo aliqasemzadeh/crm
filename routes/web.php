@@ -36,6 +36,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/warehouse/dashboard/index', 'pages::panels.warehouse.dashboard.index')->name('panels.warehouse.dashboard.index');
     Route::livewire('/panels/warehouse/item/index', 'pages::panels.warehouse.item.index')->name('panels.warehouse.item.index');
     Route::livewire('/panels/warehouse/history/index', 'pages::panels.warehouse.history.index')->name('panels.warehouse.history.index');
+    Route::livewire('/panels/warehouse/check/index', 'pages::panels.warehouse.check.index')->name('panels.warehouse.check.index');
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
     Route::livewire('/panels/workspace/task/index', \App\Livewire\Panels\Workspace\Task\Index::class)->name('panels.workspace.task.index');

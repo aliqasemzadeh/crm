@@ -30,6 +30,12 @@ class Index extends Component
         Flux::toast(__('app.project_updated'));
     }
 
+    public function runDayCheck()
+    {
+        Artisan::call('app:day-check-creation-command');
+        Flux::toast(__('app.day_check.command_executed'));
+    }
+
     #[Layout('layouts.panels.administrator')]
     public function render()
     {

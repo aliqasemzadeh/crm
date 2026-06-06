@@ -11,8 +11,9 @@
             <flux:button wire:click="updatePermissions" class="w-full">{{ __('app.update_permissions') }}</flux:button>
             <flux:button wire:click="clearCache" class="w-full">{{ __('app.clear_cache') }}</flux:button>
             <flux:button wire:click="updateProject" class="w-full">{{ __('app.update_project') }}</flux:button>
+            <flux:button wire:click="runDayCheck" class="w-full">{{ __('app.day_check.run_command') }}</flux:button>
         </div>
 
-        
+
     </div>
 </div>
