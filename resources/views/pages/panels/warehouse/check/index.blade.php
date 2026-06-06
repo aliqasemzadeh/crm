@@ -168,7 +168,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                         default => 'zinc'
                                     };
                                 @endphp
-                                <flux:badge color="{{ $color }}" :inset="false">
+                                <flux:badge color="{{ $color }}">
                                     {{ __('app.day_check.' . $check->status) }}
                                 </flux:badge>
                             </flux:table.cell>
