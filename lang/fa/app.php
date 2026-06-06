@@ -126,6 +126,7 @@ return [
         'reject_check' => 'رد بررسی',
         'search_placeholder' => 'جستجوی بررسی‌ها...',
         'image' => 'تصویر کالا',
+        'admin_title' => 'مدیریت بررسی‌ها',
         'run_command' => 'اجرای ایجاد بررسی روزانه',
         'command_executed' => 'دستور ایجاد بررسی روزانه با موفقیت اجرا شد.',
     ],

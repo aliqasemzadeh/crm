@@ -36,10 +36,12 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         }
 
         if ($this->search) {
-            $query->whereHas('user', function ($q) {
-                $q->where('first_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('last_name', 'like', '%' . $this->search . '%');
-            })->orWhere('status', 'like', '%' . $this->search . '%');
+            $query->where(function ($q) {
+                $q->whereHas('user', function ($uq) {
+                    $uq->where('first_name', 'like', '%' . $this->search . '%')
+                      ->orWhere('last_name', 'like', '%' . $this->search . '%');
+                })->orWhere('status', 'like', '%' . $this->search . '%');
+            });
         }
 
         return $query->paginate(10);
@@ -49,7 +51,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public function selectedCheck()
     {
         if (!$this->selectedCheckId) return null;
-        return DayCheck::find($this->selectedCheckId);
+        $query = DayCheck::query();
+        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) {
+            $query->where('user_id', Auth::id());
+        }
+        return $query->find($this->selectedCheckId);
     }
 
     #[Computed]
@@ -61,9 +67,27 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     public function openCheck($id)
     {
+        $query = DayCheck::query();
+        if (!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin')) {
+            $query->where('user_id', Auth::id());
+        }
+        $check = $query->find($id);
+
+        if (!$check) {
+            Flux::toast(__('common.not_found'), variant: 'danger');
+            return;
+        }
+
         $this->selectedCheckId = $id;
-        $check = DayCheck::find($id);
-        $this->item_checks = $check->item_checks ?? array_fill_keys($check->items, '');
+        $this->item_checks = $check->item_checks ?? [];
+
+        // Ensure all items have a value in item_checks array
+        foreach ($check->items as $itemId) {
+            if (!isset($this->item_checks[$itemId])) {
+                $this->item_checks[$itemId] = '';
+            }
+        }
+
         $this->user_comment = $check->user_comment;
         $this->admin_comment = $check->admin_comment;
         $this->modal('day-check-modal')->show();
@@ -73,7 +97,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     {
         if (!$this->selectedCheckId) return;
 
-        $check = DayCheck::find($this->selectedCheckId);
+        $check = $this->selectedCheck;
+        if (!$check) return;
         if ($check->status !== 'check' && $check->status !== 'reject') return;
 
         $check->update([
@@ -84,7 +109,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     public function submitCheck()
     {
-        $check = DayCheck::find($this->selectedCheckId);
+        $check = $this->selectedCheck;
+        if (!$check) return;
 
         // Basic validation: all items must have a value
         foreach ($check->items as $itemId) {
@@ -206,8 +232,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </flux:card>
     </div>
 
-    <flux:modal name="day-check-modal" variant="full">
-        <div class="space-y-6" wire:poll.60s="save">
+    <flux:modal name="day-check-modal" flyout position="right" class="w-[30rem] lg:w-[40rem]" wire:poll.60s="save">
+        <div class="space-y-6">
             <div>
                 <flux:heading size="lg">{{ __('app.day_check.view_items') }}</flux:heading>
                 <flux:subheading>{{ $this->selectedCheck?->user->name }} - {{ $this->selectedCheck ? \Morilog\Jalali\Jalalian::fromDateTime($this->selectedCheck->created_at)->format('Y/m/d') : '' }}</flux:subheading>
@@ -215,11 +241,16 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
             <div class="space-y-4">
                 @if($this->selectedCheck)
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div class="space-y-4">
                         @foreach($this->checkItems as $item)
-                            <flux:card class="p-4 flex flex-col justify-between">
+                            @php
+                                $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
+                                $actual = isset($this->item_checks[$item->ItemID]) && $this->item_checks[$item->ItemID] !== '' ? (float)$this->item_checks[$item->ItemID] : null;
+                                $hasDiff = $actual !== null && $actual != $expected;
+                            @endphp
+                            <flux:card class="p-4 {{ $hasDiff ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : '' }}">
                                 <div class="flex gap-4">
-                                    <div class="w-20 h-20 flex-shrink-0 bg-zinc-100 rounded overflow-hidden">
+                                    <div class="w-16 h-16 flex-shrink-0 bg-zinc-100 rounded overflow-hidden relative">
                                         @if($item->image?->Thumbnail)
                                             <img
                                                 src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
@@ -231,27 +262,39 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                                 <flux:icon icon="image-off" class="text-zinc-400" />
                                             </div>
                                         @endif
+
+                                        @if($hasDiff)
+                                            <div class="absolute inset-0 bg-red-500/20 flex items-center justify-center">
+                                                <flux:icon icon="circle-alert" variant="solid" class="text-red-600" />
+                                            </div>
+                                        @endif
                                     </div>
                                     <div class="flex-1 space-y-1">
                                         <div class="font-medium text-sm">{{ $item->Name }}</div>
                                         <div class="text-xs text-zinc-500">{{ $item->Number }}</div>
 
-                                        @if(Auth::user()->hasPermissionTo('warehouse_item_day_check_admin'))
-                                            <div class="text-xs font-semibold text-teal-600 mt-1">
-                                                {{ __('app.day_check.expected_stock') }}: {{ number_format($this->selectedCheck->item_stocks[$item->ItemID] ?? 0) }}
+                                        <div class="flex justify-between items-center mt-2">
+                                            <div class="text-xs font-semibold text-teal-600">
+                                                {{ __('app.day_check.expected_stock') }}: {{ number_format($expected) }}
                                             </div>
-                                        @endif
+                                            @if($actual !== null)
+                                                <div class="text-xs font-semibold {{ $hasDiff ? 'text-red-600' : 'text-zinc-600' }}">
+                                                    {{ __('app.day_check.actual_stock') }}: {{ number_format($actual) }}
+                                                </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="mt-4">
-                                    <flux:input
-                                        type="number"
-                                        size="sm"
-                                        label="{{ __('app.day_check.actual_stock') }}"
-                                        wire:model="item_checks.{{ $item->ItemID }}"
-                                        :disabled="$this->selectedCheck->status !== 'check' && $this->selectedCheck->status !== 'reject'"
-                                    />
-                                </div>
+                                @if(($this->selectedCheck->status === 'check' || $this->selectedCheck->status === 'reject') && $this->selectedCheck->user_id === Auth::id())
+                                    <div class="mt-4">
+                                        <flux:input
+                                            type="number"
+                                            size="sm"
+                                            label="{{ __('app.day_check.actual_stock') }}"
+                                            wire:model.live="item_checks.{{ $item->ItemID }}"
+                                        />
+                                    </div>
+                                @endif
                             </flux:card>
                         @endforeach
                     </div>
@@ -270,7 +313,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                         />
                     @endif
 
-                    <div class="flex gap-2">
+                    <div class="flex flex-col gap-2">
                         @if(($this->selectedCheck->status === 'check' || $this->selectedCheck->status === 'reject') && $this->selectedCheck->user_id === Auth::id())
                             <flux:button variant="primary" color="orange" class="w-full" wire:click="submitCheck">
                                 {{ __('app.day_check.submit_check') }}
@@ -278,12 +321,14 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                         @endif
 
                         @if($this->selectedCheck->status === 'send' && Auth::user()->hasPermissionTo('warehouse_item_day_check_admin'))
-                            <flux:button variant="primary" color="green" class="w-full" wire:click="approve">
-                                {{ __('app.day_check.approve_check') }}
-                            </flux:button>
-                            <flux:button variant="primary" color="red" class="w-full" wire:click="reject">
-                                {{ __('app.day_check.reject_check') }}
-                            </flux:button>
+                            <div class="flex gap-2 w-full">
+                                <flux:button variant="primary" color="green" class="flex-1" wire:click="approve">
+                                    {{ __('app.day_check.approve_check') }}
+                                </flux:button>
+                                <flux:button variant="primary" color="red" class="flex-1" wire:click="reject">
+                                    {{ __('app.day_check.reject_check') }}
+                                </flux:button>
+                            </div>
                         @endif
                     </div>
                 @endif
