@@ -20,9 +20,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
         return Cache::remember('warehouse_dashboard_overview_in_stock_'.$fiscalYearRef, now()->addMinutes(10), function () use ($fiscalYearRef) {
             return [
-                'total' => Item::query()->whereInStock($fiscalYearRef)->count(),
-                'without_image' => Item::query()->whereInStock($fiscalYearRef)->doesntHave('image')->count(),
-                'without_irancode' => Item::query()->whereInStock($fiscalYearRef)->where(function ($q) {
+                'total' => Item::query()->where('CodingGroupRef', '!=', 584)->whereInStock($fiscalYearRef)->count(),
+                'without_image' => Item::query()->where('CodingGroupRef', '!=', 584)->whereInStock($fiscalYearRef)->doesntHave('image')->count(),
+                'without_irancode' => Item::query()->where('CodingGroupRef', '!=', 584)->whereInStock($fiscalYearRef)->where(function ($q) {
                     $q->whereNull('IranCode')->orWhere('IranCode', '=', '');
                 })->count(),
             ];

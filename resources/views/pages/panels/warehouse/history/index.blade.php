@@ -531,6 +531,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
         <flux:table :paginate="$this->items">
             <flux:table.columns>
+                <flux:table.column>#</flux:table.column>
                 <flux:table.column>{{ __('app.warehouse_item_site_and_media_column') }}</flux:table.column>
                 <flux:table.column>{{ __('app.code') }}</flux:table.column>
                 <flux:table.column>{{ __('app.title') }}</flux:table.column>
@@ -556,8 +557,9 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             </flux:table.columns>
 
             <flux:table.rows>
-                @foreach($this->items as $item)
+                @foreach($this->items as $index => $item)
                     <flux:table.row :key="$item->ItemID">
+                        <flux:table.cell>{{ $this->items->firstItem() + $index }}</flux:table.cell>
                         <flux:table.cell class="align-top max-w-[16rem]">
                             <div class="flex flex-col gap-2">
                                 <div class="flex items-start gap-2">
