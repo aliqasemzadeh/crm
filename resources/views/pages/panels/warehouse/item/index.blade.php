@@ -34,8 +34,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
     public string $sortBy = 'created_desc';
 
-    public int $perPage = 100;
-
     protected $queryString = [
         'search' => ['except' => ''],
         'groupingFilter' => ['except' => ''],
@@ -44,7 +42,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         'iranCodeFilter' => ['except' => ''],
         'codePrefix' => ['except' => ''],
         'sortBy' => ['except' => 'created_desc'],
-        'perPage' => ['except' => 100],
+        'page' => ['except' => 1],
     ];
 
     public function mount(): void
@@ -280,17 +278,10 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             ->tap(fn (Builder $query) => $this->applySort($query, $fiscalYearRef));
     }
 
-    public function loadMore(): void
-    {
-        if ($this->perPage < 1000) {
-            $this->perPage += 100;
-        }
-    }
-
     #[Computed]
     public function items()
     {
-        return $this->itemsBaseQuery()->paginate($this->perPage);
+        return $this->itemsBaseQuery()->paginate(300);
     }
 
     /**
@@ -331,49 +322,41 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         $this->iranCodeFilter = '';
         $this->codePrefix = '';
         $this->sortBy = 'created_desc';
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingSearch(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingGroupingFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingStatusFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingStockFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingIranCodeFilter(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingCodePrefix(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
     public function updatingSortBy(): void
     {
-        $this->perPage = 100;
         $this->resetPage();
     }
 
@@ -510,21 +493,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         </div>
     </flux:card>
 
-    <div x-data="{
-        observe() {
-            let observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        @this.loadMore()
-                    }
-                })
-            }, {
-                rootMargin: '200px',
-            })
-            observer.observe(this.$refs.loadMore)
-        }
-    }" x-init="observe()">
-        <flux:table :paginate="$this->items">
+    <flux:table :paginate="$this->items">
         <flux:table.columns>
             <flux:table.column>#</flux:table.column>
             <flux:table.column>{{ __('app.warehouse_item_site_and_media_column') }}</flux:table.column>
@@ -640,13 +609,6 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             @endforeach
         </flux:table.rows>
     </flux:table>
-
-    @if ($this->items->hasMorePages() && $this->perPage < 1000)
-        <div x-ref="loadMore" class="flex justify-center py-4">
-            <flux:icon icon="loading" class="size-6 text-teal-600 animate-spin" />
-        </div>
-    @endif
-    </div>
     </div>
 
     @php
