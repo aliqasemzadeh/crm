@@ -201,8 +201,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                     <div class="space-y-1">
                                         <flux:field>
                                             <flux:label>{{ __('app.day_check.item_name') }}</flux:label>
-                                            <div class="font-bold text-sm truncate">{{ $item->Name }}</div>
-                                            <flux:description>{{ $item->Number }}</flux:description>
+                                            <div class="font-bold text-sm truncate">{{ $item->Title }}</div>
+                                            <flux:description>{{ $item->Code }}</flux:description>
                                         </flux:field>
                                         <div class="flex flex-col mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
                                             <div class="flex justify-between text-xs">
