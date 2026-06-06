@@ -25,11 +25,11 @@ class DayCheckCreationCommand extends Command
      */
     public function handle()
     {
-        $permissionName = 'warehouse_item_day_check';
-        $users = \App\Models\User::permission($permissionName)->get();
+        $userIds = config('main.warehouse_users', []);
+        $users = \App\Models\User::whereIn('id', $userIds)->get();
 
         if ($users->isEmpty()) {
-            $this->info('No users found with permission: ' . $permissionName);
+            $this->info('No users found in config main.warehouse_users');
             return;
         }
 
