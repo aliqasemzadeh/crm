@@ -229,7 +229,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
                                         @if($hasDiff)
                                             <div class="absolute inset-0 bg-red-500/20 flex items-center justify-center">
-                                                <flux:icon icon="circle-alert" variant="solid" class="text-red-600" />
+                                                <flux:icon icon="circle-alert" class="text-red-600" />
                                             </div>
                                         @endif
                                     </div>

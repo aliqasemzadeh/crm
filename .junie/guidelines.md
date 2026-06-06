@@ -84,3 +84,4 @@ new class extends Component {
         Flux::modal('confirm')->close();
         // Closes all modals on the page...
         Flux::modals()->close();
+40-There is no variant="solid"
