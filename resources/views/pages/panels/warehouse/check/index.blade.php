@@ -18,6 +18,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     public $search = '';
     public $selectedCheckId;
     public $item_checks = [];
+    public $mismatchedItems = [];
     public $user_comment = '';
     public $admin_comment = '';
     public $activeTab = 'items';
@@ -79,6 +80,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
         }
 
         $this->selectedCheckId = $id;
+        $this->mismatchedItems = [];
         $this->item_checks = $check->item_checks ?? [];
 
         // Ensure all items have a value in item_checks array
@@ -121,12 +123,28 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             }
         }
 
+        // Check each item against the system stock and mark mismatches
+        $this->mismatchedItems = [];
+        $stocks = $check->item_stocks ?? [];
+        foreach ($check->items as $itemId) {
+            $expected = (float) ($stocks[$itemId] ?? 0);
+            $actual = (float) $this->item_checks[$itemId];
+            if ($actual != $expected) {
+                $this->mismatchedItems[] = $itemId;
+            }
+        }
+
         $check->update([
             'item_checks' => $this->item_checks,
             'user_comment' => $this->user_comment,
             'status' => 'send',
             'check_at' => now(),
         ]);
+
+        if (!empty($this->mismatchedItems)) {
+            Flux::toast(__('app.day_check.mismatch_found'), variant: 'warning');
+            return;
+        }
 
         $this->modal('day-check-modal')->close();
         Flux::toast(__('app.saved_successfully', ['name' => __('app.day_check.title')]));
@@ -218,7 +236,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                 $isAdmin = Auth::user()->hasPermissionTo('warehouse_item_day_check_admin');
                                 $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
                                 $actual = isset($this->item_checks[$item->ItemID]) && $this->item_checks[$item->ItemID] !== '' ? (float)$this->item_checks[$item->ItemID] : null;
-                                $hasDiff = $isAdmin && $actual !== null && $actual != $expected;
+                                $hasDiff = ($isAdmin && $actual !== null && $actual != $expected) || in_array($item->ItemID, $this->mismatchedItems);
                             @endphp
                             <flux:card class="p-4 {{ $hasDiff ? 'border-red-500 bg-red-50 dark:bg-red-900/10' : '' }}">
                                 <div class="flex gap-4">

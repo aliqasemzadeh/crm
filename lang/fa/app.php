@@ -122,6 +122,7 @@ return [
         'actual_stock' => 'موجودی واقعی',
         'view_items' => 'مشاهده اقلام',
         'submit_check' => 'ثبت و ارسال بررسی',
+        'mismatch_found' => 'موجودی برخی اقلام با موجودی سیستم مطابقت ندارد. لطفاً اقلام قرمز را بررسی کنید.',
         'approve_check' => 'تایید بررسی',
         'reject_check' => 'رد بررسی',
         'admin_check' => [
