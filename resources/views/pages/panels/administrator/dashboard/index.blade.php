@@ -31,6 +31,9 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         $items = \App\Models\Sepidar\INV\ItemStockSummary::query()
             ->where('FiscalYearRef', $fiscalYearRef)
             ->where('Quantity', '>', 0)
+            ->whereHas('item', function ($query) {
+                $query->where('CodingGroupRef', '!=', 584);
+            })
             ->get();
 
         $itemIds = $items->pluck('ItemRef')->unique();
@@ -61,7 +64,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
             ->where('FiscalYearRef', $this->fiscalYearRef)
             ->where('Quantity', '>', 0)
             ->whereHas('item', function ($query) {
-                $query->whereNull('IranCode');
+                $query->whereNull('IranCode')->where('CodingGroupRef', '!=', 584);
             })
             ->count();
     }
@@ -71,6 +74,9 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     {
         return \App\Models\Sepidar\INV\ItemStockSummary::query()
             ->where('FiscalYearRef', $this->fiscalYearRef)
+            ->whereHas('item', function ($query) {
+                $query->where('CodingGroupRef', '!=', 584);
+            })
             ->count();
     }
 
@@ -80,6 +86,9 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         return \App\Models\Sepidar\INV\ItemStockSummary::query()
             ->where('FiscalYearRef', $this->fiscalYearRef)
             ->where('Quantity', '>', 0)
+            ->whereHas('item', function ($query) {
+                $query->where('CodingGroupRef', '!=', 584);
+            })
             ->whereHas('item.image')
             ->count();
     }
