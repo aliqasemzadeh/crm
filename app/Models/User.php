@@ -112,6 +112,11 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function activityLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserActivityLog::class);
+    }
+
     public function getSignature()
     {
         $signatures = json_decode($this->signature, true);

@@ -1490,4 +1490,13 @@ return [
     'warehouse_history_last_purchase' => 'آخرین تأمین',
     'warehouse_history_never_sold' => 'بدون فروش',
     'warehouse_history_never_purchased' => 'بدون تأمین',
+    'route_logs' => [
+        'title' => 'لاگ‌های دسترسی به این صفحه',
+        'user' => 'کاربر',
+        'date' => 'تاریخ',
+        'ip' => 'IP',
+        'method' => 'متد',
+        'url' => 'آدرس',
+        'no_logs_found' => 'هیچ لاگی برای این صفحه یافت نشد.',
+    ],
 ];
