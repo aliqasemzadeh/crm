@@ -298,6 +298,10 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                                 '[&_input]:!border-red-500 [&_input]:focus:!ring-red-500': state === 'wrong'
                                             }"
                                         />
+                                        <div x-show="state === 'wrong'" x-cloak class="mt-2 flex items-center gap-1 text-xs text-red-600">
+                                            <flux:icon icon="circle-alert" class="size-4" />
+                                            <span>{{ __('app.day_check.system_stock') }}: <span class="font-semibold" x-text="expected"></span></span>
+                                        </div>
                                     </div>
                                 @endif
                             </flux:card>
