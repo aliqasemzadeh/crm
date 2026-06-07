@@ -151,6 +151,16 @@
 <flux:main>
     {{ $slot }}
 </flux:main>
+
+@role('administrator')
+<div class="fixed bottom-4 left-4 z-50">
+    <flux:tooltip content="{{ __('app.route_logs.title') }}">
+        <flux:button icon="history" variant="ghost" x-on:click="$dispatch('modal-show', { name: 'user-route-logs' })" />
+    </flux:tooltip>
+</div>
+<livewire:user-route-logs />
+@endrole
+
 <livewire:crm.call.send-sms :key="'panels-accounting-send-sms'" />
 @include('partials.foot')
 </body>
