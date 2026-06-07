@@ -276,12 +276,27 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                                     </div>
                                 </div>
                                 @if(($this->selectedCheck->status === 'check' || $this->selectedCheck->status === 'reject') && $this->selectedCheck->user_id === Auth::id())
-                                    <div class="mt-4">
+                                    <div
+                                        class="mt-4"
+                                        x-data="{
+                                            expected: {{ $expected }},
+                                            value: @js((string)($this->item_checks[$item->ItemID] ?? '')),
+                                            get state() {
+                                                if (this.value === '' || this.value === null) return 'empty';
+                                                return Number(this.value) === this.expected ? 'correct' : 'wrong';
+                                            }
+                                        }"
+                                    >
                                         <flux:input
                                             type="number"
                                             size="sm"
                                             label="{{ __('app.day_check.actual_stock') }}"
                                             wire:model.live="item_checks.{{ $item->ItemID }}"
+                                            x-on:input="value = $event.target.value"
+                                            ::class="{
+                                                '[&_input]:!border-green-500 [&_input]:focus:!ring-green-500': state === 'correct',
+                                                '[&_input]:!border-red-500 [&_input]:focus:!ring-red-500': state === 'wrong'
+                                            }"
                                         />
                                     </div>
                                 @endif
