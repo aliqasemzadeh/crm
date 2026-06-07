@@ -53,7 +53,7 @@ new class extends Component
                                 </div>
                             </flux:table.cell>
                             <flux:table.cell dir="ltr" class="text-right">
-                                {{ \Morilog\Jalali\Jalali::fromDateTime($log->created_at)->format('Y/m/d H:i') }}
+                                {{ \Morilog\Jalali\Jalalian::fromDateTime($log->created_at)->format('Y/m/d H:i') }}
                             </flux:table.cell>
                             <flux:table.cell dir="ltr" class="text-right">
                                 {{ $log->ip }}
