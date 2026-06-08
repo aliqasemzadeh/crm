@@ -193,6 +193,7 @@ class Party extends Component
         return ReceiptCheque::query()
             ->with('dl')
             ->where('DlRef', $dlRef)
+            ->whereIn('State', [1, 5])
             ->orderByDesc('Date')
             ->orderByDesc('ReceiptChequeId')
             ->paginate(25, ['*'], 'partyReceiptCheques');
@@ -210,6 +211,7 @@ class Party extends Component
         return PaymentCheque::query()
             ->with('dl')
             ->where('DlRef', $dlRef)
+            ->whereIn('State', [1, 2])
             ->orderByDesc('Date')
             ->orderByDesc('PaymentChequeId')
             ->paginate(25, ['*'], 'partyPaymentCheques');

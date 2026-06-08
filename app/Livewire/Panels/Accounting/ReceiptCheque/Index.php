@@ -35,10 +35,8 @@ class Index extends Component
         $cacheKey = "receipt_cheque_stats_fiscal_year_{$fiscalYearRef}";
 
         return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef) {
-            $cheques = ReceiptCheque::whereHas('dl', function($q) use ($fiscalYearRef) {
-                // Assuming fiscal year filter might be needed, but usually cheques are across years
-                // For consistency with other pages, let's filter if possible or just get all for current context
-            })->whereYear('Date', '>', 2000) // basic filter
+            $cheques = ReceiptCheque::whereIn('State', [1, 5])
+                ->whereYear('Date', '>', 2000) // basic filter
                 ->select('Amount', 'Date')
                 ->get();
 
@@ -70,6 +68,7 @@ class Index extends Component
     {
         return ReceiptCheque::query()
             ->with('dl')
+            ->whereIn('State', [1, 5])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('Number', 'like', '%' . $this->search . '%')
@@ -91,6 +90,7 @@ class Index extends Component
     public function recentCheques()
     {
         return ReceiptCheque::with('dl')
+            ->whereIn('State', [1, 5])
             ->orderBy('Date', 'desc')
             ->orderBy('ReceiptChequeId', 'desc')
             ->take(50)
