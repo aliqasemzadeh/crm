@@ -1195,6 +1195,7 @@ return [
         'reviewer' => 'بررسی کننده',
         'watcher' => 'مشاهده گر',
         'checklist' => 'چک لیست',
+        'checklist_not_completed' => 'امکان تغییر وضعیت به انجام شده وجود ندارد، زیرا تمام موارد چک‌لیست تکمیل نشده‌اند.',
         'checklist_add' => 'افزودن آیتم',
         'checklist_empty' => 'هنوز آیتمی برای چک لیست ثبت نشده است.',
         'checklist_create_title' => 'افزودن آیتم چک لیست',

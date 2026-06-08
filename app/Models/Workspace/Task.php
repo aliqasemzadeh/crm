@@ -64,6 +64,12 @@ class Task extends Model
     protected static function booted(): void
     {
         static::saving(function (Task $task) {
+            if ($task->isDirty('status') && $task->status === 'done') {
+                if ($task->checklists()->where('is_done', false)->exists()) {
+                    throw new \Exception(__('app.task.checklist_not_completed'));
+                }
+            }
+
             if ($task->isDirty('status')) {
                 if ($task->status === 'done') {
                     $task->done_at = now();

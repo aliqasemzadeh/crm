@@ -79,10 +79,14 @@ class Edit extends Component
         $validated['locked_by'] = $validated['is_locked'] ? ($this->task->locked_by ?: auth()->id()) : null;
         $validated['locked_at'] = $validated['is_locked'] ? ($this->task->locked_at ?: now()) : null;
 
-        $this->task->update($validated);
-        Flux::toast(__('app.task.notifications.updated'));
-
-        $this->dispatch('panels.workspace.dashboard.index.render');
+        try {
+            $this->task->update($validated);
+            Flux::toast(__('app.task.notifications.updated'));
+            $this->dispatch('panels.workspace.dashboard.index.render');
+            $this->js('$flux.modal("panels.workspace.dashboard.task.edit.modal").close()');
+        } catch (\Exception $e) {
+            Flux::toast($e->getMessage(), variant: 'danger');
+        }
     }
 
     public function render()
