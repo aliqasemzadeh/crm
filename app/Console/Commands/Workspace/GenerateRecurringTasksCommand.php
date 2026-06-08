@@ -38,8 +38,15 @@ class GenerateRecurringTasksCommand extends Command
             $startsAt = $dayStart->copy()->setTime(8, 0);
             $dueAt = $dayStart->copy()->setTime(23, 55);
 
+            // Update title with Jalali date and remove old dates
+            $jalaliDate = \Morilog\Jalali\Jalalian::fromDateTime($nextDay)->format('Y/m/d');
+            $newTitle = $template->title;
+            // Remove pattern: "تاریخ:YYYY/MM/DD" or "تاریخ: YYYY/MM/DD"
+            $newTitle = preg_replace('/تاریخ:\s*\d{4}\/\d{2}\/\d{2}/u', '', $newTitle);
+            $newTitle = trim($newTitle) . ' ' . "تاریخ:$jalaliDate";
+
             $task = Task::create([
-                'title' => $template->title,
+                'title' => $newTitle,
                 'description' => $template->description,
                 'status' => 'planning',
                 'order' => 0,
@@ -109,11 +116,8 @@ class GenerateRecurringTasksCommand extends Command
             }
 
             $template->update([
-                'repeat_type' => 'none',
-                'repeat_weekday' => null,
-                'repeat_monthday' => null,
                 'last_repeated_at' => $now,
-                'next_repeat_at' => null,
+                'next_repeat_at' => $nextScheduled,
             ]);
         }
 
