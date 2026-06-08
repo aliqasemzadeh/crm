@@ -60,9 +60,8 @@ class Index extends Component
             }
 
             // Uncashed Cheques
-            $today = now()->startOfDay();
-            $uncashedReceiptsSum = ReceiptCheque::where('Date', '>', $today)->sum('Amount');
-            $uncashedPaymentsSum = PaymentCheque::where('Date', '>', $today)->sum('Amount');
+            $uncashedReceiptsSum = ReceiptCheque::whereIn('State', [1, 5])->sum('Amount');
+            $uncashedPaymentsSum = PaymentCheque::whereIn('State', [1, 2])->sum('Amount');
 
             $totalReceipts = array_sum($monthlyReceipts);
             $totalExpenses = array_sum($monthlyExpenses);

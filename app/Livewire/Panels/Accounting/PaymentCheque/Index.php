@@ -35,7 +35,8 @@ class Index extends Component
         $cacheKey = "payment_cheque_stats_fiscal_year_{$fiscalYearRef}";
 
         return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef) {
-            $cheques = PaymentCheque::whereYear('Date', '>', 2000)
+            $cheques = PaymentCheque::whereIn('State', [1, 2])
+                ->whereYear('Date', '>', 2000)
                 ->select('Amount', 'Date')
                 ->get();
 
@@ -67,6 +68,7 @@ class Index extends Component
     {
         return PaymentCheque::query()
             ->with('dl')
+            ->whereIn('State', [1, 2])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('Number', 'like', '%' . $this->search . '%')
@@ -88,6 +90,7 @@ class Index extends Component
     public function recentCheques()
     {
         return PaymentCheque::with('dl')
+            ->whereIn('State', [1, 2])
             ->orderBy('Date', 'desc')
             ->orderBy('PaymentChequeId', 'desc')
             ->take(50)
