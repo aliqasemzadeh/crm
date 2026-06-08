@@ -26,7 +26,8 @@ class DayCheckCreationCommand extends Command
      */
     public function handle()
     {
-        $userIds = config('main.warehouse_users', []);
+        $warehouseUsers = config('main.warehouse_users', []);
+        $userIds = array_keys($warehouseUsers);
         $users = \App\Models\User::whereIn('id', $userIds)->get();
 
         if ($users->isEmpty()) {
@@ -38,6 +39,8 @@ class DayCheckCreationCommand extends Command
         $thirtyDaysAgo = now()->subDays(30);
 
         foreach ($users as $user) {
+            $itemCount = $warehouseUsers[$user->id] ?? 30;
+
             // Get items checked by this user in the last 30 days
             $recentlyCheckedItemIds = \App\Models\Warehouse\DayCheck::where('user_id', $user->id)
                 ->where('created_at', '>=', $thirtyDaysAgo)
@@ -51,15 +54,15 @@ class DayCheckCreationCommand extends Command
             $items = \App\Models\Sepidar\INV\Item::whereInStock($fiscalYearRef)
                 ->whereNotIn('ItemID', $recentlyCheckedItemIds)
                 ->inRandomOrder()
-                ->limit(30)
+                ->limit($itemCount)
                 ->get();
 
-            if ($items->count() < 30) {
+            if ($items->count() < $itemCount) {
                 // If not enough items, fill with any items in stock (excluding those already selected)
                 $additionalItems = \App\Models\Sepidar\INV\Item::whereInStock($fiscalYearRef)
                     ->whereNotIn('ItemID', array_merge($recentlyCheckedItemIds, $items->pluck('ItemID')->toArray()))
                     ->inRandomOrder()
-                    ->limit(30 - $items->count())
+                    ->limit($itemCount - $items->count())
                     ->get();
 
                 $items = $items->concat($additionalItems);
