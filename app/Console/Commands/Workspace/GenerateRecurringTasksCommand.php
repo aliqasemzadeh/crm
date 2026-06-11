@@ -117,7 +117,8 @@ class GenerateRecurringTasksCommand extends Command
 
             $template->update([
                 'last_repeated_at' => $now,
-                'next_repeat_at' => $nextScheduled,
+                'next_repeat_at' => null,
+                'repeat_type' => 'none',
             ]);
         }
 
