@@ -70,6 +70,8 @@ return [
     'viewed_users' => 'کاربران مشاهده کننده',
     'no_announcements_found' => 'هیچ اطلاعیه‌ای یافت نشد.',
 
+    'total_sales_quantity' => 'تعداد کل فروش',
+    'total_sales_amount' => 'مبلغ کل فروش',
     'invoice_details' => 'جزئیات فاکتور',
     'invoice_number' => 'شماره فاکتور',
     'customer' => 'مشتری',
