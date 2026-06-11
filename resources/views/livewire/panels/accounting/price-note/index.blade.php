@@ -5,6 +5,7 @@
     <livewire:panels.accounting.grouping.item.receipt />
     <livewire:panels.accounting.invoice.view />
     <livewire:panels.accounting.inventory-receipt.view />
+    <livewire:panels.accounting.price-note.invoices :grouping-id="$grouping->GroupingID" />
 
     <div class="flex overflow-x-auto md:grid md:grid-cols-6 gap-4 pb-2 scrollbar-hide">
         @foreach($this->groupings as $groupingItem)

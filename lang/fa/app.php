@@ -72,6 +72,9 @@ return [
 
     'total_sales_quantity' => 'تعداد کل فروش',
     'total_sales_amount' => 'مبلغ کل فروش',
+    'sales_invoices' => 'فاکتورهای فروش',
+    'list_of_invoices_for_selected_group' => 'لیست فاکتورهای فروش برای گروه انتخاب شده',
+    'view_invoice' => 'مشاهده فاکتور',
     'invoice_details' => 'جزئیات فاکتور',
     'invoice_number' => 'شماره فاکتور',
     'customer' => 'مشتری',
