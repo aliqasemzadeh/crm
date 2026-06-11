@@ -20,27 +20,7 @@
         @endforeach
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <flux:card class="flex items-center gap-4">
-            <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <flux:icon icon="shopping-cart" class="text-blue-600 dark:text-blue-400" />
-            </div>
-            <div>
-                <flux:subheading>{{ __('app.total_sales_quantity') }}</flux:subheading>
-                <flux:heading size="xl">{{ number_format($this->salesStats['total_quantity']) }}</flux:heading>
-            </div>
-        </flux:card>
-
-        <flux:card class="flex items-center gap-4">
-            <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <flux:icon icon="banknote" class="text-green-600 dark:text-green-400" />
-            </div>
-            <div>
-                <flux:subheading>{{ __('app.total_sales_amount') }}</flux:subheading>
-                <flux:heading size="xl">{{ number_format($this->salesStats['total_amount']) }} {{ __('app.rial') }}</flux:heading>
-            </div>
-        </flux:card>
-    </div>
+    <livewire:panels.accounting.price-note.stats :grouping-id="$grouping->GroupingID" :key="'stats-'.$grouping->GroupingID" lazy />
 
     <div class="mt-4">
 
