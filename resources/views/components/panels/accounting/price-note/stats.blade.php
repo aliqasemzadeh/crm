@@ -45,9 +45,8 @@ new class extends Component
     public function placeholder()
     {
         return <<<'HTML'
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 animate-pulse">
-            <div class="h-24 bg-gray-200 dark:bg-zinc-800 rounded-xl"></div>
-            <div class="h-24 bg-gray-200 dark:bg-zinc-800 rounded-xl"></div>
+        <div>
+            <flux:icon.loading />
         </div>
         HTML;
     }
