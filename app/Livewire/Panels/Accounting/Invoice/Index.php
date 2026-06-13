@@ -19,6 +19,7 @@ class Index extends Component
     public string $sortDirection = 'desc';
 
     public string $search = '';
+    public string $saleType = 'all';
 
     public function sort(string $column): void
     {
@@ -34,10 +35,17 @@ class Index extends Component
     public function invoiceStats()
     {
         $fiscalYearRef = config('sepidar.FiscalYearRef');
-        $cacheKey = "invoice_stats_fiscal_year_{$fiscalYearRef}";
+        $cacheKey = "invoice_stats_fiscal_year_{$fiscalYearRef}_{$this->saleType}";
 
         return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef) {
             $invoices = Invoice::where('FiscalYearRef', $fiscalYearRef)
+                ->when($this->saleType !== 'all', function ($query) {
+                    if ($this->saleType === 'official') {
+                        $query->where('SaleTypeRef', 1);
+                    } else {
+                        $query->where('SaleTypeRef', '!=', 1);
+                    }
+                })
                 ->select('Price', 'Date')
                 ->get();
 
@@ -61,7 +69,9 @@ class Index extends Component
     public static function clearCache()
     {
         $fiscalYearRef = config('sepidar.FiscalYearRef');
-        Cache::forget("invoice_stats_fiscal_year_{$fiscalYearRef}");
+        Cache::forget("invoice_stats_fiscal_year_{$fiscalYearRef}_all");
+        Cache::forget("invoice_stats_fiscal_year_{$fiscalYearRef}_official");
+        Cache::forget("invoice_stats_fiscal_year_{$fiscalYearRef}_unofficial");
     }
 
     #[Computed]
@@ -69,6 +79,13 @@ class Index extends Component
     {
         return Invoice::query()
             ->with(['creator'])
+            ->when($this->saleType !== 'all', function ($query) {
+                if ($this->saleType === 'official') {
+                    $query->where('SaleTypeRef', 1);
+                } else {
+                    $query->where('SaleTypeRef', '!=', 1);
+                }
+            })
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('CustomerRealName', 'like', '%' . $this->search . '%')
