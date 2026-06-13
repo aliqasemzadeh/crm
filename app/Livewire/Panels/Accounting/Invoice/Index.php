@@ -7,6 +7,7 @@ use App\Models\Sepidar\SLS\Invoice;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Morilog\Jalali\Jalalian;
@@ -19,6 +20,8 @@ class Index extends Component
     public string $sortDirection = 'desc';
 
     public string $search = '';
+
+    #[Url]
     public string $saleType = 'all';
 
     public function sort(string $column): void
