@@ -98,11 +98,6 @@ class PriceTextMessageNotificationCommand extends Command
         $message = "";
         $now = Carbon::now('Asia/Tehran');
 
-        // Check if it's Friday
-        if ($now->isFriday()) {
-            $this->info(__('currencies.friday_no_notification'));
-            return;
-        }
         if ($now->hour >= 8 && $now->hour < 21) {
             foreach ($symbols as $key => $symbol) {
                 if($symbol['api']) {
