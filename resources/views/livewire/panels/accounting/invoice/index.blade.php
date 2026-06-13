@@ -12,7 +12,7 @@
 
             <div class="flex items-center gap-4">
                 <div wire:loading wire:target="saleType">
-                    <flux:icon.spinner class="animate-spin text-zinc-400" />
+                    <flux:icon.loader-circle class="animate-spin text-zinc-400" />
                 </div>
 
                 <flux:tabs variant="segmented" class="-my-px h-auto! max-md:hidden" wire:model.live="saleType">
@@ -28,7 +28,7 @@
 
     <div class="relative">
         <div wire:loading.delay.longer wire:target="saleType, search" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
-            <flux:icon.spinner class="animate-spin text-zinc-500 w-10 h-10" />
+            <flux:icon.loader-circle class="animate-spin text-zinc-500 w-10 h-10" />
         </div>
 
         <div class="space-y-6 mb-10">
