@@ -10,17 +10,28 @@
                 <flux:subheading size="lg" class="mb-6">{{ __('app.invoices_description') }}</flux:subheading>
             </div>
 
-            <flux:tabs variant="segmented" size="sm" class="-my-px h-auto! max-md:hidden" wire:model.live="saleType">
-                <flux:tab name="all">{{ __('app.all') }}</flux:tab>
-                <flux:tab name="official">{{ __('app.official') }}</flux:tab>
-                <flux:tab name="unofficial">{{ __('app.unofficial') }}</flux:tab>
-            </flux:tabs>
+            <div class="flex items-center gap-4">
+                <div wire:loading wire:target="saleType">
+                    <flux:icon.spinner class="animate-spin text-zinc-400" />
+                </div>
+
+                <flux:tabs variant="segmented" class="-my-px h-auto! max-md:hidden" wire:model.live="saleType">
+                    <flux:tab name="all">{{ __('app.all') }}</flux:tab>
+                    <flux:tab name="official">{{ __('app.official') }}</flux:tab>
+                    <flux:tab name="unofficial">{{ __('app.unofficial') }}</flux:tab>
+                </flux:tabs>
+            </div>
         </div>
 
         <flux:separator variant="subtle" />
     </div>
 
-    <div class="space-y-6 mb-10">
+    <div class="relative">
+        <div wire:loading.delay.longer wire:target="saleType, search" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+            <flux:icon.spinner class="animate-spin text-zinc-500 w-10 h-10" />
+        </div>
+
+        <div class="space-y-6 mb-10">
         @php
             $monthly = $this->invoiceStats['monthly'];
             $maxAmount = max($monthly);
@@ -128,4 +139,5 @@
             </flux:table.row>
         @endforeach
     </flux:table>
+    </div>
 </div>
