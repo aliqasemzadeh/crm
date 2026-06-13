@@ -9,6 +9,12 @@
                 <flux:heading size="xl" level="1">{{ __('app.invoices') }}</flux:heading>
                 <flux:subheading size="lg" class="mb-6">{{ __('app.invoices_description') }}</flux:subheading>
             </div>
+
+            <flux:tabs variant="segmented" size="sm" class="-my-px h-auto! max-md:hidden" wire:model.live="saleType">
+                <flux:tab name="all">{{ __('app.all') }}</flux:tab>
+                <flux:tab name="official">{{ __('app.official') }}</flux:tab>
+                <flux:tab name="unofficial">{{ __('app.unofficial') }}</flux:tab>
+            </flux:tabs>
         </div>
 
         <flux:separator variant="subtle" />
@@ -53,6 +59,12 @@
     <livewire:panels.accounting.invoice.view />
     <livewire:panels.accounting.inventory-receipt.view />
 
+
+    <div class="flex items-center justify-between gap-4 mb-4">
+        <div class="flex-1">
+            <flux:input wire:model.live.debounce.500ms="search" icon="search" placeholder="{{ __('app.search_placeholder') }}" />
+        </div>
+    </div>
 
     <flux:table :paginate="$this->invoices">
         <flux:table.columns>
