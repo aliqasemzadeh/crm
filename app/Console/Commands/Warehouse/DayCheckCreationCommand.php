@@ -26,6 +26,11 @@ class DayCheckCreationCommand extends Command
      */
     public function handle()
     {
+        if (now()->isFriday()) {
+            $this->info('Today is Friday. Skipping command execution.');
+            return;
+        }
+
         $warehouseUsers = config('main.warehouse_users', []);
         $userIds = array_keys($warehouseUsers);
         $users = \App\Models\User::whereIn('id', $userIds)->get();

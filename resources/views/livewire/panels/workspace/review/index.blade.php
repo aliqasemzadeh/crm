@@ -3,10 +3,25 @@
     <div class="flex items-center justify-between">
         <flux:heading size="xl">{{ __('app.task.review.list_title') }}</flux:heading>
 
-        <flux:radio.group wire:model.live="filter" variant="segmented">
-            <flux:radio value="pending" :label="__('app.task.review.filter_pending')" />
-            <flux:radio value="all" :label="__('app.task.review.filter_all')" />
-        </flux:radio.group>
+        <div class="flex items-center gap-2">
+            @if($this->tasks->where('approval_status', 'pending')->count() > 0)
+                <flux:button
+                    size="sm"
+                    variant="primary"
+                    color="green"
+                    icon="check-circle"
+                    wire:click="approveAll"
+                    wire:confirm="{{ __('app.task.review.approve_all_confirm') }}"
+                >
+                    {{ __('app.task.review.approve_all') }}
+                </flux:button>
+            @endif
+
+            <flux:radio.group wire:model.live="filter" variant="segmented">
+                <flux:radio value="pending" :label="__('app.task.review.filter_pending')" />
+                <flux:radio value="all" :label="__('app.task.review.filter_all')" />
+            </flux:radio.group>
+        </div>
     </div>
 
     <div class="space-y-4">
