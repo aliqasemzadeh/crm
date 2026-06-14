@@ -1258,6 +1258,9 @@ return [
             'task_users' => 'انجام دهندگان',
             'filter_pending' => 'در انتظار تایید',
             'filter_all' => 'همه موارد',
+            'approve_all' => 'تایید همه',
+            'approve_all_confirm' => 'آیا از تایید همه موارد در انتظار بررسی اطمینان دارید؟',
+            'approve_all_success' => 'تمامی موارد با موفقیت تایید شدند.',
         ],
         'activity' => [
             'modal_title' => 'فعالیت‌های وظیفه',

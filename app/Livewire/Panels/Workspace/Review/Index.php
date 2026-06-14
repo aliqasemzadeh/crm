@@ -79,6 +79,28 @@ class Index extends Component
         Flux::toast(__('app.task.review.success_message'));
     }
 
+    public function approveAll()
+    {
+        $tasks = Task::where('status', 'done')
+            ->where('approval_status', 'pending')
+            ->get();
+
+        if ($tasks->isEmpty()) {
+            Flux::toast(__('app.no_results_found'), variant: 'danger');
+            return;
+        }
+
+        foreach ($tasks as $task) {
+            $task->update([
+                'approval_status' => 'approved',
+                'approved_by' => auth()->id(),
+                'approved_at' => now(),
+            ]);
+        }
+
+        Flux::toast(__('app.task.review.approve_all_success'));
+    }
+
     #[On('panels.workspace.review.index.render')]
     #[Layout('layouts.panels.workspace')]
     public function render()

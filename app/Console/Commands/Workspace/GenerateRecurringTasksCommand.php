@@ -16,6 +16,11 @@ class GenerateRecurringTasksCommand extends Command
 
     public function handle(): int
     {
+        if (now()->isFriday()) {
+            $this->info('Today is Friday. Skipping command execution.');
+            return self::SUCCESS;
+        }
+
         $now = now();
 
         $templates = Task::query()
@@ -133,7 +138,7 @@ class GenerateRecurringTasksCommand extends Command
         if ($task->repeat_type === 'daily') {
             $next = $from->copy()->addDay()->startOfDay();
 
-            return $this->skipFridayUnlessMonthly($next, $task->repeat_type);
+            return $this->skipFriday($next);
         }
 
         if ($task->repeat_type === 'weekly') {
@@ -144,7 +149,7 @@ class GenerateRecurringTasksCommand extends Command
 
             $next = $from->copy()->addDays($daysUntil)->startOfDay();
 
-            return $this->skipFridayUnlessMonthly($next, $task->repeat_type);
+            return $this->skipFriday($next);
         }
 
         if ($task->repeat_type === 'monthly') {
@@ -152,19 +157,17 @@ class GenerateRecurringTasksCommand extends Command
             $target = $from->copy()->addMonthNoOverflow()->startOfMonth();
             $safeDay = min($monthDay, $target->daysInMonth);
 
-            return $target->copy()->day($safeDay)->startOfDay();
+            $next = $target->copy()->day($safeDay)->startOfDay();
+
+            return $this->skipFriday($next);
         }
 
         return null;
     }
 
-    private function skipFridayUnlessMonthly(Carbon $date, string $repeatType): Carbon
+    private function skipFriday(Carbon $date): Carbon
     {
         $d = $date->copy()->startOfDay();
-
-        if ($repeatType === 'monthly') {
-            return $d;
-        }
 
         while ((int) $d->dayOfWeek === Carbon::FRIDAY) {
             $d->addDay();
