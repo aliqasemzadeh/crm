@@ -29,7 +29,7 @@
                 <flux:subheading>{{ __('app.task.checklist_create_description') }}</flux:subheading>
             </div>
 
-            <flux:input wire:model.live="newChecklistTitle" :label="__('app.task.checklist_item_title')" />
+            <flux:input wire:model="newChecklistTitle" :label="__('app.task.checklist_item_title')" />
 
             <div class="w-full">
                 <flux:button type="submit" variant="primary" color="teal" class="w-full">
@@ -45,7 +45,7 @@
                 <flux:heading size="lg">{{ __('app.task.checklist_edit_title') }}</flux:heading>
             </div>
 
-            <flux:input wire:model.live="editingChecklistTitle" :label="__('app.task.checklist_item_title')" />
+            <flux:input wire:model="editingChecklistTitle" :label="__('app.task.checklist_item_title')" />
 
             <div class="w-full">
                 <flux:button type="submit" variant="primary" color="teal" class="w-full">
