@@ -35,6 +35,10 @@
                     @foreach ($colTasks as $task)
                         <flux:kanban.card wire:sort:item="{{ $task->id }}" wire:sort:handle wire:key="task-{{ $task->id }}">
                             <x-workspace.task.card :task="$task" event-prefix="panels.workspace.dashboard.task" />
+
+                            @if($task->checklists->isNotEmpty())
+                                <livewire:panels.workspace.dashboard.task.checklist :task="$task" :key="'checklist-'.$task->id" />
+                            @endif
                         </flux:kanban.card>
                     @endforeach
                 </flux:kanban.column.cards>
