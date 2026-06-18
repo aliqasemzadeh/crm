@@ -32,7 +32,9 @@ class PriceTextMessageNotificationCommand extends Command
         $phones = [
             "09177886099",
              "09177114358",
-             "09372263131"
+             "09372263131",
+            "09303979067",
+            "09164966900"
 
         ];
         $symbols = [
