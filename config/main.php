@@ -5,7 +5,7 @@ return [
         'socialite' => false
     ],
     'warehouse_users' => [
-        6 => 10,
-        11 => 30
+        6 => 15,
+        11 => 33
     ]
 ];
