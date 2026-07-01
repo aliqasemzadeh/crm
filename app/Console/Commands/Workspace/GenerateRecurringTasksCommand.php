@@ -27,9 +27,6 @@ class GenerateRecurringTasksCommand extends Command
 
         $templates = Task::query()
             ->whereIn('repeat_type', ['daily', 'weekly', 'monthly'])
-            ->where(function ($query) use ($now) {
-                $query->whereNull('next_repeat_at')->orWhere('next_repeat_at', '<=', $now);
-            })
             ->with(['users', 'checklists'])
             ->get();
 
