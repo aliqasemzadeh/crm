@@ -6,6 +6,7 @@ use App\Jobs\Sepidar\CheckInvoiceJob;
 use App\Models\LastRecordCheck;
 use App\Models\Sepidar\SLS\Invoice;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class AlertOnNewInvoiceCommand extends Command
 {
@@ -28,6 +29,7 @@ class AlertOnNewInvoiceCommand extends Command
      */
     public function handle()
     {
+        Log::info('Command app:sepidar:alert-on-new-invoice-command started.');
         $lastRecord = LastRecordCheck::firstOrCreate(['model' => 'Models\Sepidar\SLS\Invoice']);
         $invoices = Invoice::query()
             ->where('InvoiceId', '>', $lastRecord->last_record_id)
@@ -41,5 +43,6 @@ class AlertOnNewInvoiceCommand extends Command
             $lastRecord->last_record_id = $invoices->last()->InvoiceId;
             $lastRecord->save();
         }
+        Log::info('Command app:sepidar:alert-on-new-invoice-command finished.');
     }
 }

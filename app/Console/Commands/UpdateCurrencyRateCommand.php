@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 use App\Models\CurrencyRate;
 use App\Jobs\Notification\BaleSendMessageJob;
@@ -31,6 +32,7 @@ class UpdateCurrencyRateCommand extends Command
      */
     public function handle()
     {
+        Log::info('Command app:update-currency-rate started.');
         try {
             $response = Http::timeout(15)->withoutVerifying()->withOptions(["verify"=>false])->get('http://api.tetherland.com/currencies');
         } catch (\Exception $e) {
@@ -101,5 +103,6 @@ class UpdateCurrencyRateCommand extends Command
         } else {
             $this->info(__('currencies.outside_hours'));
         }
+        Log::info('Command app:update-currency-rate finished.');
     }
 }
