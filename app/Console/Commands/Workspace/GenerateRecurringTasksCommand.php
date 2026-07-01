@@ -7,6 +7,7 @@ use App\Models\Workspace\Task;
 use App\Models\Workspace\TaskChecklist;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class GenerateRecurringTasksCommand extends Command
 {
@@ -16,6 +17,7 @@ class GenerateRecurringTasksCommand extends Command
 
     public function handle(): int
     {
+        Log::info('Command app:workspace:generate-recurring-tasks started.');
         if (now()->isFriday()) {
             $this->info('Today is Friday. Skipping command execution.');
             return self::SUCCESS;
@@ -127,6 +129,7 @@ class GenerateRecurringTasksCommand extends Command
             ]);
         }
 
+        Log::info('Command app:workspace:generate-recurring-tasks finished.');
         return self::SUCCESS;
     }
 

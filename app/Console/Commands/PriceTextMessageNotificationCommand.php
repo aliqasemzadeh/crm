@@ -7,6 +7,7 @@ use App\Jobs\Notification\SendSmsMessageJob;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class PriceTextMessageNotificationCommand extends Command
 {
@@ -29,6 +30,7 @@ class PriceTextMessageNotificationCommand extends Command
      */
     public function handle()
     {
+        Log::info('Command app:price-text-message-notification-command started.');
         $phones = [
             "09177886099",
              "09177114358",
@@ -165,5 +167,6 @@ class PriceTextMessageNotificationCommand extends Command
             }
 
         }
+        Log::info('Command app:price-text-message-notification-command finished.');
     }
 }

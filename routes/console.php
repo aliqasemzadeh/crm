@@ -1,10 +1,11 @@
 <?php
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('app:update-currency-rate')->hourly()->runInBackground();
-Schedule::command('app:price-text-message-notification-command')->hourly()->runInBackground();
-Schedule::command('app:sepidar:alert-on-new-invoice-command')->everyFiveMinutes()->runInBackground();
-Schedule::command('app:voip:import-phones-from-sepidar')->dailyAt('00:00')->runInBackground();
-Schedule::command('app:workspace:generate-recurring-tasks')->dailyAt('08:00')->runInBackground();
-Schedule::command('app:day-check-creation-command')->dailyAt('08:00')->runInBackground();
+Schedule::command('app:update-currency-rate')->hourly()->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:update-currency-rate executed successfully.'));
+Schedule::command('app:price-text-message-notification-command')->hourly()->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:price-text-message-notification-command executed successfully.'));
+Schedule::command('app:sepidar:alert-on-new-invoice-command')->everyFiveMinutes()->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:sepidar:alert-on-new-invoice-command executed successfully.'));
+Schedule::command('app:voip:import-phones-from-sepidar')->dailyAt('00:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:voip:import-phones-from-sepidar executed successfully.'));
+Schedule::command('app:workspace:generate-recurring-tasks')->dailyAt('08:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:workspace:generate-recurring-tasks executed successfully.'));
+Schedule::command('app:day-check-creation-command')->dailyAt('08:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:day-check-creation-command executed successfully.'));

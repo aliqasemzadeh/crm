@@ -9,6 +9,7 @@ use App\Support\IranPhoneNumberNormalizer;
 use App\Support\PersianFinglishConverter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ImportPhoneFromSepidarCommand extends Command
@@ -19,6 +20,7 @@ class ImportPhoneFromSepidarCommand extends Command
 
     public function handle(): int
     {
+        Log::info('Command app:voip:import-phones-from-sepidar started.');
         $converter = new PersianFinglishConverter;
         $now = Carbon::now();
         $importedRelated = 0;
@@ -145,6 +147,7 @@ class ImportPhoneFromSepidarCommand extends Command
 
         $this->info("Upserted {$importedRelated} PartyRelated phone row(s) and {$importedPartyPhone} PartyPhone row(s); preserved {$preserved} manual number(s); skipped {$skipped} invalid or empty number(s).");
 
+        Log::info('Command app:voip:import-phones-from-sepidar finished.');
         return self::SUCCESS;
     }
 

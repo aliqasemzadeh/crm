@@ -4,6 +4,7 @@ namespace App\Console\Commands\Warehouse;
 
 use App\Jobs\Notification\SendSmsMessageJob;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 
 class DayCheckCreationCommand extends Command
 {
@@ -26,6 +27,7 @@ class DayCheckCreationCommand extends Command
      */
     public function handle()
     {
+        Log::info('Command app:day-check-creation-command started.');
         if (now()->isFriday()) {
             $this->info('Today is Friday. Skipping command execution.');
             return;
@@ -112,5 +114,6 @@ class DayCheckCreationCommand extends Command
                 $this->warn("No mobile number for user: {$user->name}");
             }
         }
+        Log::info('Command app:day-check-creation-command finished.');
     }
 }
