@@ -36,18 +36,37 @@ class FollowUpCommand extends Command
 
         $totalNeeded = array_sum($crmUsers);
 
-        // Get customer IDs that had a follow-up in the last 30 days
-        $excludedCustomerIds = \App\Models\Crm\FollowUp::where('created_at', '>=', now()->subDays(30))
+        // Get customer IDs that had a follow-up in the last 30 months
+        $excludedCustomerIds = \App\Models\Crm\FollowUp::where('created_at', '>=', now()->subMonths(30))
             ->pluck('customer_id')
             ->unique()
             ->toArray();
 
-        // Get random customers excluding the ones from last 30 days
-        $customers = \App\Models\SetareganCo\User::whereNotIn('Id', $excludedCustomerIds)
+        $threeMonthsAgo = now()->subMonths(3);
+        $totalToFetch = $totalNeeded * 2;
+        $halfNeeded = (int) ceil($totalToFetch / 2);
+
+        // Get customers registered in the last 3 months
+        $newCustomers = \App\Models\SetareganCo\User::whereNotIn('Id', $excludedCustomerIds)
+            ->where('RegisterDate', '>=', $threeMonthsAgo)
             ->inRandomOrder()
-            ->limit($totalNeeded * 2) // Get more than needed to be safe
+            ->limit($halfNeeded)
             ->pluck('Id')
             ->toArray();
+
+        // Get older customers
+        $oldCustomers = \App\Models\SetareganCo\User::whereNotIn('Id', $excludedCustomerIds)
+            ->where(function($query) use ($threeMonthsAgo) {
+                $query->where('RegisterDate', '<', $threeMonthsAgo)
+                      ->orWhereNull('RegisterDate');
+            })
+            ->inRandomOrder()
+            ->limit($halfNeeded)
+            ->pluck('Id')
+            ->toArray();
+
+        $customers = array_merge($newCustomers, $oldCustomers);
+        shuffle($customers);
 
         if (empty($customers)) {
             $this->error('No eligible customers found in SetareganCo database.');

@@ -10,6 +10,8 @@ use App\Models\SetareganCo\OrderDetail;
 use App\Models\SetareganCo\UserInfo;
 use App\Models\SetareganCo\Product;
 use App\Models\User;
+use App\Models\Voip\Phone;
+use App\Support\IranPhoneNumberNormalizer;
 use App\Enums\FollowUpStatusEnum;
 use Flux\Flux;
 use Morilog\Jalali\Jalalian;
@@ -93,7 +95,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     #[Computed]
     public function customers()
     {
-        $excludedCustomerIds = FollowUp::where('created_at', '>=', now()->subDays(30))
+        $excludedCustomerIds = FollowUp::where('created_at', '>=', now()->subMonths(30))
             ->pluck('customer_id')
             ->unique()
             ->toArray();
@@ -196,10 +198,23 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         ];
 
         if ($this->editing) {
+            $oldStatus = $this->editing->status;
             $this->editing->update($data);
+
+            // If status changed from pending to something else, add to VoIP
+            if ($oldStatus === FollowUpStatusEnum::PENDING && $this->form_status !== FollowUpStatusEnum::PENDING->value) {
+                $this->registerPhoneInVoip($this->editing->customer);
+            }
+
             Flux::toast(__('app.saved_successfully', ['name' => __('app.follow_up')]));
         } else {
-            FollowUp::create($data);
+            $followUp = FollowUp::create($data);
+
+            // If created with a non-pending status, add to VoIP
+            if ($this->form_status !== FollowUpStatusEnum::PENDING->value) {
+                $this->registerPhoneInVoip($followUp->customer);
+            }
+
             Flux::toast(__('app.saved_successfully', ['name' => __('app.follow_up')]));
         }
 
@@ -211,6 +226,40 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     {
         $followUp->delete();
         Flux::toast(__('app.deleted_successfully', ['name' => __('app.follow_up')]));
+    }
+
+    private function registerPhoneInVoip(Customer $customer)
+    {
+        $mobile = $customer->userInfo?->Mobile ?: $customer->PhoneNumber;
+        if (!$mobile || filter_var($mobile, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        $normalized = IranPhoneNumberNormalizer::normalize($mobile);
+        if (!$normalized) {
+            return;
+        }
+
+        $displayName = ($customer->userInfo?->Name || $customer->userInfo?->Family)
+            ? trim($customer->userInfo->Name . ' ' . $customer->userInfo->Family)
+            : $customer->UserName;
+
+        Phone::updateOrCreate(
+            ['number' => $normalized],
+            [
+                'name' => $displayName,
+                'is_manual' => true,
+            ]
+        );
+    }
+
+    public function call(Customer $customer)
+    {
+        $this->registerPhoneInVoip($customer);
+
+        $mobile = $customer->userInfo?->Mobile ?: $customer->PhoneNumber;
+        $this->dispatch('open-tel', url: "tel:{$mobile}");
+        Flux::toast(__('app.phone_added_to_voip'));
     }
 
     protected function resetForm()
@@ -317,6 +366,14 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     </flux:table.cell>
                     <flux:table.cell align="end">
             <div class="flex justify-end gap-2">
+                @if($mobile = ($item->customer?->userInfo?->Mobile ?: $item->customer?->PhoneNumber))
+                    @if(! filter_var($mobile, FILTER_VALIDATE_EMAIL))
+                        <flux:tooltip content="{{ __('app.call') }}">
+                            <flux:button size="xs" variant="primary" color="green" icon="phone" icon:variant="outline" wire:click="call({{ $item->customer_id }})" />
+                        </flux:tooltip>
+                    @endif
+                @endif
+
                 <flux:tooltip content="{{ __('app.orders') }}">
                     <flux:button size="xs" variant="primary" color="blue" icon="shopping-bag" icon:variant="outline" wire:click="showOrders({{ $item->customer_id }})" />
                 </flux:tooltip>
@@ -515,3 +572,11 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         </div>
     </flux:modal>
 </div>
+
+@script
+<script>
+    Livewire.on('open-tel', (event) => {
+        window.location.href = event.url;
+    });
+</script>
+@endscript
