@@ -59,7 +59,8 @@ new class extends Component {
     {
         return User::query()
             ->when($this->agentSearch, function ($q) {
-                $q->where('name', 'like', '%' . $this->agentSearch . '%');
+                $q->where('first_name', 'like', '%' . $this->agentSearch . '%')
+                  ->orWhere('last_name', 'like', '%' . $this->agentSearch . '%');
             })
             ->limit(20)
             ->get();
