@@ -50,7 +50,8 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                       ->orWhere('PhoneNumber', 'like', '%' . $this->search . '%')
                       ->orWhereHas('userInfo', function ($sq) {
                           $sq->where('Name', 'like', '%' . $this->search . '%')
-                            ->orWhere('Family', 'like', '%' . $this->search . '%');
+                            ->orWhere('Family', 'like', '%' . $this->search . '%')
+                            ->orWhere('Mobile', 'like', '%' . $this->search . '%');
                       });
                 });
             })
@@ -88,7 +89,8 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                   ->orWhere('PhoneNumber', 'like', '%' . $this->customerSearch . '%')
                   ->orWhereHas('userInfo', function ($sq) {
                       $sq->where('Name', 'like', '%' . $this->customerSearch . '%')
-                        ->orWhere('Family', 'like', '%' . $this->customerSearch . '%');
+                        ->orWhere('Family', 'like', '%' . $this->customerSearch . '%')
+                        ->orWhere('Mobile', 'like', '%' . $this->customerSearch . '%');
                   });
             })
             ->limit(20)
@@ -217,7 +219,11 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     <flux:table.cell>
                         <div class="flex flex-col">
                             <span class="font-medium">{{ ($item->customer?->userInfo?->Name || $item->customer?->userInfo?->Family) ? $item->customer->userInfo->Name . ' ' . $item->customer->userInfo->Family : ($item->customer?->UserName ?? 'N/A') }}</span>
-                            <span class="text-xs text-zinc-500">{{ $item->customer?->PhoneNumber }}</span>
+                            @if($mobile = ($item->customer?->userInfo?->Mobile ?: $item->customer?->PhoneNumber))
+                                @if(! filter_var($mobile, FILTER_VALIDATE_EMAIL))
+                                    <span class="text-xs text-zinc-500">{{ $mobile }}</span>
+                                @endif
+                            @endif
                         </div>
                     </flux:table.cell>
                     <flux:table.cell>{{ $item->agent?->name }}</flux:table.cell>
@@ -262,7 +268,14 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
                     @foreach($this->customers as $cust)
                         <flux:select.option value="{{ $cust->Id }}" wire:key="cust-{{ $cust->Id }}">
-                            {{ ($cust->userInfo?->Name || $cust->userInfo?->Family) ? $cust->userInfo->Name . ' ' . $cust->userInfo->Family : $cust->UserName }} ({{ $cust->PhoneNumber }})
+                            @php
+                                $displayName = ($cust->userInfo?->Name || $cust->userInfo?->Family) ? $cust->userInfo->Name . ' ' . $cust->userInfo->Family : $cust->UserName;
+                                $displayMobile = ($cust->userInfo?->Mobile ?: $cust->PhoneNumber);
+                                if (filter_var($displayMobile, FILTER_VALIDATE_EMAIL)) {
+                                    $displayMobile = null;
+                                }
+                            @endphp
+                            {{ $displayName }} {{ $displayMobile ? "($displayMobile)" : '' }}
                         </flux:select.option>
                     @endforeach
                 </flux:select>
