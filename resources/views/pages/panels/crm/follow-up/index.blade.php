@@ -206,6 +206,9 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     <flux:table :paginate="$this->followUps">
         <flux:table.columns>
             <flux:table.column>{{ __('app.customer') }}</flux:table.column>
+            <flux:table.column>{{ __('app.name') }}</flux:table.column>
+            <flux:table.column>{{ __('app.username') }}</flux:table.column>
+            <flux:table.column>{{ __('app.birth_date') }}</flux:table.column>
             <flux:table.column>{{ __('app.agent') }}</flux:table.column>
             <flux:table.column>{{ __('app.status') }}</flux:table.column>
             <flux:table.column>{{ __('app.due_date') }}</flux:table.column>
@@ -225,6 +228,11 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                 @endif
                             @endif
                         </div>
+                    </flux:table.cell>
+                    <flux:table.cell>{{ $item->customer?->userInfo?->Name ?? '-' }}</flux:table.cell>
+                    <flux:table.cell>{{ $item->customer?->NormalizedUserName ?? '-' }}</flux:table.cell>
+                    <flux:table.cell>
+                        {{ $item->customer?->userInfo?->BirthDate ? Jalalian::fromDateTime($item->customer->userInfo->BirthDate)->format('Y/m/d') : '-' }}
                     </flux:table.cell>
                     <flux:table.cell>{{ $item->agent?->name }}</flux:table.cell>
                     <flux:table.cell>
