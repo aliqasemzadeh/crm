@@ -41,4 +41,9 @@ class User extends Model
         'UserStatus' => 'integer',
         'UserType' => 'integer',
     ];
+
+    public function userInfo()
+    {
+        return $this->hasOne(UserInfo::class, 'UserId', 'Id');
+    }
 }
