@@ -9,3 +9,4 @@ Schedule::command('app:sepidar:alert-on-new-invoice-command')->everyFiveMinutes(
 Schedule::command('app:voip:import-phones-from-sepidar')->dailyAt('00:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:voip:import-phones-from-sepidar executed successfully.'));
 Schedule::command('app:workspace:generate-recurring-tasks')->dailyAt('08:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:workspace:generate-recurring-tasks executed successfully.'));
 Schedule::command('app:day-check-creation-command')->dailyAt('08:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:day-check-creation-command executed successfully.'));
+Schedule::command('app:follow-up-command')->dailyAt('08:00')->runInBackground()->onSuccess(fn() => Log::info('Scheduled app:follow-up-command executed successfully.'))->days([0, 1, 2, 3, 4, 6]);
