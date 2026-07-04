@@ -37,8 +37,8 @@ class UserInfo extends Model
         'CoworkerGroupId',
     ];
 
-    public function user()
+    public function orders()
     {
-        return $this->belongsTo(User::class, 'UserId', 'Id');
+        return $this->hasMany(Order::class, 'UserInfoId', 'Id');
     }
 }

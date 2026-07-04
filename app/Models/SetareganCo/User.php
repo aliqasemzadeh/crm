@@ -46,4 +46,9 @@ class User extends Model
     {
         return $this->hasOne(UserInfo::class, 'UserId', 'Id');
     }
+
+    public function orders()
+    {
+        return $this->hasManyThrough(Order::class, UserInfo::class, 'UserId', 'UserInfoId', 'Id', 'Id');
+    }
 }
