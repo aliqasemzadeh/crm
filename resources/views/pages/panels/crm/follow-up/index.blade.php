@@ -14,6 +14,8 @@ new class extends Component {
     use WithPagination;
 
     public $search = '';
+    public $customerSearch = '';
+    public $agentSearch = '';
     public $agent_id;
     public $status;
 
@@ -32,7 +34,7 @@ new class extends Component {
     {
         $this->form_status = FollowUpStatusEnum::PENDING->value;
         $this->form_agent_id = auth()->id();
-        $this->due_date = now()->format('Y-m-d\TH:i');
+        $this->due_date = now()->format('Y-m-d');
     }
 
     #[Computed]
@@ -55,16 +57,27 @@ new class extends Component {
     #[Computed]
     public function agents()
     {
-        return User::all();
+        return User::query()
+            ->when($this->agentSearch, function ($q) {
+                $q->where('name', 'like', '%' . $this->agentSearch . '%');
+            })
+            ->limit(20)
+            ->get();
     }
 
     #[Computed]
     public function customers()
     {
-        // Simple search for customers in flyout
+        $excludedCustomerIds = FollowUp::where('created_at', '>=', now()->subDays(30))
+            ->pluck('customer_id')
+            ->unique()
+            ->toArray();
+
         return Customer::query()
-            ->when($this->search, function ($q) {
-                $q->where('UserName', 'like', '%' . $this->search . '%');
+            ->whereNotIn('Id', $excludedCustomerIds)
+            ->when($this->customerSearch, function ($q) {
+                $q->where('UserName', 'like', '%' . $this->customerSearch . '%')
+                  ->orWhere('PhoneNumber', 'like', '%' . $this->customerSearch . '%');
             })
             ->limit(20)
             ->get();
@@ -84,8 +97,8 @@ new class extends Component {
         $this->form_status = $followUp->status->value;
         $this->failure_reason = $followUp->failure_reason;
         $this->description = $followUp->description;
-        $this->due_date = $followUp->due_date->format('Y-m-d\TH:i');
-        $this->next_follow_up_date = $followUp->next_follow_up_date ? $followUp->next_follow_up_date->format('Y-m-d\TH:i') : null;
+        $this->due_date = $followUp->due_date->format('Y-m-d');
+        $this->next_follow_up_date = $followUp->next_follow_up_date ? $followUp->next_follow_up_date->format('Y-m-d') : null;
         $this->parent_id = $followUp->parent_id;
 
         Flux::modal('follow-up-modal')->show();
@@ -133,11 +146,13 @@ new class extends Component {
     {
         $this->editing = null;
         $this->customer_id = null;
+        $this->customerSearch = '';
+        $this->agentSearch = '';
         $this->form_agent_id = auth()->id();
         $this->form_status = FollowUpStatusEnum::PENDING->value;
         $this->failure_reason = null;
         $this->description = null;
-        $this->due_date = now()->format('Y-m-d\TH:i');
+        $this->due_date = now()->format('Y-m-d');
         $this->next_follow_up_date = null;
         $this->parent_id = null;
     }
@@ -145,14 +160,14 @@ new class extends Component {
 ?>
 
 <div class="space-y-6" x-data>
-    <div class="flex items-center justify-between">
-        <div>
-            <flux:heading size="xl">{{ __('app.follow_ups') }}</flux:heading>
-            <flux:subheading>{{ __('app.crm_follow_up_description') }}</flux:subheading>
-        </div>
+        <div class="flex items-center justify-between">
+            <div>
+                <flux:heading size="xl">{{ __('app.follow_ups') }}</flux:heading>
+                <flux:subheading>{{ __('app.crm_follow_up_description') }}</flux:subheading>
+            </div>
 
-        <flux:button variant="primary" icon="plus" wire:click="create">{{ __('app.create') }}</flux:button>
-    </div>
+            <flux:button variant="primary" color="orange" icon="plus" wire:click="create">{{ __('app.create') }}</flux:button>
+        </div>
 
     <flux:card>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -206,15 +221,15 @@ new class extends Component {
                         {{ $item->next_follow_up_date ? Jalalian::fromDateTime($item->next_follow_up_date)->format('Y/m/d H:i') : '-' }}
                     </flux:table.cell>
                     <flux:table.cell align="end">
-                        <div class="flex justify-end gap-2">
-                            <flux:tooltip content="{{ __('app.edit') }}">
-                                <flux:button size="xs" variant="ghost" icon="pencil" wire:click="edit({{ $item->id }})" />
-                            </flux:tooltip>
+            <div class="flex justify-end gap-2">
+                <flux:tooltip content="{{ __('app.edit') }}">
+                    <flux:button size="xs" variant="primary" color="orange" icon="pencil" icon:variant="outline" wire:click="edit({{ $item->id }})" />
+                </flux:tooltip>
 
-                            <flux:tooltip content="{{ __('app.delete') }}">
-                                <flux:button size="xs" variant="ghost" color="red" icon="trash" wire:click="delete({{ $item->id }})" wire:confirm="{{ __('app.are_you_sure') }}" />
-                            </flux:tooltip>
-                        </div>
+                <flux:tooltip content="{{ __('app.delete') }}">
+                    <flux:button size="xs" variant="primary" color="red" icon="trash" icon:variant="outline" wire:click="delete({{ $item->id }})" wire:confirm="{{ __('app.are_you_sure') }}" />
+                </flux:tooltip>
+            </div>
                     </flux:table.cell>
                 </flux:table.row>
             @endforeach
@@ -228,16 +243,27 @@ new class extends Component {
             </div>
 
             <div class="space-y-4">
-                <flux:select wire:model="customer_id" label="{{ __('app.customer') }}" searchable>
-                    <option value="">{{ __('app.select_customer') }}</option>
-                    @foreach(App\Models\SetareganCo\User::limit(50)->get() as $cust)
-                        <option value="{{ $cust->Id }}">{{ $cust->UserName }} ({{ $cust->PhoneNumber }})</option>
+                <flux:select wire:model="customer_id" label="{{ __('app.customer') }}" variant="combobox" :filter="false">
+                    <x-slot name="input">
+                        <flux:select.input wire:model.live="customerSearch" placeholder="{{ __('app.search_placeholder') }}" />
+                    </x-slot>
+
+                    @foreach($this->customers as $cust)
+                        <flux:select.option value="{{ $cust->Id }}" wire:key="cust-{{ $cust->Id }}">
+                            {{ $cust->UserName }} ({{ $cust->PhoneNumber }})
+                        </flux:select.option>
                     @endforeach
                 </flux:select>
 
-                <flux:select wire:model="form_agent_id" label="{{ __('app.agent') }}">
+                <flux:select wire:model="form_agent_id" label="{{ __('app.agent') }}" variant="combobox" :filter="false">
+                    <x-slot name="input">
+                        <flux:select.input wire:model.live="agentSearch" placeholder="{{ __('app.search_placeholder') }}" />
+                    </x-slot>
+
                     @foreach($this->agents as $agent)
-                        <option value="{{ $agent->id }}">{{ $agent->name }}</option>
+                        <flux:select.option value="{{ $agent->id }}" wire:key="agent-{{ $agent->id }}">
+                            {{ $agent->name }}
+                        </flux:select.option>
                     @endforeach
                 </flux:select>
 
@@ -247,9 +273,9 @@ new class extends Component {
                     @endforeach
                 </flux:select>
 
-                <flux:input wire:model="due_date" type="datetime-local" label="{{ __('app.due_date') }}" />
+                <x-persian-date-picker wire:model="due_date" label="{{ __('app.due_date') }}" />
 
-                <flux:input wire:model="next_follow_up_date" type="datetime-local" label="{{ __('app.next_follow_up_date') }}" />
+                <x-persian-date-picker wire:model="next_follow_up_date" label="{{ __('app.next_follow_up_date') }}" />
 
                 <flux:input wire:model="failure_reason" label="{{ __('app.failure_reason') }}" />
 
