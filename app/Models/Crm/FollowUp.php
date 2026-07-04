@@ -27,12 +27,20 @@ class FollowUp extends Model
         'due_date',
         'next_follow_up_date',
         'parent_id',
+        'satisfaction',
+        'warranty_satisfaction',
+        'colleague',
+        'resale',
     ];
 
     protected $casts = [
         'status' => FollowUpStatusEnum::class,
         'due_date' => 'datetime',
         'next_follow_up_date' => 'datetime',
+        'satisfaction' => 'boolean',
+        'warranty_satisfaction' => 'boolean',
+        'colleague' => 'boolean',
+        'resale' => 'boolean',
     ];
 
     /*

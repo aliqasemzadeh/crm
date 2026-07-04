@@ -37,6 +37,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     public $due_date;
     public $next_follow_up_date;
     public $parent_id;
+    public $satisfaction;
+    public $warranty_satisfaction;
+    public $colleague;
+    public $resale;
 
     // Orders properties
     public $selectedCustomerForOrders = null;
@@ -53,7 +57,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     public function followUps()
     {
         return FollowUp::query()
-            ->with(['agent', 'customer.userInfo'])
+            ->with(['agent', 'customer.userInfo.city.state'])
             ->when(!auth()->user()->hasRole('administrator'), function ($query) {
                 $query->where('agent_id', auth()->id());
             })
@@ -159,6 +163,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         $this->due_date = $followUp->due_date->format('Y-m-d');
         $this->next_follow_up_date = $followUp->next_follow_up_date ? $followUp->next_follow_up_date->format('Y-m-d') : null;
         $this->parent_id = $followUp->parent_id;
+        $this->satisfaction = $followUp->satisfaction;
+        $this->warranty_satisfaction = $followUp->warranty_satisfaction;
+        $this->colleague = $followUp->colleague;
+        $this->resale = $followUp->resale;
 
         Flux::modal('follow-up-modal')->show();
     }
@@ -181,6 +189,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             'due_date' => $this->due_date,
             'next_follow_up_date' => $this->next_follow_up_date,
             'parent_id' => $this->parent_id,
+            'satisfaction' => $this->satisfaction,
+            'warranty_satisfaction' => $this->warranty_satisfaction,
+            'colleague' => $this->colleague,
+            'resale' => $this->resale,
         ];
 
         if ($this->editing) {
@@ -214,6 +226,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         $this->due_date = now()->format('Y-m-d');
         $this->next_follow_up_date = null;
         $this->parent_id = null;
+        $this->satisfaction = null;
+        $this->warranty_satisfaction = null;
+        $this->colleague = null;
+        $this->resale = null;
     }
 };
 ?>
@@ -252,6 +268,8 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         <flux:table.columns>
             <flux:table.column>{{ __('app.customer') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
+            <flux:table.column>{{ __('app.province') }}</flux:table.column>
+            <flux:table.column>{{ __('app.city') }}</flux:table.column>
             <flux:table.column>{{ __('app.username') }}</flux:table.column>
             <flux:table.column>{{ __('app.registration_date') }}</flux:table.column>
             <flux:table.column>{{ __('app.birth_date') }}</flux:table.column>
@@ -276,6 +294,8 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                         </div>
                     </flux:table.cell>
                     <flux:table.cell>{{ $item->customer?->userInfo?->Name ?? '-' }}</flux:table.cell>
+                    <flux:table.cell>{{ $item->customer?->userInfo?->city?->state?->Title ?? '-' }}</flux:table.cell>
+                    <flux:table.cell>{{ $item->customer?->userInfo?->city?->Title ?? '-' }}</flux:table.cell>
                     <flux:table.cell>{{ $item->customer?->NormalizedUserName ?? '-' }}</flux:table.cell>
                     <flux:table.cell>
                         {{ $item->customer?->RegisterDate ? Jalalian::fromDateTime($item->customer->RegisterDate)->format('Y/m/d') : '-' }}
@@ -393,6 +413,30 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 <flux:input wire:model="failure_reason" label="{{ __('app.failure_reason') }}" />
 
                 <flux:textarea wire:model="description" label="{{ __('app.description') }}" />
+
+                @if($editing)
+                    <div class="grid grid-cols-2 gap-4">
+                        <flux:radio.group wire:model="satisfaction" label="{{ __('app.satisfaction') }}" variant="segmented">
+                            <flux:radio label="{{ __('app.yes') }}" value="1" />
+                            <flux:radio label="{{ __('app.no') }}" value="0" />
+                        </flux:radio.group>
+
+                        <flux:radio.group wire:model="warranty_satisfaction" label="{{ __('app.warranty_satisfaction') }}" variant="segmented">
+                            <flux:radio label="{{ __('app.yes') }}" value="1" />
+                            <flux:radio label="{{ __('app.no') }}" value="0" />
+                        </flux:radio.group>
+
+                        <flux:radio.group wire:model="colleague" label="{{ __('app.colleague') }}" variant="segmented">
+                            <flux:radio label="{{ __('app.yes') }}" value="1" />
+                            <flux:radio label="{{ __('app.no') }}" value="0" />
+                        </flux:radio.group>
+
+                        <flux:radio.group wire:model="resale" label="{{ __('app.resale') }}" variant="segmented">
+                            <flux:radio label="{{ __('app.yes') }}" value="1" />
+                            <flux:radio label="{{ __('app.no') }}" value="0" />
+                        </flux:radio.group>
+                    </div>
+                @endif
             </div>
 
             <div class="flex gap-2">
