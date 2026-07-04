@@ -9,8 +9,10 @@ use App\Models\User;
 use App\Enums\FollowUpStatusEnum;
 use Flux\Flux;
 use Morilog\Jalali\Jalalian;
+use Livewire\Attributes\Layout;
 
-new class extends Component {
+return new #[Layout('layouts.panels.crm')] class extends Component
+{
     use WithPagination;
 
     public $search = '';
