@@ -43,11 +43,15 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     public function followUps()
     {
         return FollowUp::query()
-            ->with(['agent', 'customer'])
+            ->with(['agent', 'customer.userInfo'])
             ->when($this->search, function ($query) {
                 $query->whereHas('customer', function ($q) {
                     $q->where('UserName', 'like', '%' . $this->search . '%')
-                      ->orWhere('PhoneNumber', 'like', '%' . $this->search . '%');
+                      ->orWhere('PhoneNumber', 'like', '%' . $this->search . '%')
+                      ->orWhereHas('userInfo', function ($sq) {
+                          $sq->where('Name', 'like', '%' . $this->search . '%')
+                            ->orWhere('Family', 'like', '%' . $this->search . '%');
+                      });
                 });
             })
             ->when($this->agent_id, fn($q) => $q->where('agent_id', $this->agent_id))
@@ -77,10 +81,15 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             ->toArray();
 
         return Customer::query()
+            ->with('userInfo')
             ->whereNotIn('Id', $excludedCustomerIds)
             ->when($this->customerSearch, function ($q) {
                 $q->where('UserName', 'like', '%' . $this->customerSearch . '%')
-                  ->orWhere('PhoneNumber', 'like', '%' . $this->customerSearch . '%');
+                  ->orWhere('PhoneNumber', 'like', '%' . $this->customerSearch . '%')
+                  ->orWhereHas('userInfo', function ($sq) {
+                      $sq->where('Name', 'like', '%' . $this->customerSearch . '%')
+                        ->orWhere('Family', 'like', '%' . $this->customerSearch . '%');
+                  });
             })
             ->limit(20)
             ->get();
@@ -207,7 +216,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 <flux:table.row :key="$item->id">
                     <flux:table.cell>
                         <div class="flex flex-col">
-                            <span class="font-medium">{{ $item->customer?->UserName ?? 'N/A' }}</span>
+                            <span class="font-medium">{{ ($item->customer?->userInfo?->Name || $item->customer?->userInfo?->Family) ? $item->customer->userInfo->Name . ' ' . $item->customer->userInfo->Family : ($item->customer?->UserName ?? 'N/A') }}</span>
                             <span class="text-xs text-zinc-500">{{ $item->customer?->PhoneNumber }}</span>
                         </div>
                     </flux:table.cell>
@@ -253,7 +262,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
                     @foreach($this->customers as $cust)
                         <flux:select.option value="{{ $cust->Id }}" wire:key="cust-{{ $cust->Id }}">
-                            {{ $cust->UserName }} ({{ $cust->PhoneNumber }})
+                            {{ ($cust->userInfo?->Name || $cust->userInfo?->Family) ? $cust->userInfo->Name . ' ' . $cust->userInfo->Family : $cust->UserName }} ({{ $cust->PhoneNumber }})
                         </flux:select.option>
                     @endforeach
                 </flux:select>
