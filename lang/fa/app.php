@@ -109,6 +109,8 @@ return [
     'due_date' => 'تاریخ سررسید',
     'next_follow_up_date' => 'تاریخ پیگیری بعدی',
     'description' => 'توضیحات',
+    'username' => 'نام کاربری',
+    'birth_date' => 'تاریخ تولد',
     'status' => 'وضعیت',
     'pending' => 'در انتظار بررسی',
     'completed' => 'بررسی شده',
