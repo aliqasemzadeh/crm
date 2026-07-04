@@ -34,23 +34,44 @@ class FollowUpCommand extends Command
             return;
         }
 
-        $customers = \App\Models\SetareganCo\User::inRandomOrder()->limit(100)->pluck('Id')->toArray();
+        $totalNeeded = array_sum($crmUsers);
+
+        // Get customer IDs that had a follow-up in the last 30 days
+        $excludedCustomerIds = \App\Models\Crm\FollowUp::where('created_at', '>=', now()->subDays(30))
+            ->pluck('customer_id')
+            ->unique()
+            ->toArray();
+
+        // Get random customers excluding the ones from last 30 days
+        $customers = \App\Models\SetareganCo\User::whereNotIn('Id', $excludedCustomerIds)
+            ->inRandomOrder()
+            ->limit($totalNeeded * 2) // Get more than needed to be safe
+            ->pluck('Id')
+            ->toArray();
 
         if (empty($customers)) {
-            $this->error('No customers found in SetareganCo database.');
+            $this->error('No eligible customers found in SetareganCo database.');
             return;
         }
 
+        $customerIndex = 0;
         foreach ($crmUsers as $agentId => $count) {
             $this->info("Creating {$count} follow-ups for agent ID: {$agentId}");
 
             for ($i = 0; $i < $count; $i++) {
+                if (!isset($customers[$customerIndex])) {
+                    $this->warn("Ran out of unique customers for agent ID: {$agentId}");
+                    break;
+                }
+
                 \App\Models\Crm\FollowUp::create([
                     'agent_id' => $agentId,
-                    'customer_id' => $customers[array_rand($customers)],
+                    'customer_id' => $customers[$customerIndex],
                     'status' => \App\Enums\FollowUpStatusEnum::PENDING,
                     'due_date' => now(),
                 ]);
+
+                $customerIndex++;
             }
 
             if ($count >= 10) {
