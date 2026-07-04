@@ -1,9 +1,20 @@
 <?php
 
+use Livewire\Component;
+use Livewire\WithPagination;
+use Livewire\Attributes\Computed;
+use App\Models\Crm\FollowUp;
+use App\Models\SetareganCo\User as Customer;
 use App\Models\SetareganCo\Order;
 use App\Models\SetareganCo\OrderDetail;
-use Livewire\Attributes\Url;
-use Livewire\Component;
+use App\Models\SetareganCo\UserInfo;
+use App\Models\SetareganCo\Product;
+use App\Models\User;
+use App\Enums\FollowUpStatusEnum;
+use Flux\Flux;
+use Morilog\Jalali\Jalalian;
+use Livewire\Attributes\Layout;
+
 
 return new #[Layout('layouts.panels.crm')] class extends Component
 {
