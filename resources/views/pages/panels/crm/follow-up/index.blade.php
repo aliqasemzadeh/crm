@@ -288,7 +288,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
         try {
             Ami::connect();
-            $response = Ami::originate([
+            Ami::originate([
                 'Channel' => $device->dial,
                 'Context' => 'from-internal',
                 'Exten' => $mobile,
@@ -296,11 +296,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 'Timeout' => 30000,
             ]);
 
-            if ($response->isSuccess()) {
-                Flux::toast(__('app.call_initiated'));
-            } else {
-                Flux::toast(__('app.call_failed').': '.$response->getMessage(), variant: 'danger');
-            }
+            Flux::toast(__('app.call_initiated'));
         } catch (\Exception $e) {
             \Log::error('AMI Call Error: '.$e->getMessage());
             Flux::toast(__('app.call_failed'), variant: 'danger');
