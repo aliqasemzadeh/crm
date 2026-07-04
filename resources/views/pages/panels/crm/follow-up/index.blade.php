@@ -1,20 +1,14 @@
 <?php
 
-use Livewire\Component;
-use Livewire\WithPagination;
-use Livewire\Attributes\Computed;
-use App\Models\Crm\FollowUp;
-use App\Models\SetareganCo\User as Customer;
-use App\Models\User;
-use App\Enums\FollowUpStatusEnum;
-use Flux\Flux;
-use Morilog\Jalali\Jalalian;
-use Livewire\Attributes\Layout;
+use App\Models\SetareganCo\Order;
+use App\Models\SetareganCo\OrderDetail;
+use Livewire\Attributes\Url;
 
 return new #[Layout('layouts.panels.crm')] class extends Component
 {
     use WithPagination;
 
+    #[Url]
     public $search = '';
     public $customerSearch = '';
     public $agentSearch = '';
@@ -32,6 +26,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     public $next_follow_up_date;
     public $parent_id;
 
+    // Orders properties
+    public $selectedCustomerForOrders = null;
+    public $selectedOrderForDetails = null;
+
     public function mount()
     {
         $this->form_status = FollowUpStatusEnum::PENDING->value;
@@ -44,6 +42,9 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     {
         return FollowUp::query()
             ->with(['agent', 'customer.userInfo'])
+            ->when(!auth()->user()->hasRole('administrator'), function ($query) {
+                $query->where('agent_id', auth()->id());
+            })
             ->when($this->search, function ($query) {
                 $query->whereHas('customer', function ($q) {
                     $q->where('UserName', 'like', '%' . $this->search . '%')
@@ -95,6 +96,38 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             })
             ->limit(20)
             ->get();
+    }
+
+    #[Computed]
+    public function customerOrders()
+    {
+        if (!$this->selectedCustomerForOrders) return collect();
+
+        return Order::where('UserInfoId', $this->selectedCustomerForOrders->userInfo?->Id)
+            ->orderBy('Date', 'desc')
+            ->get();
+    }
+
+    #[Computed]
+    public function orderDetails()
+    {
+        if (!$this->selectedOrderForDetails) return collect();
+
+        return OrderDetail::with('product')
+            ->where('OrderId', $this->selectedOrderForDetails)
+            ->get();
+    }
+
+    public function showOrders(Customer $customer)
+    {
+        $this->selectedCustomerForOrders = $customer->load('userInfo');
+        Flux::modal('orders-modal')->show();
+    }
+
+    public function showOrderDetails($orderId)
+    {
+        $this->selectedOrderForDetails = $orderId;
+        Flux::modal('order-details-modal')->show();
     }
 
     public function create()
@@ -208,6 +241,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             <flux:table.column>{{ __('app.customer') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.username') }}</flux:table.column>
+            <flux:table.column>{{ __('app.registration_date') }}</flux:table.column>
             <flux:table.column>{{ __('app.birth_date') }}</flux:table.column>
             <flux:table.column>{{ __('app.agent') }}</flux:table.column>
             <flux:table.column>{{ __('app.status') }}</flux:table.column>
@@ -232,6 +266,9 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     <flux:table.cell>{{ $item->customer?->userInfo?->Name ?? '-' }}</flux:table.cell>
                     <flux:table.cell>{{ $item->customer?->NormalizedUserName ?? '-' }}</flux:table.cell>
                     <flux:table.cell>
+                        {{ $item->customer?->RegisterDate ? Jalalian::fromDateTime($item->customer->RegisterDate)->format('Y/m/d') : '-' }}
+                    </flux:table.cell>
+                    <flux:table.cell>
                         {{ $item->customer?->userInfo?->BirthDate ? Jalalian::fromDateTime($item->customer->userInfo->BirthDate)->format('Y/m/d') : '-' }}
                     </flux:table.cell>
                     <flux:table.cell>{{ $item->agent?->name }}</flux:table.cell>
@@ -248,6 +285,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     </flux:table.cell>
                     <flux:table.cell align="end">
             <div class="flex justify-end gap-2">
+                <flux:tooltip content="{{ __('app.orders') }}">
+                    <flux:button size="xs" variant="primary" color="blue" icon="shopping-bag" icon:variant="outline" wire:click="showOrders({{ $item->customer_id }})" />
+                </flux:tooltip>
+
                 <flux:tooltip content="{{ __('app.edit') }}">
                     <flux:button size="xs" variant="primary" color="orange" icon="pencil" icon:variant="outline" wire:click="edit({{ $item->id }})" />
                 </flux:tooltip>
@@ -269,7 +310,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             </div>
 
             <div class="space-y-4">
-                <flux:select wire:model="customer_id" label="{{ __('app.customer') }}" variant="combobox" :filter="false">
+                <flux:select wire:model="customer_id" label="{{ __('app.customer') }}" variant="combobox" :filter="false" :disabled="$editing !== null">
                     <x-slot name="input">
                         <flux:select.input wire:model.live="customerSearch" placeholder="{{ __('app.search_placeholder') }}" />
                     </x-slot>
@@ -288,7 +329,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     @endforeach
                 </flux:select>
 
-                <flux:select wire:model="form_agent_id" label="{{ __('app.agent') }}" variant="combobox" :filter="false">
+                <flux:select wire:model="form_agent_id" label="{{ __('app.agent') }}" variant="combobox" :filter="false" :disabled="$editing !== null">
                     <x-slot name="input">
                         <flux:select.input wire:model.live="agentSearch" placeholder="{{ __('app.search_placeholder') }}" />
                     </x-slot>
@@ -321,5 +362,73 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 <flux:button type="submit" variant="primary" color="orange" class="w-full">{{ __('app.save') }}</flux:button>
             </div>
         </form>
+    </flux:modal>
+
+    <flux:modal name="orders-modal" flyout position="right" class="w-full max-w-2xl">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('app.orders') }} - {{ $selectedCustomerForOrders?->userInfo?->Name }} {{ $selectedCustomerForOrders?->userInfo?->Family }}</flux:heading>
+            </div>
+
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>{{ __('app.tracking_code') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.date') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.total_amount') }}</flux:table.column>
+                    <flux:table.column align="end"></flux:table.column>
+                </flux:table.columns>
+
+                <flux:table.rows>
+                    @forelse($this->customerOrders as $order)
+                        <flux:table.row :key="$order->Id">
+                            <flux:table.cell>{{ $order->TrackingCode }}</flux:table.cell>
+                            <flux:table.cell>{{ $order->Date ? Jalalian::fromDateTime($order->Date)->format('Y/m/d') : '-' }}</flux:table.cell>
+                            <flux:table.cell>{{ number_format($order->TotalAmount) }} {{ __('app.rial') }}</flux:table.cell>
+                            <flux:table.cell align="end">
+                                <flux:button size="xs" variant="ghost" icon="eye" wire:click="showOrderDetails({{ $order->Id }})" />
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="4" class="text-center">{{ __('app.no_records_found') }}</flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </flux:table>
+
+            <div class="flex justify-end">
+                <flux:button variant="ghost" x-on:click="Flux.modal('orders-modal').close()">{{ __('app.close') }}</flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    <flux:modal name="order-details-modal" flyout position="right" class="w-full max-w-lg">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('app.order_details') }}</flux:heading>
+            </div>
+
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column>{{ __('app.product') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.count') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.price') }}</flux:table.column>
+                </flux:table.columns>
+
+                <flux:table.rows>
+                    @foreach($this->orderDetails as $detail)
+                        <flux:table.row :key="$detail->Id">
+                            <flux:table.cell>{{ $detail->product?->Name ?? '-' }}</flux:table.cell>
+                            <flux:table.cell>{{ $detail->Count }}</flux:table.cell>
+                            <flux:table.cell>{{ number_format($detail->Price) }}</flux:table.cell>
+                        </flux:table.row>
+                    @endforeach
+                </flux:table.rows>
+            </flux:table>
+
+            <div class="flex justify-end">
+                <flux:button variant="ghost" x-on:click="Flux.modal('order-details-modal').close()">{{ __('app.back') }}</flux:button>
+            </div>
+        </div>
     </flux:modal>
 </div>
