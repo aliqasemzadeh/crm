@@ -253,7 +253,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         );
     }
 
-    public function call(Customer $customer)
+    public function makeCall(Customer $customer)
     {
         $this->registerPhoneInVoip($customer);
 
@@ -369,7 +369,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 @if($mobile = ($item->customer?->userInfo?->Mobile ?: $item->customer?->PhoneNumber))
                     @if(! filter_var($mobile, FILTER_VALIDATE_EMAIL))
                         <flux:tooltip content="{{ __('app.call') }}">
-                            <flux:button size="xs" variant="primary" color="green" icon="phone" icon:variant="outline" wire:click="call({{ $item->customer_id }})" />
+                            <flux:button size="xs" variant="primary" color="green" icon="phone" icon:variant="outline" wire:click="makeCall({{ $item->customer_id }})" />
                         </flux:tooltip>
                     @endif
                 @endif
