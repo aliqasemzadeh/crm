@@ -150,7 +150,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     public function edit(FollowUp $followUp)
     {
-        $this->editing = $followUp;
+        $this->editing = $followUp->load(['customer.userInfo']);
         $this->customer_id = $followUp->customer_id;
         $this->form_agent_id = $followUp->agent_id;
         $this->form_status = $followUp->status->value;
@@ -322,36 +322,63 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             </div>
 
             <div class="space-y-4">
-                <flux:select wire:model="customer_id" label="{{ __('app.customer') }}" variant="combobox" :filter="false" :disabled="$editing !== null">
-                    <x-slot name="input">
-                        <flux:select.input wire:model.live="customerSearch" placeholder="{{ __('app.search_placeholder') }}" />
-                    </x-slot>
+                @if($editing)
+                    <div class="p-4 bg-zinc-50 dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-zinc-500">{{ __('app.customer') }}:</span>
+                            <span class="font-medium">
+                                @php
+                                    $customer = $editing->customer;
+                                    $displayName = ($customer?->userInfo?->Name || $customer?->userInfo?->Family) ? $customer->userInfo->Name . ' ' . $customer->userInfo->Family : ($customer?->UserName ?? 'N/A');
+                                @endphp
+                                {{ $displayName }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-zinc-500">{{ __('app.birth_date') }}:</span>
+                            <span class="font-medium">
+                                {{ $customer?->userInfo?->BirthDate ? Jalalian::fromDateTime($customer->userInfo->BirthDate)->format('Y/m/d') : '-' }}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-zinc-500">{{ __('app.registration_date') }}:</span>
+                            <span class="font-medium">
+                                {{ $customer?->RegisterDate ? Jalalian::fromDateTime($customer->RegisterDate)->format('Y/m/d') : '-' }}
+                            </span>
+                        </div>
+                    </div>
+                @else
+                    <flux:select wire:model="customer_id" label="{{ __('app.customer') }}" variant="combobox" :filter="false">
+                        <x-slot name="input">
+                            <flux:select.input wire:model.live="customerSearch" placeholder="{{ __('app.search_placeholder') }}" />
+                        </x-slot>
 
-                    @foreach($this->customers as $cust)
-                        <flux:select.option value="{{ $cust->Id }}" wire:key="cust-{{ $cust->Id }}">
-                            @php
-                                $displayName = ($cust->userInfo?->Name || $cust->userInfo?->Family) ? $cust->userInfo->Name . ' ' . $cust->userInfo->Family : $cust->UserName;
-                                $displayMobile = ($cust->userInfo?->Mobile ?: $cust->PhoneNumber);
-                                if (filter_var($displayMobile, FILTER_VALIDATE_EMAIL)) {
-                                    $displayMobile = null;
-                                }
-                            @endphp
-                            {{ $displayName }} {{ $displayMobile ? "($displayMobile)" : '' }}
-                        </flux:select.option>
-                    @endforeach
-                </flux:select>
+                        @foreach($this->customers as $cust)
+                            <flux:select.option value="{{ $cust->Id }}" wire:key="cust-{{ $cust->Id }}">
+                                @php
+                                    $displayName = ($cust->userInfo?->Name || $cust->userInfo?->Family) ? $cust->userInfo->Name . ' ' . $cust->userInfo->Family : $cust->UserName;
+                                    $displayMobile = ($cust->userInfo?->Mobile ?: $cust->PhoneNumber);
+                                    if (filter_var($displayMobile, FILTER_VALIDATE_EMAIL)) {
+                                        $displayMobile = null;
+                                    }
+                                @endphp
+                                {{ $displayName }} {{ $displayMobile ? "($displayMobile)" : '' }}
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
 
-                <flux:select wire:model="form_agent_id" label="{{ __('app.agent') }}" variant="combobox" :filter="false" :disabled="$editing !== null">
-                    <x-slot name="input">
-                        <flux:select.input wire:model.live="agentSearch" placeholder="{{ __('app.search_placeholder') }}" />
-                    </x-slot>
+                    <flux:select wire:model="form_agent_id" label="{{ __('app.agent') }}" variant="combobox" :filter="false">
+                        <x-slot name="input">
+                            <flux:select.input wire:model.live="agentSearch" placeholder="{{ __('app.search_placeholder') }}" />
+                        </x-slot>
 
-                    @foreach($this->agents as $agent)
-                        <flux:select.option value="{{ $agent->id }}" wire:key="agent-{{ $agent->id }}">
-                            {{ $agent->name }}
-                        </flux:select.option>
-                    @endforeach
-                </flux:select>
+                        @foreach($this->agents as $agent)
+                            <flux:select.option value="{{ $agent->id }}" wire:key="agent-{{ $agent->id }}">
+                                {{ $agent->name }}
+                            </flux:select.option>
+                        @endforeach
+                    </flux:select>
+                @endif
 
                 <flux:select wire:model="form_status" label="{{ __('app.status') }}">
                     @foreach(FollowUpStatusEnum::cases() as $case)
