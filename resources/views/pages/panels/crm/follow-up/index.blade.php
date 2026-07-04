@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Models\Voip\Phone;
 use App\Support\IranPhoneNumberNormalizer;
 use App\Enums\FollowUpStatusEnum;
+use Khody2012\LaravelAmiToolkit\Facades\Ami;
 use Flux\Flux;
 use Morilog\Jalali\Jalalian;
 use Livewire\Attributes\Layout;
@@ -255,11 +256,44 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     public function makeCall(Customer $customer)
     {
-        $this->registerPhoneInVoip($customer);
+        $user = auth()->user();
+        $user->load('internalPhoneDevice');
+        $device = $user->internalPhoneDevice;
+
+        if (! $device || ! $device->dial) {
+            Flux::toast(__('app.internal_phone_not_found'), variant: 'danger');
+
+            return;
+        }
 
         $mobile = $customer->userInfo?->Mobile ?: $customer->PhoneNumber;
-        $this->dispatch('open-tel', url: "tel:{$mobile}");
-        Flux::toast(__('app.phone_added_to_voip'));
+        if (! $mobile || filter_var($mobile, FILTER_VALIDATE_EMAIL)) {
+            Flux::toast(__('app.invalid_mobile_number'), variant: 'danger');
+
+            return;
+        }
+
+        $this->registerPhoneInVoip($customer);
+
+        try {
+            Ami::connect();
+            $response = Ami::originate([
+                'Channel' => $device->dial,
+                'Context' => 'from-internal',
+                'Exten' => $mobile,
+                'Priority' => 1,
+                'Timeout' => 30000,
+            ]);
+
+            if ($response->isSuccess()) {
+                Flux::toast(__('app.call_initiated'));
+            } else {
+                Flux::toast(__('app.call_failed').': '.$response->getMessage(), variant: 'danger');
+            }
+        } catch (\Exception $e) {
+            \Log::error('AMI Call Error: '.$e->getMessage());
+            Flux::toast(__('app.call_failed'), variant: 'danger');
+        }
     }
 
     protected function resetForm()
