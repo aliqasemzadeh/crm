@@ -3,6 +3,7 @@
 use App\Models\SetareganCo\Order;
 use App\Models\SetareganCo\OrderDetail;
 use Livewire\Attributes\Url;
+use Livewire\Component;
 
 return new #[Layout('layouts.panels.crm')] class extends Component
 {
