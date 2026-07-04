@@ -104,6 +104,9 @@ return [
     // CRM / Follow Up
     'follow_up' => 'پیگیری',
     'follow_ups' => 'پیگیری‌ها',
+    'call' => 'تماس',
+    'invalid_mobile_number' => 'شماره موبایل نامعتبر است.',
+    'phone_added_to_voip' => 'شماره با موفقیت در سیستم VoIP ثبت شد.',
     'agent' => 'کارشناس',
     'failure_reason' => 'دلیل عدم خرید',
     'due_date' => 'تاریخ سررسید',
