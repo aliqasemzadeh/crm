@@ -41,4 +41,9 @@ class UserInfo extends Model
     {
         return $this->hasMany(Order::class, 'UserInfoId', 'Id');
     }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'CityId', 'Id');
+    }
 }
