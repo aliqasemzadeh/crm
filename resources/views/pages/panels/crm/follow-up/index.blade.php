@@ -12,10 +12,12 @@ use App\Models\SetareganCo\Product;
 use App\Models\User;
 use App\Models\Voip\Phone;
 use App\Support\IranPhoneNumberNormalizer;
+use App\Support\PersianFinglishConverter;
 use App\Enums\FollowUpStatusEnum;
 use Khody2012\LaravelAmiToolkit\Facades\Ami;
 use Flux\Flux;
 use Morilog\Jalali\Jalalian;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 
 
@@ -245,10 +247,19 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             ? trim($customer->userInfo->Name . ' ' . $customer->userInfo->Family)
             : $customer->UserName;
 
+        $nameLatin = '';
+        if ($displayName !== '') {
+            $converter = new PersianFinglishConverter;
+            $translated = trim($converter->convert($displayName));
+            $spaced = preg_replace('/\s+/u', ' ', $translated);
+            $nameLatin = Str::title(is_string($spaced) ? $spaced : '');
+        }
+
         Phone::updateOrCreate(
             ['number' => $normalized],
             [
                 'name' => $displayName,
+                'name_latin' => $nameLatin,
                 'is_manual' => true,
             ]
         );
