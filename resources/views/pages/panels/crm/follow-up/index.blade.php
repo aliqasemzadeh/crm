@@ -273,9 +273,9 @@ new class extends Component {
                     @endforeach
                 </flux:select>
 
-                <x-persian-date-picker wire:model="due_date" label="{{ __('app.due_date') }}" />
+                <flux:date-picker wire:model="due_date" label="{{ __('app.due_date') }}" />
 
-                <x-persian-date-picker wire:model="next_follow_up_date" label="{{ __('app.next_follow_up_date') }}" />
+                <flux:date-picker wire:model="next_follow_up_date" label="{{ __('app.next_follow_up_date') }}" />
 
                 <flux:input wire:model="failure_reason" label="{{ __('app.failure_reason') }}" />
 
