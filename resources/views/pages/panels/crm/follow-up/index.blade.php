@@ -357,7 +357,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     <flux:table :paginate="$this->followUps">
         <flux:table.columns>
             <flux:table.column>{{ __('app.customer') }}</flux:table.column>
-            <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.province') }}</flux:table.column>
             <flux:table.column>{{ __('app.city') }}</flux:table.column>
             <flux:table.column>{{ __('app.username') }}</flux:table.column>
@@ -383,7 +382,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                             @endif
                         </div>
                     </flux:table.cell>
-                    <flux:table.cell>{{ $item->customer?->userInfo?->Name ?? '-' }}</flux:table.cell>
                     <flux:table.cell>{{ $item->customer?->userInfo?->city?->state?->Title ?? '-' }}</flux:table.cell>
                     <flux:table.cell>{{ $item->customer?->userInfo?->city?->Title ?? '-' }}</flux:table.cell>
                     <flux:table.cell>{{ $item->customer?->NormalizedUserName ?? '-' }}</flux:table.cell>
