@@ -10,8 +10,8 @@
     <flux:sidebar.search placeholder="Search..." />
 
     <flux:sidebar.nav>
-        <flux:sidebar.item icon="home" href="{{ route('panels.crm.dashboard.index') }}" current  wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="phone-call" href="{{ route('panels.crm.follow-up.index') }}" wire:navigate>{{ __('app.follow_ups') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="home" href="{{ route('panels.crm.dashboard.index') }}" :current="request()->routeIs('panels.crm.dashboard.*')"  wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="phone-call" href="{{ route('panels.crm.follow-up.index') }}" :current="request()->routeIs('panels.crm.follow-up.*')" wire:navigate>{{ __('app.follow_ups') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
