@@ -6,8 +6,8 @@
 4-TailwindCSS
 5-AlpineJS
 6-PHP 8.4
-7-All Text Must Translate in /lang/fa/app.php If you want to add new text add it in app.php.
-8-Optimize Queries and use cache if you can.
+7-All Text Must Translate in /lang/en/crm.php If you want to add new text add it in crm.php.
+8-Optimize Queries check N + 1 problem.
 9-Try to use AlpineJS for UI and Livewire for Backend.
 10-We have to use modal for create and edit form.
 11-We have to use pagination for list.
@@ -23,22 +23,18 @@
 21-Use https://fluxui.dev/components/select#backend-search for select when database options.
 21-for event use full name of event assign-data name is not good use panels.administrator.learning-management.school.edit.assign-data
 22-When you want to load livewire component user <livewire:component-name :key="$componentId" />
-23-<flux:main> is container for all pages.
 24-After all livewire action we need Flux::toast('message');
 25-for actions use buttons with icon and tooltip.
-<flux:tooltip content="{{ __('common.import') }}">
+<flux:tooltip content="{{ __('crm.import') }}">
 <flux:button size="xs" variant="primary" color="teal" icon="upload" icon:variant="outline" wire:click="$dispatch('learning-management.student.import.assign-data', { classId: {{ $class->id }} })" />
 </flux:tooltip>
 
-                            <flux:tooltip content="{{ __('common.delete') }}">
-                                <flux:button size="xs" variant="primary" color="red" icon="trash" icon:variant="outline" wire:click="delete({{ $class->id }})" wire:confirm="{{ __('common.are_you_sure') }}" />
+                            <flux:tooltip content="{{ __('crm.delete') }}">
+                                <flux:button size="xs" variant="primary" color="red" icon="trash" icon:variant="outline" wire:click="delete({{ $class->id }})" wire:confirm="{{ __('crm.are_you_sure') }}" />
                             </flux:tooltip>
-26-All Date must be use Jalali Date. morilog/jalali
-27-Use https://github.com/morilog/jalali for date.
 28-For Table use https://fluxui.dev/components/table and add search in searchable fields top of <flux:table.columns>
 29-For Search and Fillter create use card and use <flux:card> and data of table use <flux:table.columns>
 30-https://fluxui.dev/components/pillbox#searchable use it for search.
-31-Use https://github.com/morilog/jalali for date.
 32-searchable for all select and search <flux:select searchable>
 33-Buttons use <flux:button> they have many colors base on action user can use. For example <flux:button color="orange">Save</flux:button> for save action.
 <flux:button variant="primary" color="zinc">Zinc</flux:button>
@@ -61,9 +57,14 @@
 <flux:button variant="primary" color="rose">Rose</flux:button>
 33-In forms and modals only user w-full buttons and only save
 34-try to use colors
-35-I want to use signle file livewire component
-36-I use pages:: for livewire page.
-37-If possible, change class base to single file compoenet.
+35- for edit and delete use these buttons
+<flux:tooltip content="{{ __('crm.edit') }}">
+<flux:button size="xs" variant="primary" color="blue" icon="pencil" icon:variant="outline" wire:click="$dispatch('panels.administrator.user.edit.assign-data', { user: {{ $user->id }} })" />
+</flux:tooltip>
+
+                                    <flux:tooltip content="{{ __('crm.delete') }}">
+                                        <flux:button size="xs" variant="primary" color="red" icon="trash" icon:variant="outline" wire:click="delete({{ $user->id }})" wire:confirm="{{ __('crm.are_you_sure') }}" />
+                                    </flux:tooltip>
 36-Livewire events use Livewire\Attributes\On; and use $this->dispatch('event-name');
 <?php // resources/views/components/⚡dashboard.blade.php
  
@@ -84,4 +85,117 @@ new class extends Component {
         Flux::modal('confirm')->close();
         // Closes all modals on the page...
         Flux::modals()->close();
-40-There is no variant="solid"
+
+39-Here is example of page with flux:table and create button
+<div>
+    <div class="space-y-6">
+        <div class="flex items-center justify-between">
+            <flux:heading size="xl">{{ __('crm.users') }}</flux:heading>
+
+            <flux:modal.trigger name="user-create-modal">
+                <flux:button variant="primary" color="teal" icon="plus">
+                    {{ __('crm.create_user') }}
+                </flux:button>
+            </flux:modal.trigger>
+
+        </div>
+
+        <flux:card>
+            <div class="mb-4">
+                <flux:input wire:model.live.debounce.300ms="search" icon="search" placeholder="{{ __('crm.search') }}..." />
+            </div>
+
+            <flux:table :paginate="$this->users">
+                <flux:table.columns>
+                    <flux:table.column>{{ __('crm.first_name') }}</flux:table.column>
+                    <flux:table.column>{{ __('crm.last_name') }}</flux:table.column>
+                    <flux:table.column>{{ __('crm.email') }}</flux:table.column>
+                    <flux:table.column align="end">{{ __('crm.actions') }}</flux:table.column>
+                </flux:table.columns>
+
+                <flux:table.rows>
+                    @foreach ($this->users as $user)
+                        <flux:table.row :key="$user->id">
+                            <flux:table.cell>{{ $user->first_name }}</flux:table.cell>
+                            <flux:table.cell>{{ $user->last_name }}</flux:table.cell>
+                            <flux:table.cell>{{ $user->email }}</flux:table.cell>
+                            <flux:table.cell align="end">
+                                <div class="flex justify-end gap-2">
+                                    <flux:tooltip content="{{ __('crm.edit') }}">
+                                        <flux:button size="xs" variant="primary" color="blue" icon="pencil" icon:variant="outline" wire:click="$dispatch('panels.administrator.user.edit.assign-data', { user: {{ $user->id }} })" />
+                                    </flux:tooltip>
+
+                                    <flux:tooltip content="{{ __('crm.delete') }}">
+                                        <flux:button size="xs" variant="primary" color="red" icon="trash" icon:variant="outline" wire:click="delete({{ $user->id }})" wire:confirm="{{ __('crm.are_you_sure') }}" />
+                                    </flux:tooltip>
+                                </div>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforeach
+                </flux:table.rows>
+            </flux:table>
+        </flux:card>
+    </div>
+
+    <livewire:user.create />
+    <livewire:user.edit />
+</div>
+40-For per_page use  ->paginate(config('crm.per_page'));
+41-use wire:confirm  for any danger like remove and delete <flux:button
+    type="button"
+    wire:click="delete"
+    wire:confirm="{{ __('crm.are_you_sure') }}"
+>
+    Delete post 
+</flux:button>
+42-Try to use <flux:callout icon="cube" variant="secondary" inline>
+    <flux:callout.heading>Your package is delayed</flux:callout.heading>
+    <x-slot name="actions">
+        <flux:button>Track order -></flux:button>
+        <flux:button variant="ghost">Reschedule</flux:button>
+    </x-slot>
+</flux:callout> when you want to display a record like permissions and roles and users in modals.
+43-no need to add cancel button in modals.
+44-only use <flux:button></flux:button> has color="zinc".
+45-For each model we need php artisan livewire:form ModelForm which guide can be find in 
+https://livewire.laravel.com/docs/4.x/forms#extracting-a-form-object
+use setModel like post
+    public function setPost(Post $post)
+    {
+        $this->post = $post;
+ 
+        $this->title = $post->title;
+ 
+        $this->content = $post->content;
+    }
+ 
+46-When we have one modal component dont add <div></div> just use <flux:modal></flux:modal>
+47-Never use model.live in forms. Just use when I told you.
+48-there is no flex:number use <flux:input type="number" />
+49-<flux:modal.trigger name="create-user-modal">
+    <flux:button>Create user</flux:button>
+</flux:modal.trigger>
+when there is data on open modal use <flux:modal.trigger name="create-user-modal"></flux:modal.trigger>
+50-For submit button use <flux:button type="submit" variant="primary" color="teal">Button</flux:button> - variant="primary" color="teal"
+51-#[Fillable([])] 
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden; 
+try Fillable instead of $fillable array.
+52-use <flux:date-picker  selectable-header /> for date picker and <flux:time-picker  selectable-header /> for time picker.
+53-for active for is_active  <flux:field variant="inline">
+    <flux:label>Enable notifications</flux:label>
+    <flux:switch wire:model.live="notifications" />
+    <flux:error name="notifications" />
+</flux:field>
+54-refresh data: if you add livewire component in a page after create or edit use refresh data on that page. this need to use livewire events #[On('refresh-data')] on page and dispatch livewire event refresh-data on create or edit page.
+55-Add breadcrumbs to livewire page
+<flux:breadcrumbs>
+    <flux:breadcrumbs.item href="{{ route('home') }}" icon="home" />
+    <flux:breadcrumbs.item href="#"></flux:breadcrumbs.item>
+    <flux:breadcrumbs.item>Post</flux:breadcrumbs.item>
+</flux:breadcrumbs>
+56-use <x-slot name="title">page title - config('app.name')</x-slot>page title is page title - config('app.name')
+57-Laravel 13 in command #[Signature('')]
+use Illuminate\Console\Attributes\Description;
+use Illuminate\Console\Attributes\Signature;
+58-I want to replace app.php in language file with crm.php.
