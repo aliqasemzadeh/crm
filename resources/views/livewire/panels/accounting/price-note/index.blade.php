@@ -5,14 +5,14 @@
     <livewire:panels.accounting.grouping.item.receipt />
     <livewire:panels.accounting.invoice.view />
     <livewire:panels.accounting.inventory-receipt.view />
-    <livewire:panels.accounting.price-note.invoices :grouping-id="$grouping->GroupingID" />
-    <livewire:panels.accounting.price-note.receipts :grouping-id="$grouping->GroupingID" />
+    <livewire:panels.accounting.price-note.invoices :grouping-id="$groupingId" />
+    <livewire:panels.accounting.price-note.receipts :grouping-id="$groupingId" />
 
     <div class="flex overflow-x-auto md:grid md:grid-cols-6 gap-4 pb-2 scrollbar-hide">
         @foreach($this->groupings as $groupingItem)
             <flux:button
                 variant="primary"
-                :color="$groupingItem->GroupingID == $grouping->GroupingID ? 'green' : ''"
+                :color="$groupingItem->GroupingID == $groupingId ? 'green' : ''"
                 class="w-full shrink-0 md:shrink"
                 wire:navigate
                 href="{{ route('panels.accounting.price-note.index', ['groupingId' => $groupingItem->GroupingID]) }}"
@@ -22,20 +22,20 @@
         @endforeach
     </div>
 
-    <livewire:panels.accounting.price-note.stats :grouping-id="$grouping->GroupingID" :key="'stats-'.$grouping->GroupingID" lazy />
+    <livewire:panels.accounting.price-note.stats :grouping-id="$groupingId" :key="'stats-'.$groupingId" lazy />
 
     <div class="mt-4">
 
-        @if(\App\Models\Sepidar\INV\Item::where('CodingGroupRef', $grouping->GroupingID)->count() > 0)
-            <livewire:panels.accounting.price-note.items :grouping-id="$grouping->GroupingID" />
+        @if(\App\Models\Sepidar\INV\Item::where('CodingGroupRef', $groupingId)->count() > 0)
+            <livewire:panels.accounting.price-note.items :grouping-id="$groupingId" />
         @else
             @php
                 $groupings = \Illuminate\Support\Facades\Cache::remember(
-                    "groupings_parent_{$grouping->GroupingID}",
+                    "groupings_parent_{$groupingId}",
                     now()->addHours(6),
                     fn () => \App\Models\Sepidar\GNR\Grouping::where(
                         'ParentGroupRef',
-                        $grouping->GroupingID
+                        $groupingId
                     )->get()
                 );
             @endphp
