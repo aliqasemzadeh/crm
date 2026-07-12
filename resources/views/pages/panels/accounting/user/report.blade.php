@@ -30,13 +30,13 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         'selectedMonth' => ['except' => null],
     ];
 
-    public function mount(int $sepidarUser): void
+    public function mount(SepidarUser $sepidarUser): void
     {
         $this->authorize('accounting_user_report');
 
-        $this->sepidarUser = SepidarUser::query()
-            ->where('IsDeleted', 0)
-            ->findOrFail($sepidarUser);
+        abort_if($sepidarUser->IsDeleted, 404);
+
+        $this->sepidarUser = $sepidarUser;
     }
 
     public function sort(string $column): void
