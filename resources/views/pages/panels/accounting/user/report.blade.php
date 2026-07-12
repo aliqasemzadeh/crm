@@ -2,7 +2,7 @@
 
 use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\Sepidar\SLS\Invoice;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -21,6 +21,15 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     #[Url]
     public ?int $selectedMonth = null;
 
+    #[Url]
+    public string $saleType = 'all';
+
+    #[Url]
+    public string $startDate = '';
+
+    #[Url]
+    public string $endDate = '';
+
     public string $sortBy = 'Date';
 
     public string $sortDirection = 'desc';
@@ -28,6 +37,9 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'selectedMonth' => ['except' => null],
+        'saleType' => ['except' => 'all'],
+        'startDate' => ['except' => ''],
+        'endDate' => ['except' => ''],
     ];
 
     public function mount(SepidarUser $sepidarUser): void
@@ -55,40 +67,97 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         $this->resetPage();
     }
 
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->selectedMonth = null;
+        $this->saleType = 'all';
+        $this->startDate = '';
+        $this->endDate = '';
+        $this->resetPage();
+    }
+
     public function updatingSearch(): void
     {
         $this->resetPage();
     }
 
+    public function updatingSaleType(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingStartDate(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingEndDate(): void
+    {
+        $this->resetPage();
+    }
+
+    protected function gregorianDate(?string $persianDate): ?string
+    {
+        if (! $persianDate) {
+            return null;
+        }
+
+        try {
+            return Jalalian::fromFormat('Y/m/d', $persianDate)->toCarbon()->format('Y-m-d');
+        } catch (\Exception) {
+            return null;
+        }
+    }
+
+    protected function baseInvoiceQuery(): Builder
+    {
+        $fiscalYearRef = config('sepidar.FiscalYearRef');
+
+        return Invoice::query()
+            ->where('FiscalYearRef', $fiscalYearRef)
+            ->where('Creator', $this->sepidarUser->UserID)
+            ->when($this->saleType !== 'all', function (Builder $query) {
+                if ($this->saleType === 'official') {
+                    $query->where('SaleTypeRef', 1);
+                } else {
+                    $query->where('SaleTypeRef', '!=', 1);
+                }
+            })
+            ->when($this->startDate !== '', function (Builder $query) {
+                $startDate = $this->gregorianDate($this->startDate);
+                if ($startDate) {
+                    $query->where('Date', '>=', $startDate);
+                }
+            })
+            ->when($this->endDate !== '', function (Builder $query) {
+                $endDate = $this->gregorianDate($this->endDate);
+                if ($endDate) {
+                    $query->where('Date', '<=', $endDate);
+                }
+            });
+    }
+
     #[Computed]
     public function invoiceStats(): array
     {
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
-        $userId = $this->sepidarUser->UserID;
-        $cacheKey = "accounting_user_invoice_stats_{$userId}_{$fiscalYearRef}";
+        $invoices = $this->baseInvoiceQuery()
+            ->select(['Price', 'Date'])
+            ->whereNotNull('Date')
+            ->get();
 
-        return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef, $userId) {
-            $invoices = Invoice::query()
-                ->where('FiscalYearRef', $fiscalYearRef)
-                ->where('Creator', $userId)
-                ->select(['Price', 'Date'])
-                ->get();
+        $monthlyStats = array_fill(1, 12, 0);
 
-            $monthlyStats = array_fill(1, 12, 0);
+        foreach ($invoices as $invoice) {
+            $month = Jalalian::fromDateTime($invoice->Date)->getMonth();
+            $monthlyStats[$month] += (float) $invoice->Price;
+        }
 
-            foreach ($invoices as $invoice) {
-                if ($invoice->Date) {
-                    $month = Jalalian::fromDateTime($invoice->Date)->getMonth();
-                    $monthlyStats[$month] += (float) $invoice->Price;
-                }
-            }
-
-            return [
-                'monthly' => $monthlyStats,
-                'total' => array_sum($monthlyStats),
-                'count' => $invoices->count(),
-            ];
-        });
+        return [
+            'monthly' => $monthlyStats,
+            'total' => array_sum($monthlyStats),
+            'count' => $invoices->count(),
+        ];
     }
 
     #[Computed]
@@ -98,11 +167,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             return [];
         }
 
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
-
-        return Invoice::query()
-            ->where('FiscalYearRef', $fiscalYearRef)
-            ->where('Creator', $this->sepidarUser->UserID)
+        return $this->baseInvoiceQuery()
             ->whereNotNull('Date')
             ->get(['InvoiceId', 'Date'])
             ->filter(function (Invoice $invoice) {
@@ -115,24 +180,21 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     #[Computed]
     public function invoices()
     {
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
         $monthInvoiceIds = $this->selectedMonthInvoiceIds;
 
-        return Invoice::query()
+        return $this->baseInvoiceQuery()
             ->with(['customer'])
-            ->where('FiscalYearRef', $fiscalYearRef)
-            ->where('Creator', $this->sepidarUser->UserID)
-            ->when($this->selectedMonth, function ($query) use ($monthInvoiceIds) {
+            ->when($this->selectedMonth, function (Builder $query) use ($monthInvoiceIds) {
                 $query->whereIn('InvoiceId', $monthInvoiceIds ?: [0]);
             })
-            ->when($this->search !== '', function ($query) {
+            ->when($this->search !== '', function (Builder $query) {
                 $search = '%'.$this->search.'%';
-                $query->where(function ($inner) use ($search) {
+                $query->where(function (Builder $inner) use ($search) {
                     $inner->where('CustomerRealName', 'like', $search)
                         ->orWhere('Number', 'like', $search);
                 });
             })
-            ->tap(function ($query) {
+            ->tap(function (Builder $query) {
                 if ($this->sortBy) {
                     $query->orderBy($this->sortBy, $this->sortDirection);
                 }
@@ -160,22 +222,72 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                 <flux:text class="text-zinc-500">{{ __('app.user_invoices_report_description') }}</flux:text>
             </div>
 
-            <flux:button
-                variant="primary"
-                color="zinc"
-                icon="arrow-right"
-                href="{{ route('panels.accounting.user.index') }}"
-                wire:navigate
-            >
-                {{ __('app.back_to_users') }}
-            </flux:button>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <flux:tabs variant="segmented" wire:model.live="saleType">
+                    <flux:tab name="all">{{ __('app.all') }}</flux:tab>
+                    <flux:tab name="official">{{ __('app.official') }}</flux:tab>
+                    <flux:tab name="unofficial">{{ __('app.unofficial') }}</flux:tab>
+                </flux:tabs>
+
+                <flux:button
+                    variant="primary"
+                    color="zinc"
+                    icon="arrow-right"
+                    href="{{ route('panels.accounting.user.index') }}"
+                    wire:navigate
+                >
+                    {{ __('app.back_to_users') }}
+                </flux:button>
+            </div>
         </div>
 
         <flux:separator variant="subtle" class="mt-6" />
     </div>
 
+    <flux:card class="mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+            <flux:input
+                wire:model.live.debounce.400ms="startDate"
+                :label="__('app.start_date')"
+                mask="9999/99/99"
+                placeholder="1404/01/01"
+            />
+
+            <flux:input
+                wire:model.live.debounce.400ms="endDate"
+                :label="__('app.end_date')"
+                mask="9999/99/99"
+                placeholder="1404/12/29"
+            />
+
+            <flux:input
+                wire:model.live.debounce.400ms="search"
+                icon="search"
+                :label="__('app.search')"
+                placeholder="{{ __('app.search_placeholder') }}"
+            />
+
+            <div class="flex items-end">
+                <flux:button
+                    variant="primary"
+                    color="zinc"
+                    class="w-full"
+                    wire:click="clearFilters"
+                >
+                    {{ __('app.clear_all_filters') }}
+                </flux:button>
+            </div>
+        </div>
+
+        @if($startDate && $endDate && $this->gregorianDate($startDate) && $this->gregorianDate($endDate))
+            <flux:text class="mt-3 text-sm text-zinc-500">
+                {{ __('app.date_range_filter_hint', ['start' => $startDate, 'end' => $endDate]) }}
+            </flux:text>
+        @endif
+    </flux:card>
+
     <div class="relative">
-        <div wire:loading.delay.longer wire:target="selectedMonth, search" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+        <div wire:loading.delay.longer wire:target="selectedMonth, search, saleType, startDate, endDate, clearFilters" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
             <flux:icon.loader-circle class="animate-spin text-zinc-500 w-10 h-10" />
         </div>
 
@@ -248,14 +360,6 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         @endif
 
         <livewire:panels.accounting.invoice.view />
-
-        <flux:card class="mb-4">
-            <flux:input
-                wire:model.live.debounce.400ms="search"
-                icon="search"
-                placeholder="{{ __('app.search_placeholder') }}"
-            />
-        </flux:card>
 
         <flux:table :paginate="$this->invoices">
             <flux:table.columns>

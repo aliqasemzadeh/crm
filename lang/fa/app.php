@@ -580,6 +580,7 @@ return [
     'total_user_invoices' => 'جمع فاکتورهای کاربر',
     'back_to_users' => 'بازگشت به کاربران',
     'filtered_by_month' => 'فیلتر بر اساس ماه',
+    'date_range_filter_hint' => 'نمایش فاکتورها از :start تا :end',
     'name_en' => 'نام انگلیسی',
     'bank' => 'بانک',
     'banks' => 'بانک‌ها',
