@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Accounting\PriceNote;
 
 use App\Models\Sepidar\GNR\Grouping;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -20,13 +21,17 @@ class Index extends Component
         }
     }
 
-    #[Computed(cache: true)]
+    #[Computed]
     public function groupings()
     {
-        return Grouping::query()
-            ->where('ParentGroupRef', null)
-            ->where('EntityType', 'SG.Inventory.ItemManagement.Common.ItemCodingGroup')
-            ->get();
+        return Cache::remember(
+            'price_note_root_groupings',
+            now()->addHours(6),
+            fn () => Grouping::query()
+                ->where('ParentGroupRef', null)
+                ->where('EntityType', 'SG.Inventory.ItemManagement.Common.ItemCodingGroup')
+                ->get(['GroupingID', 'Title'])
+        );
     }
 
     #[Layout('layouts.panels.accounting')]
