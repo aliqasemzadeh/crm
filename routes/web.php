@@ -68,6 +68,8 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/full-report/index', \App\Livewire\Panels\Accounting\FullReport\Index::class)->name('panels.accounting.full-report.index');
     Route::livewire('/panels/accounting/full-report/party/{party}', \App\Livewire\Panels\Accounting\FullReport\Party::class)->name('panels.accounting.full-report.party.show');
     Route::livewire('/panels/accounting/tax/index', \App\Livewire\Panels\Accounting\Tax\Index::class)->name('panels.accounting.tax.index');
+    Route::livewire('/panels/accounting/user/index', 'pages::panels.accounting.user.index')->name('panels.accounting.user.index');
+    Route::livewire('/panels/accounting/user/{sepidarUser}/report', 'pages::panels.accounting.user.report')->name('panels.accounting.user.report');
 
     Route::get('/item-image/{itemId}', function ($itemId) {
         return \Illuminate\Support\Facades\Cache::remember("item_image_$itemId", now()->addDays(7), function () use ($itemId) {

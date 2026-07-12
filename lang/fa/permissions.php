@@ -189,6 +189,9 @@ return [
 
         'accounting_full_report_index' => 'گزارش جامع حساب ها',
         'accounting_tax_index' => 'گزارش مالیاتی',
+
+        'accounting_user_index' => 'فهرست کاربران صدور فاکتور',
+        'accounting_user_report' => 'گزارش فاکتورهای کاربر',
     ],
 
     'workspace' => [
