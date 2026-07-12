@@ -8,6 +8,7 @@ use App\Models\Sepidar\GNR\Party;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 
 class Invoice extends Model
 {
@@ -19,15 +20,32 @@ class Invoice extends Model
     {
         static::deleted(function ($invoice) {
             Index::clearCache();
+            static::clearUserStatsCache($invoice->Creator);
         });
 
         static::created(function ($invoice) {
             Index::clearCache();
+            static::clearUserStatsCache($invoice->Creator);
         });
 
         static::updated(function ($invoice) {
             Index::clearCache();
+            static::clearUserStatsCache($invoice->Creator);
+
+            if ($invoice->wasChanged('Creator')) {
+                static::clearUserStatsCache($invoice->getOriginal('Creator'));
+            }
         });
+    }
+
+    protected static function clearUserStatsCache(?int $creatorId): void
+    {
+        if (! $creatorId) {
+            return;
+        }
+
+        $fiscalYearRef = config('sepidar.FiscalYearRef');
+        Cache::forget("accounting_user_invoice_stats_{$creatorId}_{$fiscalYearRef}");
     }
 
     public function customer(): BelongsTo

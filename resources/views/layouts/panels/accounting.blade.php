@@ -66,6 +66,15 @@
         </flux:sidebar.item>
         @endcan
 
+        @can('accounting_user_index')
+        <flux:sidebar.item icon="user-cog"
+                           href="{{ route('panels.accounting.user.index') }}"
+                           :current="request()->routeIs('panels.accounting.user.*')"
+                           wire:navigate>
+            {{ __('app.accounting_users') }}
+        </flux:sidebar.item>
+        @endcan
+
         @can('accounting_payment_header_index')
         <flux:sidebar.item icon="credit-card"
                            href="{{ route('panels.accounting.payment-header.index') }}"
