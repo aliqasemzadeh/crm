@@ -8,7 +8,7 @@
                 </span>
             </div>
             <div class="flex gap-1 shrink-0">
-                <flux:button size="xs" variant="ghost" href="{{ $itemFetcher->link }}" target="_blank" class="!p-1">
+                <flux:button size="xs" variant="ghost" href="{{ $itemFetcher->link }}" target="_blank" rel="nofollow noopener noreferrer" class="!p-1">
                     <flux:icon.link class="w-3 h-3" />
                 </flux:button>
                 <flux:button size="xs" variant="ghost" wire:click="run({{ $itemFetcher->id }})" wire:loading.attr="disabled" class="!p-1">
