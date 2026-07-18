@@ -10,15 +10,17 @@
 
     <div class="flex overflow-x-auto md:grid md:grid-cols-6 gap-4 pb-2 scrollbar-hide">
         @foreach($this->groupings as $groupingItem)
-            <flux:button
-                variant="primary"
-                :color="$groupingItem->GroupingID == $groupingId ? 'green' : ''"
-                class="w-full shrink-0 md:shrink"
-                wire:navigate
-                href="{{ route('panels.accounting.price-note.index', ['groupingId' => $groupingItem->GroupingID]) }}"
-            >
-                {{ $groupingItem->Title }}
-            </flux:button>
+            @if(is_object($groupingItem))
+                <flux:button
+                    variant="primary"
+                    :color="$groupingItem->GroupingID == $groupingId ? 'green' : ''"
+                    class="w-full shrink-0 md:shrink"
+                    wire:navigate
+                    href="{{ route('panels.accounting.price-note.index', ['groupingId' => $groupingItem->GroupingID]) }}"
+                >
+                    {{ $groupingItem->Title }}
+                </flux:button>
+            @endif
         @endforeach
     </div>
 
@@ -30,8 +32,8 @@
             <livewire:panels.accounting.price-note.items :grouping-id="$groupingId" />
         @else
             @php
-                $groupings = \Illuminate\Support\Facades\Cache::remember(
-                    "groupings_parent_{$groupingId}",
+                $priceNoteGroupings = \Illuminate\Support\Facades\Cache::remember(
+                    "price_note_groupings_parent_{$groupingId}",
                     now()->addHours(6),
                     fn () => \App\Models\Sepidar\GNR\Grouping::where(
                         'ParentGroupRef',
@@ -40,38 +42,43 @@
                 );
             @endphp
             <flux:accordion>
-                @foreach($groupings as $sub_grouping)
-                    @if(\App\Models\Sepidar\GNR\Grouping::where('ParentGroupRef', $sub_grouping->GroupingID)->count() > 0)
-                        @php
-                            $subGroupings = \Illuminate\Support\Facades\Cache::remember(
-                                "groupings_parent_{$sub_grouping->GroupingID}",
-                                now()->addHours(6),
-                                fn () => \App\Models\Sepidar\GNR\Grouping::where(
-                                    'ParentGroupRef',
-                                    $sub_grouping->GroupingID
-                                )->get()
-                            );
-                        @endphp
+                @foreach($priceNoteGroupings as $sub_grouping)
+                    @if(is_object($sub_grouping))
+                        @if(\App\Models\Sepidar\GNR\Grouping::where('ParentGroupRef', $sub_grouping->GroupingID)->count() > 0)
+                            @php
+                                $priceNoteSubGroupings = \Illuminate\Support\Facades\Cache::remember(
+                                    "price_note_groupings_parent_{$sub_grouping->GroupingID}",
+                                    now()->addHours(6),
+                                    fn () => \App\Models\Sepidar\GNR\Grouping::where(
+                                        'ParentGroupRef',
+                                        $sub_grouping->GroupingID
+                                    )->get()
+                                );
+                            @endphp
 
-                        @foreach($subGroupings as $sub_grouping_item)
+                            @foreach($priceNoteSubGroupings as $sub_grouping_item)
+                                @if(is_object($sub_grouping_item))
+                                    <flux:accordion.item>
+                                        <flux:accordion.heading>
+                                            {{ $sub_grouping_item->Title }} - {{ $sub_grouping_item->GroupingID }}
+                                        </flux:accordion.heading>
+                                        <flux:accordion.content>
+                                            <livewire:panels.accounting.price-note.items
+                                                :grouping-id="$sub_grouping_item->GroupingID"
+                                                :key="'items-'.$sub_grouping_item->GroupingID"
+                                            />
+                                        </flux:accordion.content>
+                                    </flux:accordion.item>
+                                @endif
+                            @endforeach
+                        @else
                             <flux:accordion.item>
-                                <flux:accordion.heading>
-                                    {{ $sub_grouping_item->Title }} - {{ $sub_grouping_item->GroupingID }}
-                                </flux:accordion.heading>
+                                <flux:accordion.heading>{{ $sub_grouping->Title }} - {{ $sub_grouping->GroupingID }}</flux:accordion.heading>
                                 <flux:accordion.content>
-                                    <livewire:panels.accounting.price-note.items
-                                        :grouping-id="$sub_grouping_item->GroupingID"
-                                    />
+                                    <livewire:panels.accounting.price-note.items :grouping-id="$sub_grouping->GroupingID" :key="'items-'.$sub_grouping->GroupingID" />
                                 </flux:accordion.content>
                             </flux:accordion.item>
-                        @endforeach
-                    @else
-                        <flux:accordion.item>
-                            <flux:accordion.heading>{{ $sub_grouping->Title }} - {{ $sub_grouping->GroupingID }}</flux:accordion.heading>
-                            <flux:accordion.content>
-                                <livewire:panels.accounting.price-note.items :grouping-id="$sub_grouping->GroupingID" />
-                            </flux:accordion.content>
-                        </flux:accordion.item>
+                        @endif
                     @endif
                 @endforeach
             </flux:accordion>
