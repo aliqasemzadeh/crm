@@ -11,10 +11,10 @@ new class extends Component
 {
     use WithPagination;
 
-    public int $groupingId;
+    public $groupingId;
 
     #[On('panels.accounting.price-note.receipts.assign-data')]
-    public function assignData(int $groupingId)
+    public function assignData($groupingId)
     {
         $this->groupingId = $groupingId;
         $this->resetPage();

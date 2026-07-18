@@ -10,11 +10,11 @@ use Livewire\Component;
 
 class Index extends Component
 {
-    public int $groupingId;
+    public $groupingId;
 
-    public function mount(int $groupingId = 0): void
+    public function mount($groupingId = 0): void
     {
-        if ($groupingId === 0) {
+        if (empty($groupingId)) {
             $this->groupingId = Grouping::firstOrFail()->GroupingID;
         } else {
             $this->groupingId = $groupingId;
@@ -25,7 +25,7 @@ class Index extends Component
     public function groupings()
     {
         return Cache::remember(
-            'price_note_root_groupings',
+            'price_note_root_groupings_v2',
             now()->addHours(6),
             fn () => Grouping::query()
                 ->where('ParentGroupRef', null)

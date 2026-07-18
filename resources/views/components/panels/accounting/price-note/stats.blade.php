@@ -7,13 +7,13 @@ use Livewire\Component;
 
 new class extends Component
 {
-    public int $groupingId;
+    public $groupingId;
 
     #[Computed]
     public function salesStats(): array
     {
         return \Illuminate\Support\Facades\Cache::remember(
-            "sales_stats_grouping_{$this->groupingId}_year_" . config('sepidar.FiscalYearRef'),
+            "sales_stats_grouping_v2_{$this->groupingId}_year_" . config('sepidar.FiscalYearRef'),
             now()->addHours(1),
             function () {
                 $grouping = Grouping::find($this->groupingId);
