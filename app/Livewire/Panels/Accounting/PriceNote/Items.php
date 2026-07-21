@@ -12,16 +12,16 @@ class Items extends Component
 {
     public string $search = '';
 
-    public int $groupingId;
+    public $groupingId;
 
     #[On('panels.accounting.price-note.items.refresh')]
     public function refresh(): void
     {
-        Cache::forget("items_by_grouping_{$this->groupingId}");
+        Cache::forget("items_by_grouping_v2_{$this->groupingId}");
         unset($this->items);
     }
 
-    public function mount(int $groupingId): void
+    public function mount($groupingId): void
     {
         $this->groupingId = $groupingId;
     }
@@ -38,7 +38,7 @@ class Items extends Component
                 ->get();
         }
 
-        $cacheKey = "items_by_grouping_{$groupingId}";
+        $cacheKey = "items_by_grouping_v2_{$groupingId}";
         return Cache::remember($cacheKey, now()->addMinutes(8000), function () use ($groupingId) {
             return Item::query()
                 ->where('CodingGroupRef', $groupingId)

@@ -52,7 +52,7 @@
                         </flux:table.cell>
                         <flux:table.cell>
                             <div class="flex gap-2">
-                                <flux:button size="xs" href="{{ $itemFetcher->link }}" target="_blank" >
+                                <flux:button size="xs" href="{{ $itemFetcher->link }}" target="_blank" rel="nofollow noopener noreferrer">
                                     <flux:icon.link class="w-4 h-4" />
                                 </flux:button>
                                 <flux:button size="xs" wire:click="run({{ $itemFetcher->id }})" variant="primary" color="green" wire:loading.attr="disabled">
