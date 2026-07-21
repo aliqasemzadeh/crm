@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('file_name');
             $table->string('file_path');
             $table->string('file_description')->nullable();
-            $table->foreignId('instruction_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('instruction_id')->constrained('workspace_instructions')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('instruction_files');
+        Schema::dropIfExists('workspace_instruction_files');
     }
 };
