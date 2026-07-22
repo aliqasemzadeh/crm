@@ -194,13 +194,20 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     #[Computed]
     public function groupings(): Collection
     {
-        return Cache::remember('warehouse_item_groupings', now()->addHours(1), function () {
+        $rows = Cache::remember('warehouse_item_groupings_v2', now()->addHours(1), function () {
             return Grouping::query()
                 ->select(['GroupingID', 'Title'])
                 ->whereNotNull('Title')
                 ->orderBy('Title')
-                ->get();
+                ->get()
+                ->map(fn (Grouping $grouping) => [
+                    'GroupingID' => $grouping->GroupingID,
+                    'Title' => $grouping->Title,
+                ])
+                ->all();
         });
+
+        return collect($rows)->map(fn (array $row) => (object) $row);
     }
 
     #[Computed]
