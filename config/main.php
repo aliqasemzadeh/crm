@@ -15,5 +15,6 @@ return [
     'crm_users' => [
         2 => 10,
         8 => 10,
-    ]
+    ],
+    'price_notification' => env('PRICE_NOTIFICATION', false),
 ];

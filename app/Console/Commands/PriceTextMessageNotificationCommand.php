@@ -31,6 +31,14 @@ class PriceTextMessageNotificationCommand extends Command
     public function handle()
     {
         Log::info('Command app:price-text-message-notification-command started.');
+
+        if (! config('main.price_notification')) {
+            $this->info('Price notification is disabled. Skipping command execution.');
+            Log::info('Command app:price-text-message-notification-command skipped (price notification inactive).');
+
+            return;
+        }
+
         $phones = [
             "09177886099",
              "09177114358",
