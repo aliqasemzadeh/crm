@@ -28,6 +28,14 @@ class DayCheckCreationCommand extends Command
     public function handle()
     {
         Log::info('Command app:day-check-creation-command started.');
+
+        if (! config('main.active_day_check.warehouse')) {
+            $this->info('Warehouse day check is disabled. Skipping command execution.');
+            Log::info('Command app:day-check-creation-command skipped (warehouse inactive).');
+
+            return;
+        }
+
         if (now()->isFriday()) {
             $this->info('Today is Friday. Skipping command execution.');
             return;

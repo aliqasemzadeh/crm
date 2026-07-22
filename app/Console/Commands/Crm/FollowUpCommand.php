@@ -27,6 +27,12 @@ class FollowUpCommand extends Command
      */
     public function handle()
     {
+        if (! config('main.active_day_check.crm')) {
+            $this->info('CRM day check is disabled. Skipping command execution.');
+
+            return;
+        }
+
         $crmUsers = config('main.crm_users', []);
 
         if (empty($crmUsers)) {
