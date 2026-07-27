@@ -56,7 +56,7 @@ class SendOtpJob implements ShouldQueue
 
             // If user has no Bale (code=17 & type=3), fall back to SMS
             if ($this->isBaleNoAccount($baleResponse)) {
-                $this->sendViaSabapnovin($normalizedMobile, $message, $originalMobile);
+                $this->sendViaSetaregan($normalizedMobile, $message, $originalMobile);
 
                 return;
             }
@@ -65,12 +65,12 @@ class SendOtpJob implements ShouldQueue
             Log::warning('Bale send was not successful, falling back to SMS.', [
                 'response' => $baleResponse,
             ]);
-            $this->sendViaSabapnovin($normalizedMobile, $message, $originalMobile);
+            $this->sendViaSetaregan($normalizedMobile, $message, $originalMobile);
         } catch (\Throwable $e) {
             Log::error('Bale send exception, falling back to SMS: '.$e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
             ]);
-            $this->sendViaSabapnovin($normalizedMobile, $message, $originalMobile);
+            $this->sendViaSetaregan($normalizedMobile, $message, $originalMobile);
         }
     }
 
@@ -204,30 +204,39 @@ class SendOtpJob implements ShouldQueue
     }
 
     /**
-     * Send SMS via Sabapnovin fallback method using provided gateway.
+     * Send SMS via پنل پیامک ستارگان fallback.
      */
-    private function sendViaSabapnovin(string $normalizedTo, string $text, string $originalTo): void
+    private function sendViaSetaregan(string $normalizedTo, string $text, string $originalTo): void
     {
         try {
-            $request = Http::get(
-                sprintf('https://api.sabanovin.com/v1/%s/sms/send.json', (string) Config::get('sms.api-key')),
-                [
-                    'gateway' => Config::get('sms.gateway'),
-                    'to' => $normalizedTo,
-                    'text' => $text.PHP_EOL."لغو 11",
-                ]
-            )->json();
+            $token = (string) Config::get('sms.token');
+            $gateway = (string) Config::get('sms.gateway');
+            $endpoint = (string) Config::get('sms.endpoint', 'https://srscrm.ir/api/sms/send');
 
-            // Optional: info log and simple auditing
-            Log::info('SMS send attempt via Sabapnovin', [
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->asJson()
+                ->post($endpoint, [
+                    'to' => $normalizedTo,
+                    'message' => $text.PHP_EOL.'لغو 11',
+                    'gateway' => $gateway,
+                ]);
+
+            $payload = $response->json() ?? [];
+
+            Log::info('SMS send attempt via Setaregan', [
                 'to' => $normalizedTo,
                 'original' => $originalTo,
                 'message' => $text,
-                'response' => $request,
+                'http_status' => $response->status(),
+                'response' => $payload,
             ]);
 
-            if (($request['status']['code'] ?? 0) != 200) {
-                Log::error('Send SMS Error: '.($request['status']['message'] ?? 'unknown error'));
+            if (! $response->successful() || ! ($payload['ok'] ?? false)) {
+                Log::error('Send SMS Error: '.($payload['message'] ?? 'unknown error'), [
+                    'code' => $payload['code'] ?? null,
+                    'http_status' => $response->status(),
+                ]);
             }
         } catch (\Throwable $e) {
             Log::error('Failed to send SMS: '.$e->getMessage(), [
