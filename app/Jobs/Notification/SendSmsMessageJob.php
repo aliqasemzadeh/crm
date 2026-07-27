@@ -18,8 +18,7 @@ class SendSmsMessageJob implements ShouldQueue
     public function __construct(
         public string $mobile,
         public string $text
-    ) 
-    {
+    ) {
     }
 
     /**
@@ -27,10 +26,9 @@ class SendSmsMessageJob implements ShouldQueue
      */
     public function handle(): void
     {
-        // Normalize and send SMS via Sabapnovin
         [$originalMobile, $normalizedMobile] = $this->normalizeIranMobile($this->mobile);
 
-        $this->sendViaSabapnovin($normalizedMobile, $this->text, $originalMobile);
+        $this->sendViaSetaregan($normalizedMobile, $this->text, $originalMobile);
     }
 
     /**
@@ -68,30 +66,39 @@ class SendSmsMessageJob implements ShouldQueue
     }
 
     /**
-     * Send SMS via Sabapnovin using provided gateway.
+     * Send SMS via پنل پیامک ستارگان.
      */
-    private function sendViaSabapnovin(string $normalizedTo, string $text, string $originalTo): void
+    private function sendViaSetaregan(string $normalizedTo, string $text, string $originalTo): void
     {
         try {
-            $request = Http::withoutVerifying()->withOptions(["verify"=>false])->get(
-                sprintf('https://api.sabanovin.com/v1/%s/sms/send.json', (string) Config::get('sms.api-key')),
-                [
-                    'gateway' => Config::get('sms.gateway'),
-                    'to' => $normalizedTo,
-                    'text' => $text.PHP_EOL."لغو 11",
-                ]
-            )->json();
+            $token = (string) Config::get('sms.token');
+            $gateway = (string) Config::get('sms.gateway');
+            $endpoint = (string) Config::get('sms.endpoint', 'https://srscrm.ir/api/sms/send');
 
-            // Optional: info log and simple auditing
-            Log::info('SMS send attempt via Sabapnovin', [
+            $response = Http::withToken($token)
+                ->acceptJson()
+                ->asJson()
+                ->post($endpoint, [
+                    'to' => $normalizedTo,
+                    'message' => $text.PHP_EOL.'لغو 11',
+                    'gateway' => $gateway,
+                ]);
+
+            $payload = $response->json() ?? [];
+
+            Log::info('SMS send attempt via Setaregan', [
                 'to' => $normalizedTo,
                 'original' => $originalTo,
                 'message' => $text,
-                'response' => $request,
+                'http_status' => $response->status(),
+                'response' => $payload,
             ]);
 
-            if (($request['status']['code'] ?? 0) != 200) {
-                Log::error('Send SMS Error: '.($request['status']['message'] ?? 'unknown error'));
+            if (! $response->successful() || ! ($payload['ok'] ?? false)) {
+                Log::error('Send SMS Error: '.($payload['message'] ?? 'unknown error'), [
+                    'code' => $payload['code'] ?? null,
+                    'http_status' => $response->status(),
+                ]);
             }
         } catch (\Throwable $e) {
             Log::error('Failed to send SMS: '.$e->getMessage(), [
