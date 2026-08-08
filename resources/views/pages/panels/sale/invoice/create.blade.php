@@ -3,7 +3,7 @@
 use App\Livewire\Forms\Accounting\InvoiceForm;
 use App\Livewire\Panels\Accounting\Invoice\Concerns\HandlesInvoiceForm;
 use App\Models\Sepidar\INV\Item;
-use App\Services\Sale\SaleCart;
+use App\Services\Sale\SaleTemporaryInvoice;
 use App\Services\Sepidar\InvoiceCreator;
 use Flux\Flux;
 use Illuminate\Support\Str;
@@ -32,13 +32,13 @@ new #[Layout('layouts.panels.sale')] class extends Component
         return ['required', 'numeric', 'gt:0'];
     }
 
-    public function mount(SaleCart $cart): void
+    public function mount(SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
         $this->form->date = Jalalian::now()->format('Y/m/d');
         $this->form->sale_type_ref = 2;
-        $this->items = $this->itemsFromCart($cart);
+        $this->items = $this->itemsFromTemporaryInvoice($draft);
     }
 
     public function applySitePrices(): void
@@ -62,7 +62,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
         Flux::toast(__('app.site_prices_applied'));
     }
 
-    public function save(InvoiceCreator $creator, SaleCart $cart): void
+    public function save(InvoiceCreator $creator, SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
@@ -77,8 +77,8 @@ new #[Layout('layouts.panels.sale')] class extends Component
             return;
         }
 
-        $cart->clear();
-        $this->dispatch('panels.sale.cart.updated');
+        $draft->clear();
+        $this->dispatch('panels.sale.temporary-invoice.updated');
 
         Flux::toast(__('app.invoice_created', ['number' => $invoice->Number]));
 
@@ -88,9 +88,9 @@ new #[Layout('layouts.panels.sale')] class extends Component
     /**
      * @return list<array{row_id: string, item_ref: int|null, quantity: float|int, fee: float|int|string, discount: int, tax: int, description: string}>
      */
-    protected function itemsFromCart(SaleCart $cart): array
+    protected function itemsFromTemporaryInvoice(SaleTemporaryInvoice $draft): array
     {
-        $quantities = $cart->all();
+        $quantities = $draft->all();
 
         if ($quantities === []) {
             return [
