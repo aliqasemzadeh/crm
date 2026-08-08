@@ -83,6 +83,7 @@ class UploadImage extends Component
 
         Flux::toast(text: $message, variant: 'success');
         $this->dispatch('panels.sale.item.upload-image.saved');
+        $this->dispatch('panels.sale.item-price.items.refresh');
     }
 
     /**

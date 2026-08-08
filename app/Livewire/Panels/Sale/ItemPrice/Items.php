@@ -4,10 +4,12 @@ namespace App\Livewire\Panels\Sale\ItemPrice;
 
 use App\Models\Sepidar\INV\Item;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Component;
 use Illuminate\Support\Facades\Cache;
 
+#[Lazy]
 class Items extends Component
 {
     public string $search = '';
