@@ -583,6 +583,7 @@ return [
     'sales_items_description' => 'فهرست کالاها همراه با موجودی، جستجو و تنظیمات متادیتای فروش.',
     'sales_item_price_description' => 'قیمت‌گذاری و مشاهده کالاها بر اساس دسته‌بندی اصلی.',
     'sales_customers_description' => 'مشاهده مشتریان به همراه شماره تماس و آدرس.',
+    'updated_successfully' => 'با موفقیت به‌روزرسانی شد.',
     'accounting_description' => 'مدیریت و مشاهده حساب‌های بانکی و تراکنش‌ها.',
     'accounting_users' => 'کاربران صدور فاکتور',
     'accounting_users_description' => 'مشاهده کاربران سپیدار و گزارش فاکتورهای صادر شده توسط هر کاربر.',
