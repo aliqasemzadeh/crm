@@ -10,7 +10,7 @@ new class extends Component
 {
     public int $count = 0;
 
-    /** @var list<array{id: int, title: string, code: string, quantity: int, thumbnail: mixed}> */
+    /** @var list<array{id: int, title: string, code: string, quantity: int, thumbnail: ?string}> */
     public array $lines = [];
 
     public function mount(SaleTemporaryInvoice $draft): void
@@ -108,10 +108,13 @@ new class extends Component
 
                 return [
                     'id' => $itemId,
-                    'title' => $item->Title,
-                    'code' => $item->Code,
+                    'title' => (string) $item->Title,
+                    'code' => (string) $item->Code,
                     'quantity' => $quantity,
-                    'thumbnail' => $item->image?->Thumbnail,
+                    // Binary thumbnails cannot live in Livewire public state (JSON/UTF-8).
+                    'thumbnail' => $item->image?->Thumbnail
+                        ? base64_encode($item->image->Thumbnail)
+                        : null,
                 ];
             })
             ->filter()
@@ -171,7 +174,7 @@ new class extends Component
                             <div class="shrink-0">
                                 @if ($line['thumbnail'])
                                     <img
-                                        src="data:image/jpeg;base64,{{ base64_encode($line['thumbnail']) }}"
+                                        src="data:image/jpeg;base64,{{ $line['thumbnail'] }}"
                                         alt="{{ $line['title'] }}"
                                         class="size-12 rounded-md object-cover shadow-sm"
                                     >
