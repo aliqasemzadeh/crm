@@ -24,6 +24,7 @@ class InvoiceCreator
      *         quantity: float|int,
      *         fee: float|int,
      *         discount?: float|int,
+     *         tax?: float|int,
      *         description?: string|null
      *     }>
      * }  $data

@@ -1645,4 +1645,6 @@ return [
     'sepidar_user' => 'کاربر سپیدار',
     'sepidar_user_placeholder' => 'انتخاب کاربر سپیدار',
     'search_sepidar_user' => 'جستجوی کاربر سپیدار',
+    'party_financial_status' => 'وضعیت مالی مشتری',
+    'search_min_chars' => 'حداقل :count حرف وارد کنید',
 ];

@@ -128,6 +128,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                             <th class="px-3 py-2 text-right font-medium">{{ __('app.quantity') }}</th>
                             <th class="px-3 py-2 text-right font-medium">{{ __('app.fee') }}</th>
                             <th class="px-3 py-2 text-right font-medium">{{ __('app.discount') }}</th>
+                            <th class="px-3 py-2 text-right font-medium">{{ __('app.tax') }}</th>
                             <th class="px-3 py-2 text-right font-medium">{{ __('app.line_total') }}</th>
                         </tr>
                     </thead>
@@ -160,6 +161,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                                 <td class="px-3 py-3 tabular-nums">{{ number_format($item->Quantity) }}</td>
                                 <td class="px-3 py-3 tabular-nums">{{ number_format($item->Fee) }}</td>
                                 <td class="px-3 py-3 tabular-nums">{{ number_format($item->Discount) }}</td>
+                                <td class="px-3 py-3 tabular-nums">{{ number_format($item->Tax) }}</td>
                                 <td class="px-3 py-3 font-semibold tabular-nums">{{ number_format($item->NetPrice) }}</td>
                             </tr>
                         @endforeach
@@ -175,6 +177,10 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-zinc-500">{{ __('app.discount') }}</span>
                     <span class="font-medium tabular-nums">{{ number_format($invoice->Discount) }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-zinc-500">{{ __('app.tax') }}</span>
+                    <span class="font-medium tabular-nums">{{ number_format($invoice->Tax) }}</span>
                 </div>
                 <flux:separator variant="subtle" />
                 <div class="flex items-center justify-between">
