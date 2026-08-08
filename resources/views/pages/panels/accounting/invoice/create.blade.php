@@ -20,7 +20,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
         $this->form->date = Jalalian::now()->format('Y/m/d');
         $this->form->sale_type_ref = 2;
-        $this->form->items = [
+        $this->items = [
             $this->emptyRow(),
         ];
     }
@@ -29,8 +29,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     {
         $this->authorize('accounting_invoice_create');
 
-        $this->normalizeMoneyFields();
-        $this->form->validate();
+        $this->validateInvoice();
 
         try {
             $invoice = $creator->create($this->formPayload());

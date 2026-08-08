@@ -60,7 +60,7 @@ class InvoiceCreator
             $fee = (float) $row['fee'];
             $discount = (float) ($row['discount'] ?? 0);
             $price = $quantity * $fee;
-            $tax = 0;
+            $tax = (float) ($row['tax'] ?? 0);
             $duty = 0;
             $addition = 0;
             $netPrice = $price - $discount + $addition + $tax + $duty;
