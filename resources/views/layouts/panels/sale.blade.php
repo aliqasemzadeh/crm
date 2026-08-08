@@ -7,13 +7,63 @@
 <flux:sidebar sticky collapsible="mobile" class="panel-shell-sidebar dark:bg-zinc-900 dark:border-zinc-700">
     @include('partials.sidebar-header')
 
-    <flux:sidebar.search placeholder="Search..." />
+    <flux:sidebar.search placeholder="{{ __('app.search_placeholder') }}" />
 
     <flux:sidebar.nav>
-        <flux:sidebar.item icon="home" href="{{ route('panels.user.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="key" href="{{ route('panels.user.setting.change-password') }}" wire:navigate>{{ __('app.change_password') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="at-sign" href="{{ route('panels.user.setting.change-email') }}" wire:navigate>{{ __('app.change_email') }}</flux:sidebar.item>
-        <flux:sidebar.item icon="smartphone" href="{{ route('panels.user.setting.change-mobile') }}" wire:navigate>{{ __('app.change_mobile') }}</flux:sidebar.item>
+        @can('sales_dashboard_index')
+            <flux:sidebar.item
+                icon="layout-dashboard"
+                href="{{ route('panels.sale.dashboard.index') }}"
+                :current="request()->routeIs('panels.sale.dashboard.*')"
+                wire:navigate
+            >
+                {{ __('app.dashboard') }}
+            </flux:sidebar.item>
+        @endcan
+
+        @can('sales_invoice_index')
+            <flux:sidebar.item
+                icon="file-text"
+                href="{{ route('panels.sale.invoice.index') }}"
+                :current="request()->routeIs('panels.sale.invoice.*')"
+                wire:navigate
+            >
+                {{ __('app.invoices') }}
+            </flux:sidebar.item>
+        @endcan
+
+        @can('sales_item_index')
+            <flux:sidebar.item
+                icon="package"
+                href="{{ route('panels.sale.item.index') }}"
+                :current="request()->routeIs('panels.sale.item.*') && ! request()->routeIs('panels.sale.item-price.*')"
+                wire:navigate
+            >
+                {{ __('app.items') }}
+            </flux:sidebar.item>
+        @endcan
+
+        @can('sales_item_price_index')
+            <flux:sidebar.item
+                icon="chart-candlestick"
+                href="{{ route('panels.sale.item-price.index') }}"
+                :current="request()->routeIs('panels.sale.item-price.*')"
+                wire:navigate
+            >
+                {{ __('app.price_notes') }}
+            </flux:sidebar.item>
+        @endcan
+
+        @can('sales_party_index')
+            <flux:sidebar.item
+                icon="users"
+                href="{{ route('panels.sale.party.index') }}"
+                :current="request()->routeIs('panels.sale.party.*')"
+                wire:navigate
+            >
+                {{ __('app.customers') }}
+            </flux:sidebar.item>
+        @endcan
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
@@ -25,7 +75,15 @@
 </flux:sidebar>
 
 <flux:header class="panel-shell-header block! dark:bg-zinc-900 dark:border-zinc-700">
-    @include('partials.user-navbar')
+    <div class="flex w-full flex-col gap-2 px-3 py-2 lg:px-4">
+        @include('partials.user-navbar')
+
+        @can('sales_item_index')
+            <div class="w-full max-w-3xl">
+                <livewire:panels.sale.item.search :key="'panels-sale-item-search'" />
+            </div>
+        @endcan
+    </div>
 </flux:header>
 
 <flux:main>

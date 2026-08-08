@@ -227,6 +227,33 @@ return [
 
     'sales' => [
         'sales_access' => 'فروش',
+        'sales_dashboard_index' => 'داشبورد فروش',
+
+        'sales_invoice_index' => 'فهرست فاکتورهای فروش',
+        'sales_invoice_create' => 'ایجاد فاکتور فروش',
+        'sales_invoice_edit' => 'ویرایش فاکتور فروش',
+        'sales_invoice_view' => 'مشاهده فاکتور فروش',
+        'sales_invoice_print' => 'چاپ فاکتور فروش',
+        'sales_invoice_delete' => 'حذف فاکتور فروش',
+
+        'sales_item_index' => 'فهرست کالاهای فروش',
+        'sales_item_view' => 'مشاهده کالای فروش',
+        'sales_item_edit' => 'ویرایش متادیتای کالا',
+        'sales_item_image' => 'آپلود عکس کالا',
+        'sales_item_site_edit' => 'ویرایش آدرس سایت کالا',
+        'sales_item_fetchers' => 'دریافت‌کننده قیمت کالا',
+        'sales_item_fee' => 'قیمت‌گذاری کالا',
+        'sales_item_sale_price' => 'قیمت فروش کالا',
+        'sales_item_purchase_price' => 'قیمت خرید کالا',
+        'sales_item_stock_summary' => 'موجودی انبار کالا',
+
+        'sales_item_price_index' => 'اعلام قیمت فروش',
+
+        'sales_party_index' => 'فهرست مشتریان فروش',
+        'sales_party_view' => 'مشاهده مشتری فروش',
+        'sales_party_create' => 'ایجاد مشتری فروش',
+        'sales_party_phone' => 'تلفن مشتری فروش',
+        'sales_party_address' => 'آدرس مشتری فروش',
     ],
 
 ];

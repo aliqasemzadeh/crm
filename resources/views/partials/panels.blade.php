@@ -24,5 +24,8 @@
     <flux:sidebar.item icon="handshake" href="{{ route('panels.crm.dashboard.index') }}" :current="request()->routeIs('panels.crm.*')" wire:navigate>{{ __('app.crm') }}</flux:sidebar.item>
     @endcan
 
+    @can('sales_access')
+        <flux:sidebar.item icon="shopping-bag" href="{{ route('panels.sale.dashboard.index') }}" :current="request()->routeIs('panels.sale.*')" wire:navigate>{{ __('app.sales') }}</flux:sidebar.item>
+    @endcan
 
 </flux:sidebar.nav>

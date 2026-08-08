@@ -76,6 +76,18 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/user/index', 'pages::panels.accounting.user.index')->name('panels.accounting.user.index');
     Route::livewire('/panels/accounting/user/{sepidarUser}/report', 'pages::panels.accounting.user.report')->name('panels.accounting.user.report');
 
+    Route::livewire('/panels/sale/dashboard/index', 'pages::panels.sale.dashboard.index')->name('panels.sale.dashboard.index');
+    Route::livewire('/panels/sale/invoice/index', 'pages::panels.sale.invoice.index')->name('panels.sale.invoice.index');
+    Route::livewire('/panels/sale/invoice/create', 'pages::panels.sale.invoice.create')->name('panels.sale.invoice.create');
+    Route::livewire('/panels/sale/invoice/edit/{invoice}', 'pages::panels.sale.invoice.edit')->name('panels.sale.invoice.edit');
+    Route::livewire('/panels/sale/invoice/view/{invoice}', 'pages::panels.sale.invoice.view')->name('panels.sale.invoice.view');
+    Route::livewire('/panels/sale/invoice/print/{invoice}', 'pages::panels.sale.invoice.print')->name('panels.sale.invoice.print');
+    Route::livewire('/panels/sale/item/index', 'pages::panels.sale.item.index')->name('panels.sale.item.index');
+    Route::livewire('/panels/sale/item/{item}', 'pages::panels.sale.item.view')->name('panels.sale.item.view');
+    Route::livewire('/panels/sale/item-price/index/{groupingId?}', 'pages::panels.sale.item-price.index')->name('panels.sale.item-price.index');
+    Route::livewire('/panels/sale/party/index', 'pages::panels.sale.party.index')->name('panels.sale.party.index');
+    Route::livewire('/panels/sale/party/{party}', 'pages::panels.sale.party.view')->name('panels.sale.party.view');
+
     Route::get('/item-image/{itemId}', function ($itemId) {
         return \Illuminate\Support\Facades\Cache::remember("item_image_$itemId", now()->addDays(7), function () use ($itemId) {
             $image = \App\Models\Sepidar\INV\ItemImage::where('ItemRef', $itemId)->first();

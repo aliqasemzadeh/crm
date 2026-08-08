@@ -97,12 +97,22 @@ trait HandlesInvoiceForm
         }
     }
 
+    protected function invoiceUiPrefix(): string
+    {
+        return 'panels.accounting.invoice';
+    }
+
+    protected function invoiceModal(string $suffix): string
+    {
+        return $this->invoiceUiPrefix().'.'.$suffix;
+    }
+
     public function openItemSearch(int $index): void
     {
         $this->itemSearchRow = $index;
         $this->itemSearch = '';
         unset($this->itemResults);
-        Flux::modal('panels.accounting.invoice.item-search.modal')->show();
+        Flux::modal($this->invoiceModal('item-search.modal'))->show();
     }
 
     public function selectItem(int $itemId): void
@@ -128,7 +138,7 @@ trait HandlesInvoiceForm
         $this->itemSearchRow = -1;
         unset($this->itemResults, $this->selectedItems);
 
-        Flux::modal('panels.accounting.invoice.item-search.modal')->close();
+        Flux::modal($this->invoiceModal('item-search.modal'))->close();
     }
 
     public function clearParty(): void
@@ -151,17 +161,22 @@ trait HandlesInvoiceForm
     public function showPartyBalance(int $partyId): void
     {
         $this->partyBalance = app(PartyBalance::class)->forParty($partyId);
-        Flux::modal('panels.accounting.invoice.party-balance.modal')->show();
+        Flux::modal($this->invoiceModal('party-balance.modal'))->show();
     }
 
     public function openPreview(): void
     {
-        Flux::modal('panels.accounting.invoice.preview.modal')->show();
+        Flux::modal($this->invoiceModal('preview.modal'))->show();
     }
 
     public function createParty(PartyCreator $creator): void
     {
-        if (! auth()->user()?->can('accounting_party_create') && ! auth()->user()?->can('accounting_invoice_create')) {
+        if (
+            ! auth()->user()?->can('accounting_party_create')
+            && ! auth()->user()?->can('accounting_invoice_create')
+            && ! auth()->user()?->can('sales_party_create')
+            && ! auth()->user()?->can('sales_invoice_create')
+        ) {
             abort(403);
         }
 
@@ -195,7 +210,7 @@ trait HandlesInvoiceForm
         $this->newPartyMobile = '';
         unset($this->selectedParty, $this->partyResults);
 
-        Flux::modal('panels.accounting.invoice.party-create.modal')->close();
+        Flux::modal($this->invoiceModal('party-create.modal'))->close();
         Flux::toast(__('app.party_created'));
         $this->showPartyBalance((int) $party->PartyId);
     }
