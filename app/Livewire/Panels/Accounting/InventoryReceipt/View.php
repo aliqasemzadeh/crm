@@ -9,7 +9,7 @@ use Livewire\Component;
 
 class View extends Component
 {
-    public InventoryReceipt $receipt;
+    public ?InventoryReceipt $receipt = null;
 
     #[On('panels.accounting.inventory-receipt.view.assign-data')]
     public function assignData($id): void

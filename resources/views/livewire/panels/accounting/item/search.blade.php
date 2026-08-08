@@ -1,6 +1,6 @@
 <div
     class="relative w-full max-w-2xl"
-    x-data="{ open: @entangle('open') }"
+    x-data="{ open: @entangle('open').live }"
     @keydown.escape.window="open = false; $wire.close()"
     @click.outside="open = false; $wire.close()"
 >

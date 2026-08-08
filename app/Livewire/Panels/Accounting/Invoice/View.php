@@ -11,7 +11,7 @@ use Livewire\Component;
 
 class View extends Component
 {
-    public Invoice $invoice;
+    public ?Invoice $invoice = null;
     #[On('panels.accounting.invoice.view.assign-data')]
     public function assignData($InvoiceId): void
     {

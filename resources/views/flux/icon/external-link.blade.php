@@ -39,11 +39,7 @@ $strokeWidth = match ($variant) {
     aria-hidden="true"
     data-slot="icon"
 >
-  <path d="M9 5v4" />
-  <rect width="4" height="6" x="7" y="9" rx="1" />
-  <path d="M9 15v2" />
-  <path d="M17 3v2" />
-  <rect width="4" height="8" x="15" y="5" rx="1" />
-  <path d="M17 13v3" />
-  <path d="M3 3v16a2 2 0 0 0 2 2h16" />
+  <path d="M15 3h6v6" />
+  <path d="M10 14 21 3" />
+  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
 </svg>
