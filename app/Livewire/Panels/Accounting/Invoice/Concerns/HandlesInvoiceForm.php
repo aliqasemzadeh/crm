@@ -52,6 +52,24 @@ trait HandlesInvoiceForm
         $this->items = array_values($this->items);
     }
 
+    public function sortItems(string $id, int $position): void
+    {
+        $currentIndex = collect($this->items)->search(
+            fn (array $row): bool => (string) ($row['row_id'] ?? '') === $id
+        );
+
+        if ($currentIndex === false) {
+            return;
+        }
+
+        $items = $this->items;
+        $item = $items[$currentIndex];
+        unset($items[$currentIndex]);
+        $items = array_values($items);
+        array_splice($items, $position, 0, [$item]);
+        $this->items = array_values($items);
+    }
+
     public function updatedFormCustomerPartyRef(): void
     {
         $this->partySearch = '';
@@ -229,7 +247,7 @@ trait HandlesInvoiceForm
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
 
         $items = Item::query()
-            ->with('image')
+            ->with(['image', 'product'])
             ->select(['ItemID', 'Title', 'Code', 'IranCode'])
             ->where(function ($query) use ($term) {
                 $query->where('Title', 'like', '%'.$term.'%')
@@ -255,7 +273,7 @@ trait HandlesInvoiceForm
             ->groupBy('ItemRef')
             ->pluck('total_quantity', 'ItemRef');
 
-            $lastSales = $this->batchLatestFees('[SLS].[InvoiceItem]', 'InvoiceItemId', 'ItemRef', 'Fee', $ids);
+        $lastSales = $this->batchLatestFees('[SLS].[InvoiceItem]', 'InvoiceItemId', 'ItemRef', 'Fee', $ids);
         $lastPurchases = $this->batchLatestFees('[INV].[InventoryReceiptItem]', 'InventoryReceiptItemID', 'ItemRef', 'Fee', $ids);
 
         return $items->map(function (Item $item) use ($stocks, $lastSales, $lastPurchases) {
@@ -269,6 +287,7 @@ trait HandlesInvoiceForm
                 'stock' => (float) ($stocks[$item->ItemID] ?? 0),
                 'last_sale_price' => (float) ($lastSales[$id] ?? 0),
                 'last_purchase_price' => (float) ($lastPurchases[$id] ?? 0),
+                'site_price' => $item->siteMinPriceRial(),
             ];
         });
     }
@@ -361,6 +380,7 @@ trait HandlesInvoiceForm
     protected function emptyRow(): array
     {
         return [
+            'row_id' => (string) Str::uuid(),
             'item_ref' => null,
             'quantity' => 1,
             'fee' => 0,
