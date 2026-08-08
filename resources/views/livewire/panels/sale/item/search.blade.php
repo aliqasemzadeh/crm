@@ -2,7 +2,7 @@
 
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
-use App\Services\Sale\SaleCart;
+use App\Services\Sale\SaleTemporaryInvoice;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -30,19 +30,19 @@ new class extends Component
         $this->open = false;
     }
 
-    public function addToCart(int $itemId, SaleCart $cart): void
+    public function sendToTemporaryInvoice(int $itemId, SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
         if (! Item::query()->whereKey($itemId)->exists()) {
-            Flux::toast(__('app.failed_to_add_to_cart'), variant: 'danger');
+            Flux::toast(__('app.failed_to_add_to_temporary_invoice'), variant: 'danger');
 
             return;
         }
 
-        $cart->add($itemId);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.product_added_to_cart'));
+        $draft->add($itemId);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
+        Flux::toast(__('app.added_to_temporary_invoice'));
     }
 
     #[Computed]
@@ -198,14 +198,14 @@ new class extends Component
 
                         <div class="flex shrink-0 items-start gap-1">
                             @can('sales_invoice_create')
-                                <flux:tooltip content="{{ __('app.add_to_cart') }}">
+                                <flux:tooltip content="{{ __('app.send_to_temporary_invoice') }}">
                                     <flux:button
                                         size="xs"
                                         variant="primary"
                                         color="teal"
-                                        icon="shopping-cart"
+                                        icon="file-text"
                                         icon:variant="outline"
-                                        wire:click="addToCart({{ $result['id'] }})"
+                                        wire:click="sendToTemporaryInvoice({{ $result['id'] }})"
                                     />
                                 </flux:tooltip>
                             @endcan
