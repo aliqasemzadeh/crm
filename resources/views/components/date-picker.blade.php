@@ -12,24 +12,10 @@
     $wireModel = $attributes->whereStartsWith('wire:model')->first();
     $wireModelName = $attributes->wire('model')->value();
     $name ??= $wireModel ? (string) str($wireModel)->afterLast('.') : null;
-
-    $fieldAttributes = $attributes->only(['name', 'label', 'description', 'variant', 'required']);
-
-    $inputAttributes = $attributes->except([
-        'name',
-        'label',
-        'description',
-        'variant',
-        'required',
-        'value',
-        'wire:model',
-        'wire:model.live',
-        'wire:model.blur',
-    ]);
 @endphp
 
 <div class="antialiased sans-serif" x-data="window.persianDatePicker({{ $wireModelName ? '$wire.entangle(\''.$wireModelName.'\')' : 'null' }}, '{{ $value }}')" x-cloak>
-    <flux:field :$name {{ $fieldAttributes }}>
+    <flux:field :$name>
         @if ($label)
             <flux:label>
                 {{ $label }}
@@ -59,7 +45,6 @@
                     @keydown.backspace.prevent="clearDate()"
                     @keydown.delete.prevent="clearDate()"
                     class="cursor-pointer"
-                    {{ $inputAttributes }}
                 >
                     <x-slot name="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
