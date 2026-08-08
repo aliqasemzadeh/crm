@@ -31,6 +31,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         $this->form->description = (string) ($this->invoice->Description ?? '');
         $this->items = $this->invoice->items->map(function ($item) {
             return [
+                'row_id' => (string) \Illuminate\Support\Str::uuid(),
                 'item_ref' => (int) $item->ItemRef,
                 'quantity' => $item->Quantity,
                 'fee' => (int) $item->Fee,
@@ -104,4 +105,6 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             'invoiceNumber' => $invoice->Number,
         ])
     </form>
+
+    @include('pages.panels.accounting.invoice._modals')
 </div>
