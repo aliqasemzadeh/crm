@@ -1,5 +1,5 @@
 <div class="space-y-6">
-    <flux:card>
+    <flux:card class="panel-filter-card">
         <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
             <flux:select wire:model.live="fiscalYear" :label="__('app.fiscal_year')">
                 @foreach($this->getFiscalYears() as $fy)
