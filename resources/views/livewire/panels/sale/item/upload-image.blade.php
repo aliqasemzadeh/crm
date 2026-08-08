@@ -1,4 +1,4 @@
-<flux:modal name="panels.warehouse.item.upload-image.modal" class="md:max-w-lg w-full" flyout position="right">
+<flux:modal name="panels.sale.item.upload-image.modal" class="md:max-w-lg w-full" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.warehouse_item_upload_image_modal_title') }}</flux:heading>
