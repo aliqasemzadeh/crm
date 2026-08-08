@@ -317,7 +317,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                         color="yellow"
                         icon="chart-candlestick"
                         icon:variant="outline"
-                        wire:click="$dispatch('panels.accounting.price-note.fetchers.assign-data', { id: {{ $item->ItemID }} })"
+                        wire:click="$dispatch('panels.sale.item-price.fetchers.assign-data', { id: {{ $item->ItemID }} })"
                     />
                 </flux:tooltip>
             </div>
