@@ -932,7 +932,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     </div>
 
     @if ($this->isAdministrator)
-        <flux:card x-show="showFilters" x-cloak>
+        <flux:card class="panel-filter-card" x-show="showFilters" x-cloak>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <flux:select
                     wire:model.defer="userFilter"
@@ -975,7 +975,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     @endif
 
     @unless ($this->isAdministrator)
-        <flux:card x-show="showFilters" x-cloak>
+        <flux:card class="panel-filter-card" x-show="showFilters" x-cloak>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
                 <flux:select
                     wire:model.defer="directionFilter"
