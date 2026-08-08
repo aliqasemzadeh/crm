@@ -44,11 +44,12 @@
                         <flux:table.cell>{{ $item->grouping->Title ?? '-' }}</flux:table.cell>
 
                         <flux:table.cell>
-                            @if($lastStockSummary = \App\Models\Sepidar\INV\ItemStockSummary::where('ItemRef', $item->ItemID)->where('FiscalYearRef', config('sepidar.FiscalYearRef'))->first())
-                                {{ number_format($lastStockSummary->Quantity) }}
-                            @else
-                                0
-                            @endif
+                            {{ number_format(
+                                \App\Models\Sepidar\INV\ItemStockSummary::query()
+                                    ->where('ItemRef', $item->ItemID)
+                                    ->where('FiscalYearRef', config('sepidar.FiscalYearRef'))
+                                    ->sum('Quantity')
+                            ) }}
                         </flux:table.cell>
 
                         <flux:table.cell class="whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromDateTime($item->CreationDate)->format('%Y-%m-%d') }}</flux:table.cell>
