@@ -1,6 +1,6 @@
 <div class="space-y-4">
 
-    @can('accounting_price_note_edit')
+    @can('sales_item_fee')
     <flux:card class="m-3">
         <form wire:submit="save">
             <div class="flex items-end gap-2">
@@ -19,7 +19,7 @@
         </form>
     </flux:card>
     @endcan
-    @can('accounting_price_note_site_edit')
+    @can('sales_item_site_edit')
     @foreach($prices as $index => $price)
         <flux:card class="m-3">
             <form wire:submit="saveSite({{ $index }})">
