@@ -38,7 +38,6 @@ new class extends Component
 
         $draft->increment($itemId);
         $this->syncState($draft);
-        $this->dispatch('panels.sale.temporary-invoice.updated');
     }
 
     public function decrement(int $itemId, SaleTemporaryInvoice $draft): void
@@ -47,7 +46,6 @@ new class extends Component
 
         $draft->decrement($itemId);
         $this->syncState($draft);
-        $this->dispatch('panels.sale.temporary-invoice.updated');
     }
 
     public function remove(int $itemId, SaleTemporaryInvoice $draft): void
@@ -56,7 +54,6 @@ new class extends Component
 
         $draft->remove($itemId);
         $this->syncState($draft);
-        $this->dispatch('panels.sale.temporary-invoice.updated');
         Flux::toast(__('app.item_removed_from_temporary_invoice'));
     }
 
@@ -66,7 +63,6 @@ new class extends Component
 
         $draft->clear();
         $this->syncState($draft);
-        $this->dispatch('panels.sale.temporary-invoice.updated');
         Flux::toast(__('app.temporary_invoice_empty'));
     }
 
