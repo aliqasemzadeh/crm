@@ -110,7 +110,6 @@ class InvoiceUpdater
                 'BankFeeForCurrencySaleInBaseCurrency' => 0,
                 'IsAggregateDiscountInvoiceItem' => 0,
                 'TaxPayerCurrencyPurchaseRate' => null,
-                'NetPrice' => $netPrice,
             ];
 
             $totals['Price'] += $price;
@@ -157,7 +156,6 @@ class InvoiceUpdater
                 'LastModifier' => $modifier,
                 'LastModificationDate' => $now,
                 'Description' => $data['description'] ?? null,
-                'NetPrice' => $totals['NetPrice'],
                 'Version' => ((int) $invoice->Version) + 1,
             ]);
 
