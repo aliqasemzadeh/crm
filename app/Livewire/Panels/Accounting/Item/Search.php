@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Accounting\Item;
 
 use App\Models\Sepidar\INV\Item;
+use App\Models\Sepidar\INV\ItemStockSummary;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -38,13 +39,10 @@ class Search extends Component
             return collect();
         }
 
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
+        $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
 
-        return Item::query()
+        $items = Item::query()
             ->with(['image', 'grouping.parent', 'product'])
-            ->withSum([
-                'stockSummaries as stock_quantity' => fn ($query) => $query->where('FiscalYearRef', $fiscalYearRef),
-            ], 'Quantity')
             ->where(function ($query) use ($term) {
                 $query->where('Title', 'like', '%'.$term.'%')
                     ->orWhere('Title_En', 'like', '%'.$term.'%')
@@ -53,24 +51,32 @@ class Search extends Component
             })
             ->orderBy('Title')
             ->limit(10)
-            ->get()
-            ->map(function (Item $item) {
-                return [
-                    'id' => $item->ItemID,
-                    'title' => $item->Title,
-                    'code' => $item->Code,
-                    'iran_code' => $item->IranCode,
-                    'main_grouping' => $item->mainGroupingTitle(),
-                    'grouping' => $item->grouping?->Title,
-                    'stock' => (float) ($item->stock_quantity ?? 0),
-                    'last_purchase_price' => (float) $item->getLastPurchasePrice(),
-                    'last_sale_price' => (float) $item->getLastSalePrice(),
-                    'site_price' => $item->siteMinPriceRial(),
-                    'site_url' => $item->siteUrl(),
-                    'thumbnail' => $item->image?->Thumbnail,
-                    'url' => route('panels.accounting.item.show', $item->ItemID),
-                ];
-            });
+            ->get();
+
+        $stocks = ItemStockSummary::query()
+            ->whereIn('ItemRef', $items->pluck('ItemID'))
+            ->where('FiscalYearRef', $fiscalYearRef)
+            ->selectRaw('ItemRef, SUM(CAST(Quantity AS DECIMAL(18,4))) as total_quantity')
+            ->groupBy('ItemRef')
+            ->pluck('total_quantity', 'ItemRef');
+
+        return $items->map(function (Item $item) use ($stocks) {
+            return [
+                'id' => $item->ItemID,
+                'title' => $item->Title,
+                'code' => $item->Code,
+                'iran_code' => $item->IranCode,
+                'main_grouping' => $item->mainGroupingTitle(),
+                'grouping' => $item->grouping?->Title,
+                'stock' => (float) ($stocks[$item->ItemID] ?? 0),
+                'last_purchase_price' => (float) $item->getLastPurchasePrice(),
+                'last_sale_price' => (float) $item->getLastSalePrice(),
+                'site_price' => $item->siteMinPriceRial(),
+                'site_url' => $item->siteUrl(),
+                'thumbnail' => $item->image?->Thumbnail,
+                'url' => route('panels.accounting.item.show', $item->ItemID),
+            ];
+        });
     }
 
     public function render()

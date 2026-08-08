@@ -85,9 +85,10 @@ class Item extends Model
 
     public function stockQuantity(?string $fiscalYearRef = null): float
     {
-        $fiscalYearRef ??= config('sepidar.FiscalYearRef');
+        $fiscalYearRef ??= (string) config('sepidar.FiscalYearRef');
 
-        return (float) $this->stockSummaries()
+        return (float) ItemStockSummary::query()
+            ->where('ItemRef', $this->ItemID)
             ->where('FiscalYearRef', $fiscalYearRef)
             ->sum('Quantity');
     }
