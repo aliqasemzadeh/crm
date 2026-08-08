@@ -55,6 +55,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/dashboard/index', \App\Livewire\Panels\Accounting\Dashboard\Index::class)->name('panels.accounting.dashboard.index');
     Route::livewire('/panels/accounting/bank/index', \App\Livewire\Panels\Accounting\Bank\Index::class)->name('panels.accounting.bank.index');
     Route::livewire('/panels/accounting/invoice/index', \App\Livewire\Panels\Accounting\Invoice\Index::class)->name('panels.accounting.invoice.index');
+    Route::livewire('/panels/accounting/invoice/create', 'pages::panels.accounting.invoice.create')->name('panels.accounting.invoice.create');
     Route::livewire('/panels/accounting/inventory-receipt/index', \App\Livewire\Panels\Accounting\InventoryReceipt\Index::class)->name('panels.accounting.inventory-receipt.index');
     Route::livewire('/panels/accounting/item/index', \App\Livewire\Panels\Accounting\Item\Index::class)->name('panels.accounting.item.index');
     Route::livewire('/panels/accounting/item/{item}', 'pages::panels.accounting.item.show')->name('panels.accounting.item.show');

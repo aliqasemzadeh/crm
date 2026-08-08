@@ -1,6 +1,6 @@
 <div class="mt-2 space-y-1">
-    @foreach($fetchers as $itemFetcher)
-        <div class="flex items-center justify-between gap-2 p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700">
+    @foreach($this->fetchers as $itemFetcher)
+        <div class="flex items-center justify-between gap-2 p-1 bg-zinc-50 dark:bg-zinc-800/50 rounded-lg border border-zinc-200 dark:border-zinc-700" wire:key="fetcher-card-row-{{ $itemFetcher->id }}">
             <div class="flex items-center gap-2 overflow-hidden">
                 <span class="text-[10px] font-medium text-zinc-500 truncate w-16" title="{{ $itemFetcher->fetcher }}">{{ $itemFetcher->fetcher }}</span>
                 <span class="text-xs font-bold text-zinc-700 dark:text-zinc-300">

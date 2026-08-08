@@ -43,7 +43,7 @@
                             <flux:table.cell>
                                 {{ $item->Title }}
                                 @can('accounting_price_note_fetchers')
-                                <livewire:panels.accounting.price-note.fetcher-card :itemId="$item->ItemID" />
+                                <livewire:panels.accounting.price-note.fetcher-card :itemId="$item->ItemID" :key="'item-fetchers-'.$item->ItemID" />
                                 @endcan
                             </flux:table.cell>
                             <flux:table.cell>

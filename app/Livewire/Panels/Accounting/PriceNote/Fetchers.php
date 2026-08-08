@@ -3,17 +3,20 @@
 namespace App\Livewire\Panels\Accounting\PriceNote;
 
 use App\Models\Accounting\PriceNote\ItemPriceFetcher;
+use Flux\Flux;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 class Fetchers extends Component
 {
     public $itemId;
-    public $fetchers = [];
     public $fetcher;
     public $link;
 
-    public $supportedFetchers = [
+    public array $supportedFetchers = [
         'DigikalaPriceFetcher' => \App\Support\DigikalaPriceFetcher::class,
         'FafaitPriceFetcher' => \App\Support\FafaitPriceFetcher::class,
         'FaterPriceFetcher' => \App\Support\FaterPriceFetcher::class,
@@ -29,13 +32,25 @@ class Fetchers extends Component
     public function assignData($id)
     {
         $this->itemId = $id;
-        $this->loadFetchers();
+        $this->reset(['fetcher', 'link']);
+        unset($this->fetchers);
         $this->js('$flux.modal(\'panels.accounting.price-note.fetchers.modal\').show()');
     }
 
-    public function loadFetchers()
+    #[Computed]
+    public function fetchers()
     {
-        $this->fetchers = ItemPriceFetcher::where('item_id', $this->itemId)->get();
+        if (! $this->itemId) {
+            return collect();
+        }
+
+        return ItemPriceFetcher::where('item_id', $this->itemId)->get();
+    }
+
+    protected function bustFetchersCache(): void
+    {
+        Cache::forget('item-fetchers-'.$this->itemId);
+        unset($this->fetchers);
     }
 
     public function add()
@@ -45,33 +60,37 @@ class Fetchers extends Component
             'link' => 'required|url',
         ]);
 
-        \App\Models\Accounting\PriceNote\ItemPriceFetcher::create([
+        ItemPriceFetcher::create([
             'item_id' => $this->itemId,
             'fetcher' => $this->fetcher,
             'link' => $this->link,
         ]);
 
-        \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
-
+        $this->bustFetchersCache();
         $this->reset(['fetcher', 'link']);
-        $this->loadFetchers();
+        Flux::toast(__('app.saved_successfully', ['name' => __('app.fetcher')]));
     }
 
     public function delete($id)
     {
-        \App\Models\Accounting\PriceNote\ItemPriceFetcher::find($id)->delete();
-        \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
-        $this->loadFetchers();
+        ItemPriceFetcher::find($id)?->delete();
+        $this->bustFetchersCache();
+        Flux::toast(__('app.deleted_successfully', ['name' => __('app.fetcher')]));
     }
 
     public function run($id)
     {
-        $itemFetcher = \App\Models\Accounting\PriceNote\ItemPriceFetcher::find($id);
+        $itemFetcher = ItemPriceFetcher::find($id);
+
+        if (! $itemFetcher) {
+            return;
+        }
+
         $fetcherClass = $this->supportedFetchers[$itemFetcher->fetcher] ?? null;
 
         if ($fetcherClass) {
             try {
-                $logger = \Illuminate\Support\Facades\Log::channel('single');
+                $logger = Log::channel('single');
                 $price = $fetcherClass::fetchPrice($itemFetcher->link, $logger);
 
                 if ($price) {
@@ -79,21 +98,22 @@ class Fetchers extends Component
                         'price' => (string) $price,
                         'message' => null,
                     ]);
+                    Flux::toast(__('app.saved_successfully', ['name' => __('app.fetcher')]));
                 } else {
                     $itemFetcher->update([
                         'message' => 'Could not fetch price',
                     ]);
+                    Flux::toast(text: 'Could not fetch price', variant: 'danger');
                 }
             } catch (\Exception $e) {
                 $itemFetcher->update([
                     'message' => $e->getMessage(),
                 ]);
+                Flux::toast(text: $e->getMessage(), variant: 'danger');
             }
         }
 
-        \Illuminate\Support\Facades\Cache::forget('item-fetchers-'.$this->itemId);
-
-        $this->loadFetchers();
+        $this->bustFetchersCache();
     }
 
     public function placeholder()
