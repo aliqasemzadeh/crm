@@ -226,6 +226,15 @@
                                         </button>
                                     @endif
 
+                                    <div
+                                        class="mt-1 text-[11px] leading-tight text-zinc-500 dark:text-zinc-400"
+                                        x-show="parse(rows[{{ $index }}].fee) > 0"
+                                        x-cloak
+                                    >
+                                        <div x-text="rialWords(rows[{{ $index }}].fee)"></div>
+                                        <div x-text="tomanEquivalentWords(rows[{{ $index }}].fee)"></div>
+                                    </div>
+
                                     @error("items.$index.item_ref")
                                         <flux:text class="text-red-500">{{ $message }}</flux:text>
                                     @enderror
@@ -243,24 +252,14 @@
                                     />
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
-                                    <div class="space-y-1">
-                                        <flux:input
-                                            size="sm"
-                                            class="text-center [&_input]:text-center"
-                                            mask:dynamic="$money($input, '.', ',', 0)"
-                                            x-model="rows[{{ $index }}].fee"
-                                            x-on:input="onBaseChange({{ $index }})"
-                                            x-on:blur="formatMoneyField({{ $index }}, 'fee', 0); syncBaseRow({{ $index }})"
-                                        />
-                                        <div
-                                            class="text-[11px] leading-tight text-zinc-500 dark:text-zinc-400"
-                                            x-show="parse(rows[{{ $index }}].fee) > 0"
-                                            x-cloak
-                                        >
-                                            <div x-text="rialWords(rows[{{ $index }}].fee)"></div>
-                                            <div x-text="tomanEquivalentWords(rows[{{ $index }}].fee)"></div>
-                                        </div>
-                                    </div>
+                                    <flux:input
+                                        size="sm"
+                                        class="text-center [&_input]:text-center"
+                                        mask:dynamic="$money($input, '.', ',', 0)"
+                                        x-model="rows[{{ $index }}].fee"
+                                        x-on:input="onBaseChange({{ $index }})"
+                                        x-on:blur="formatMoneyField({{ $index }}, 'fee', 0); syncBaseRow({{ $index }})"
+                                    />
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
                                     <div class="flex items-start gap-1">
