@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Accounting\Invoice\Concerns;
 
+use App\Models\Sepidar\GNR\DeliveryLocation;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
@@ -30,6 +31,10 @@ trait HandlesInvoiceForm
 
     /** @var array<string, float>|null */
     public ?array $partyBalance = null;
+
+    public string $price_mode = 'last_sale';
+
+    public float $tax_percent = 0;
 
     public function addRow(): void
     {
@@ -84,6 +89,13 @@ trait HandlesInvoiceForm
 
     public function updatedFormSaleTypeRef(): void
     {
+        $this->syncTaxPercentFromSaleType();
+        $this->recalculateLineTaxes();
+    }
+
+    public function updatedTaxPercent(): void
+    {
+        $this->tax_percent = max(0, (float) $this->tax_percent);
         $this->recalculateLineTaxes();
     }
 
@@ -95,6 +107,22 @@ trait HandlesInvoiceForm
             $index = (int) Str::before($key, '.');
             $this->recalculateLineTax($index);
         }
+    }
+
+    public function syncTaxPercentFromSaleType(): void
+    {
+        $this->tax_percent = (int) $this->form->sale_type_ref === 1
+            ? (float) config('sepidar.TaxPercent', 10)
+            : 0.0;
+    }
+
+    public function ensureInvoiceFormDefaults(): void
+    {
+        if (! $this->form->delivery_location_ref) {
+            $this->form->delivery_location_ref = (int) config('sepidar.DeliveryLocationRef', 1);
+        }
+
+        $this->syncTaxPercentFromSaleType();
     }
 
     protected function invoiceUiPrefix(): string
@@ -124,11 +152,7 @@ trait HandlesInvoiceForm
         }
 
         $fromResults = collect($this->itemResults)->firstWhere('id', $itemId);
-        $fee = (int) ($fromResults['last_sale_price'] ?? 0);
-
-        if ($fee <= 0) {
-            $fee = (int) (Item::query()->find($itemId)?->getLastSalePrice() ?? 0);
-        }
+        $fee = $this->resolveFeeForItem($itemId, $fromResults ?: null);
 
         $this->items[$index]['item_ref'] = $itemId;
         $this->items[$index]['fee'] = $this->normalizeDefaultFee($fee);
@@ -139,6 +163,72 @@ trait HandlesInvoiceForm
         unset($this->itemResults, $this->selectedItems);
 
         Flux::modal($this->invoiceModal('item-search.modal'))->close();
+    }
+
+    public function refreshRow(int $index): void
+    {
+        if (! isset($this->items[$index])) {
+            return;
+        }
+
+        $itemId = (int) ($this->items[$index]['item_ref'] ?? 0);
+
+        if ($itemId <= 0) {
+            Flux::toast(__('app.select_item_first'), variant: 'danger');
+
+            return;
+        }
+
+        $fee = $this->resolveFeeForItem($itemId);
+        $this->items[$index]['fee'] = $this->normalizeDefaultFee($fee);
+        $this->recalculateLineTax($index);
+
+        Flux::toast(__('app.row_refreshed'));
+    }
+
+    public function applyPriceMode(): void
+    {
+        foreach ($this->items as $index => $row) {
+            $itemId = (int) ($row['item_ref'] ?? 0);
+
+            if ($itemId <= 0) {
+                continue;
+            }
+
+            $fee = $this->resolveFeeForItem($itemId);
+            $this->items[$index]['fee'] = $this->normalizeDefaultFee($fee);
+            $this->recalculateLineTax((int) $index);
+        }
+
+        Flux::toast(
+            $this->price_mode === 'site'
+                ? __('app.site_prices_applied')
+                : __('app.last_sale_prices_applied')
+        );
+    }
+
+    /**
+     * @param  array{last_sale_price?: float|int, site_price?: float|int|null}|null  $fromResults
+     */
+    protected function resolveFeeForItem(int $itemId, ?array $fromResults = null): float
+    {
+        if ($this->price_mode === 'site') {
+            $sitePrice = $fromResults['site_price'] ?? null;
+
+            if ($sitePrice === null) {
+                $sitePrice = Item::query()->find($itemId)?->siteMinPriceRial();
+            }
+
+            return (float) ($sitePrice ?? 0);
+        }
+
+        $fee = (float) ($fromResults['last_sale_price'] ?? 0);
+
+        if ($fee <= 0) {
+            $fee = (float) (Item::query()->find($itemId)?->getLastSalePrice() ?? 0);
+        }
+
+        return $fee;
     }
 
     /**
@@ -414,7 +504,32 @@ trait HandlesInvoiceForm
 
     public function taxRate(): float
     {
-        return (int) $this->form->sale_type_ref === 1 ? 0.09 : 0.0;
+        return ((float) $this->tax_percent) / 100;
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, DeliveryLocation>
+     */
+    #[Computed]
+    public function deliveryLocations()
+    {
+        return DeliveryLocation::query()
+            ->select(['DeliveryLocationID', 'Title', 'Title_En'])
+            ->orderBy('Title')
+            ->get();
+    }
+
+    public function formatInvoiceNumber(float|int|string|null $value): string
+    {
+        $number = (float) str_replace(',', '', (string) ($value ?? 0));
+
+        if (abs($number - round($number)) < 0.0000001) {
+            return number_format((int) round($number));
+        }
+
+        $formatted = number_format($number, 4, '.', ',');
+
+        return rtrim(rtrim($formatted, '0'), '.');
     }
 
     protected function emptyRow(): array
@@ -462,7 +577,6 @@ trait HandlesInvoiceForm
     protected function validateInvoice(): void
     {
         $this->normalizeMoneyFields();
-        $this->recalculateLineTaxes();
 
         $this->form->validate();
 
@@ -474,6 +588,8 @@ trait HandlesInvoiceForm
             'items.*.discount' => ['nullable', 'numeric', 'gte:0'],
             'items.*.tax' => ['nullable', 'numeric', 'gte:0'],
             'items.*.description' => ['nullable', 'string', 'max:500'],
+            'tax_percent' => ['nullable', 'numeric', 'gte:0'],
+            'price_mode' => ['required', 'in:last_sale,site'],
         ], [], [
             'items' => __('app.items'),
             'items.*.item_ref' => __('app.item'),
@@ -482,17 +598,20 @@ trait HandlesInvoiceForm
             'items.*.discount' => __('app.discount'),
             'items.*.tax' => __('app.tax'),
             'items.*.description' => __('app.description'),
+            'tax_percent' => __('app.tax_percent'),
+            'price_mode' => __('app.price_mode'),
         ]);
     }
 
     protected function formPayload(): array
     {
         $this->normalizeMoneyFields();
-        $this->recalculateLineTaxes();
 
         return [
             'customer_party_ref' => (int) $this->form->customer_party_ref,
             'sale_type_ref' => (int) $this->form->sale_type_ref,
+            'delivery_location_ref' => (int) ($this->form->delivery_location_ref
+                ?: config('sepidar.DeliveryLocationRef', 1)),
             'date' => $this->form->date,
             'description' => $this->form->description !== '' ? $this->form->description : null,
             'items' => collect($this->items)->map(function (array $row) {
