@@ -1674,6 +1674,7 @@ return [
     'tax_percent' => 'درصد مالیات',
     'discount_percent' => 'درصد تخفیف',
     'apply_percent' => 'اعمال درصد',
+    'amount_equivalent_prefix' => 'معادل',
     'sepidar_user' => 'کاربر سپیدار',
     'sepidar_user_placeholder' => 'انتخاب کاربر سپیدار',
     'search_sepidar_user' => 'جستجوی کاربر سپیدار',
