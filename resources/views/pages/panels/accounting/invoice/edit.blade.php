@@ -29,18 +29,19 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             ? Jalalian::fromDateTime($this->invoice->Date)->format('Y/m/d')
             : Jalalian::now()->format('Y/m/d');
         $this->form->description = (string) ($this->invoice->Description ?? '');
-        $this->form->items = $this->invoice->items->map(function ($item) {
+        $this->items = $this->invoice->items->map(function ($item) {
             return [
                 'item_ref' => (int) $item->ItemRef,
                 'quantity' => $item->Quantity,
                 'fee' => (int) $item->Fee,
                 'discount' => (int) ($item->Discount ?? 0),
+                'tax' => (int) ($item->Tax ?? 0),
                 'description' => (string) ($item->Description ?? ''),
             ];
         })->values()->all();
 
-        if ($this->form->items === []) {
-            $this->form->items = [$this->emptyRow()];
+        if ($this->items === []) {
+            $this->items = [$this->emptyRow()];
         }
     }
 
@@ -48,8 +49,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     {
         $this->authorize('accounting_invoice_edit');
 
-        $this->normalizeMoneyFields();
-        $this->form->validate();
+        $this->validateInvoice();
 
         try {
             $invoice = $updater->update($this->invoice, $this->formPayload());
