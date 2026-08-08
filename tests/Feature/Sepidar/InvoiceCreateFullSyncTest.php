@@ -117,9 +117,10 @@ class InvoiceCreateFullSyncTest extends TestCase
         [$party, $item] = $this->fixture();
         $fiscalYearRef = (int) config('sepidar.FiscalYearRef');
         $previousMax = $this->maxVoucherNumberAndReference($fiscalYearRef);
+        $skewedNumber = $previousMax + 1;
         $skewedReference = $previousMax + 50;
 
-        $this->seedSkewedVoucher($fiscalYearRef, $previousMax, $skewedReference);
+        $this->seedSkewedVoucher($fiscalYearRef, $skewedNumber, $skewedReference);
 
         $invoice = app(InvoiceCreator::class)->create([
             'customer_party_ref' => (int) $party->PartyId,
