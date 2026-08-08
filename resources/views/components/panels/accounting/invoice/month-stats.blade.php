@@ -14,9 +14,37 @@ new class extends Component
 
     public string $periodMode = 'weekly';
 
+    public ?string $startDate = null;
+
+    public ?string $endDate = null;
+
     public function updatedPeriodMode(): void
     {
         unset($this->monthPeriodStats);
+    }
+
+    public function updatedStartDate(): void
+    {
+        unset($this->monthPeriodStats);
+    }
+
+    public function updatedEndDate(): void
+    {
+        unset($this->monthPeriodStats);
+    }
+
+    #[Computed]
+    public function monthBounds(): array
+    {
+        $year = $this->resolveJalaliYear();
+        $daysInMonth = (new Jalalian($year, $this->month, 1))->getMonthDays();
+
+        return [
+            'year' => $year,
+            'min' => sprintf('%04d/%02d/%02d', $year, $this->month, 1),
+            'max' => sprintf('%04d/%02d/%02d', $year, $this->month, $daysInMonth),
+            'days_in_month' => $daysInMonth,
+        ];
     }
 
     #[Computed]
@@ -32,9 +60,9 @@ new class extends Component
         }
 
         $fiscalYearRef = config('sepidar.FiscalYearRef');
-        $cacheKey = "invoice_period_stats_{$fiscalYearRef}_{$this->saleType}_{$this->month}_{$this->periodMode}";
+        $hasCustomRange = filled($this->startDate) && filled($this->endDate);
 
-        return Cache::rememberForever($cacheKey, function () use ($fiscalYearRef) {
+        $compute = function () use ($fiscalYearRef) {
             $invoices = Invoice::where('FiscalYearRef', $fiscalYearRef)
                 ->when($this->saleType !== 'all', function ($query) {
                     if ($this->saleType === 'official') {
@@ -47,7 +75,17 @@ new class extends Component
                 ->get();
 
             $monthName = __('app.jalali_months.'.$this->month);
-            $year = null;
+            $bounds = $this->monthBounds;
+            $year = $bounds['year'];
+            $daysInMonth = $bounds['days_in_month'];
+            $filterFrom = $this->parseJalaliKey($this->startDate);
+            $filterTo = $this->parseJalaliKey($this->endDate);
+            $hasRange = $filterFrom !== null && $filterTo !== null;
+
+            if ($hasRange && $filterFrom > $filterTo) {
+                [$filterFrom, $filterTo] = [$filterTo, $filterFrom];
+            }
+
             $dayAmounts = [];
 
             foreach ($invoices as $invoice) {
@@ -61,13 +99,16 @@ new class extends Component
                     continue;
                 }
 
-                $year ??= $jalaliDate->getYear();
                 $day = $jalaliDate->getDay();
+                $key = ($jalaliDate->getYear() * 10000) + ($jalaliDate->getMonth() * 100) + $day;
+
+                if ($hasRange && ($key < $filterFrom || $key > $filterTo)) {
+                    continue;
+                }
+
                 $dayAmounts[$day] = ($dayAmounts[$day] ?? 0) + $invoice->Price;
             }
 
-            $year ??= (int) Jalalian::now()->getYear();
-            $daysInMonth = (new Jalalian($year, $this->month, 1))->getMonthDays();
             $ranges = $this->buildPeriodRanges($daysInMonth, $this->periodMode);
             $total = array_sum($dayAmounts);
             $periods = [];
@@ -97,10 +138,76 @@ new class extends Component
             return [
                 'month' => $this->month,
                 'month_name' => $monthName,
+                'year' => $year,
                 'total' => $total,
                 'periods' => $periods,
             ];
-        });
+        };
+
+        if ($hasCustomRange) {
+            return $compute();
+        }
+
+        $cacheKey = "invoice_period_stats_{$fiscalYearRef}_{$this->saleType}_{$this->month}_{$this->periodMode}";
+
+        return Cache::rememberForever($cacheKey, $compute);
+    }
+
+    protected function resolveJalaliYear(): int
+    {
+        $fiscalYearRef = config('sepidar.FiscalYearRef');
+
+        $date = Invoice::where('FiscalYearRef', $fiscalYearRef)
+            ->when($this->saleType !== 'all', function ($query) {
+                if ($this->saleType === 'official') {
+                    $query->where('SaleTypeRef', 1);
+                } else {
+                    $query->where('SaleTypeRef', '!=', 1);
+                }
+            })
+            ->whereNotNull('Date')
+            ->value('Date');
+
+        if ($date) {
+            $jalali = Jalalian::fromDateTime($date);
+
+            if ($jalali->getMonth() === $this->month) {
+                return $jalali->getYear();
+            }
+        }
+
+        $sample = Invoice::where('FiscalYearRef', $fiscalYearRef)
+            ->whereNotNull('Date')
+            ->orderByDesc('Date')
+            ->value('Date');
+
+        if ($sample) {
+            return Jalalian::fromDateTime($sample)->getYear();
+        }
+
+        return (int) Jalalian::now()->getYear();
+    }
+
+    protected function parseJalaliKey(?string $date): ?int
+    {
+        if (! $date) {
+            return null;
+        }
+
+        $parts = preg_split('/[\/\-]/', $date);
+        if (! $parts || count($parts) !== 3) {
+            return null;
+        }
+
+        $year = (int) $parts[0];
+        $month = (int) $parts[1];
+        $day = (int) $parts[2];
+
+        if ($year < 1 || $month < 1 || $day < 1) {
+            return null;
+        }
+
+        return ($year * 10000) + ($month * 100) + $day;
     }
 
     /**
@@ -153,7 +260,18 @@ new class extends Component
 <div class="space-y-6">
     @php
         $monthStats = $this->monthPeriodStats;
+        $bounds = $this->monthBounds;
     @endphp
+
+    <x-jalali-date-range
+        start-model="startDate"
+        end-model="endDate"
+        :start="$startDate"
+        :end="$endDate"
+        :min="$bounds['min']"
+        :max="$bounds['max']"
+        :label="__('app.date_range')"
+    />
 
     <flux:card class="bg-zinc-50 dark:bg-zinc-900 border-t-4 border-zinc-500">
         <div class="flex justify-between items-center gap-4">
@@ -170,12 +288,12 @@ new class extends Component
         <flux:tab name="ten_days">{{ __('app.invoice_period_ten_days') }}</flux:tab>
     </flux:tabs>
 
-    <div wire:loading.delay wire:target="periodMode" class="flex flex-col items-center justify-center gap-3 py-8">
+    <div wire:loading.delay wire:target="periodMode, startDate, endDate" class="flex flex-col items-center justify-center gap-3 py-8">
         <flux:icon.loader-circle class="animate-spin text-zinc-400" />
         <flux:text size="sm" class="text-zinc-500">{{ __('app.invoice_period_calculating') }}</flux:text>
     </div>
 
-    <div wire:loading.remove.delay wire:target="periodMode" class="space-y-3">
+    <div wire:loading.remove.delay wire:target="periodMode, startDate, endDate" class="space-y-3">
         @forelse($monthStats['periods'] as $period)
             <flux:card class="border-t-4 border-sky-500">
                 <div class="flex flex-col gap-2">
