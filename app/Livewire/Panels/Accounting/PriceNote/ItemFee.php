@@ -144,6 +144,8 @@ class ItemFee extends Component
 
             $this->prices[$index]['saved'] = true;
 
+            $this->dispatch('panels.accounting.item.show.site-price-updated');
+
             Flux::toast(__('app.saved_successfully', ['name' => __('app.site_price')]));
         }
     }
