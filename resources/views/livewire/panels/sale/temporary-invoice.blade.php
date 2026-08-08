@@ -1,97 +1,99 @@
 <?php
 
 use App\Models\Sepidar\INV\Item;
-use App\Services\Sale\SaleCart;
+use App\Services\Sale\SaleTemporaryInvoice;
 use Flux\Flux;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
 new class extends Component
 {
-    #[On('panels.sale.cart.updated')]
-    public function refreshCart(): void
+    public int $count = 0;
+
+    /** @var list<array{id: int, title: string, code: string, quantity: int, thumbnail: mixed}> */
+    public array $lines = [];
+
+    public function mount(SaleTemporaryInvoice $draft): void
     {
-        unset($this->lines, $this->count);
+        $this->syncState($draft);
     }
 
-    public function open(SaleCart $cart): void
+    #[On('panels.sale.temporary-invoice.updated')]
+    public function refreshTemporaryInvoice(SaleTemporaryInvoice $draft): void
+    {
+        $this->syncState($draft);
+    }
+
+    public function open(SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        unset($this->lines, $this->count);
-        Flux::modal('panels.sale.cart.modal')->show();
+        $this->syncState($draft);
+        Flux::modal('panels.sale.temporary-invoice.modal')->show();
     }
 
-    public function increment(int $itemId, SaleCart $cart): void
+    public function increment(int $itemId, SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        $cart->increment($itemId);
-        unset($this->lines, $this->count);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.quantity_increased'));
+        $draft->increment($itemId);
+        $this->syncState($draft);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
     }
 
-    public function decrement(int $itemId, SaleCart $cart): void
+    public function decrement(int $itemId, SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        $cart->decrement($itemId);
-        unset($this->lines, $this->count);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.quantity_decreased'));
+        $draft->decrement($itemId);
+        $this->syncState($draft);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
     }
 
-    public function remove(int $itemId, SaleCart $cart): void
+    public function remove(int $itemId, SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        $cart->remove($itemId);
-        unset($this->lines, $this->count);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.item_removed_from_cart'));
+        $draft->remove($itemId);
+        $this->syncState($draft);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
+        Flux::toast(__('app.item_removed_from_temporary_invoice'));
     }
 
-    public function clear(SaleCart $cart): void
+    public function clear(SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        $cart->clear();
-        unset($this->lines, $this->count);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.cart_is_empty'));
+        $draft->clear();
+        $this->syncState($draft);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
+        Flux::toast(__('app.temporary_invoice_empty'));
     }
 
-    public function createInvoice(SaleCart $cart): void
+    public function createInvoice(SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        if ($cart->isEmpty()) {
-            Flux::toast(__('app.cart_is_empty'), variant: 'danger');
+        if ($draft->isEmpty()) {
+            Flux::toast(__('app.temporary_invoice_empty'), variant: 'danger');
 
             return;
         }
 
-        Flux::modal('panels.sale.cart.modal')->close();
+        Flux::modal('panels.sale.temporary-invoice.modal')->close();
 
         $this->redirect(route('panels.sale.invoice.create'), navigate: true);
     }
 
-    #[Computed]
-    public function count(): int
+    protected function syncState(SaleTemporaryInvoice $draft): void
     {
-        return app(SaleCart::class)->count();
-    }
-
-    #[Computed]
-    public function lines()
-    {
-        $cart = app(SaleCart::class);
-        $quantities = $cart->all();
+        $quantities = $draft->all();
+        $this->count = (int) array_sum($quantities);
 
         if ($quantities === []) {
-            return collect();
+            $this->lines = [];
+
+            return;
         }
 
         $items = Item::query()
@@ -100,7 +102,7 @@ new class extends Component
             ->get()
             ->keyBy('ItemID');
 
-        return collect($quantities)
+        $this->lines = collect($quantities)
             ->map(function (int $quantity, int $itemId) use ($items) {
                 $item = $items->get($itemId);
 
@@ -117,37 +119,38 @@ new class extends Component
                 ];
             })
             ->filter()
-            ->values();
+            ->values()
+            ->all();
     }
 };
 ?>
 
 <div class="shrink-0">
-    <flux:tooltip content="{{ __('app.shopping_cart') }}">
+    <flux:tooltip content="{{ __('app.temporary_invoice') }}">
         <flux:button
             variant="filled"
             color="teal"
-            icon="shopping-cart"
+            icon="file-text"
             wire:click="open"
             class="relative"
         >
-            @if ($this->count > 0)
+            @if ($count > 0)
                 <span class="absolute -top-1.5 -left-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                    {{ $this->count }}
+                    {{ $count }}
                 </span>
             @endif
         </flux:button>
     </flux:tooltip>
 
-    <flux:modal name="panels.sale.cart.modal" class="md:w-96" flyout position="right">
+    <flux:modal name="panels.sale.temporary-invoice.modal" class="md:w-96" flyout position="right">
         <div class="space-y-6">
             <div class="flex items-start justify-between gap-3">
                 <div>
-                    <flux:heading size="lg">{{ __('app.shopping_cart') }}</flux:heading>
-                    <flux:text class="mt-2">{{ __('app.shopping_cart_description') }}</flux:text>
+                    <flux:heading size="lg">{{ __('app.temporary_invoice') }}</flux:heading>
+                    <flux:text class="mt-2">{{ __('app.temporary_invoice_description') }}</flux:text>
                 </div>
-                @if ($this->count > 0)
-                    <flux:tooltip content="{{ __('app.clear') }}">
+                @if ($count > 0)
+                    <flux:tooltip content="{{ __('app.clear_temporary_invoice') }}">
                         <flux:button
                             size="xs"
                             variant="primary"
@@ -161,14 +164,14 @@ new class extends Component
                 @endif
             </div>
 
-            @if ($this->lines->isEmpty())
-                <flux:callout variant="secondary" icon="shopping-cart">
-                    {{ __('app.cart_is_empty_description') }}
+            @if ($lines === [])
+                <flux:callout variant="secondary" icon="file-text">
+                    {{ __('app.temporary_invoice_empty_description') }}
                 </flux:callout>
             @else
                 <ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
-                    @foreach ($this->lines as $line)
-                        <li wire:key="sale-cart-{{ $line['id'] }}" class="flex gap-3 py-3">
+                    @foreach ($lines as $line)
+                        <li wire:key="temp-invoice-{{ $line['id'] }}-{{ $line['quantity'] }}" class="flex gap-3 py-3">
                             <div class="shrink-0">
                                 @if ($line['thumbnail'])
                                     <img
@@ -235,7 +238,7 @@ new class extends Component
                     icon="file-text"
                     wire:click="createInvoice"
                 >
-                    {{ __('app.create_invoice_from_cart') }}
+                    {{ __('app.create_invoice_from_temporary') }}
                 </flux:button>
             @endif
         </div>

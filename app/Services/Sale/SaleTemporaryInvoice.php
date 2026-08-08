@@ -2,9 +2,9 @@
 
 namespace App\Services\Sale;
 
-class SaleCart
+class SaleTemporaryInvoice
 {
-    public const SESSION_KEY = 'sale.cart';
+    public const SESSION_KEY = 'sale.temporary_invoice';
 
     /**
      * @return array<int, int> itemId => quantity
@@ -13,22 +13,19 @@ class SaleCart
     {
         $items = session(self::SESSION_KEY, []);
 
-        if (! is_array($items)) {
-            return [];
-        }
+        // Migrate legacy session key if present.
+        if ((! is_array($items) || $items === []) && session()->has('sale.cart')) {
+            $items = session('sale.cart', []);
+            session()->forget('sale.cart');
 
-        $normalized = [];
+            if (is_array($items) && $items !== []) {
+                $this->store($this->normalize($items));
 
-        foreach ($items as $itemId => $quantity) {
-            $id = (int) $itemId;
-            $qty = (int) $quantity;
-
-            if ($id > 0 && $qty > 0) {
-                $normalized[$id] = $qty;
+                return $this->all();
             }
         }
 
-        return $normalized;
+        return $this->normalize(is_array($items) ? $items : []);
     }
 
     public function count(): int
@@ -97,7 +94,27 @@ class SaleCart
 
     public function clear(): void
     {
-        session()->forget(self::SESSION_KEY);
+        session()->forget([self::SESSION_KEY, 'sale.cart']);
+    }
+
+    /**
+     * @param  array<int|string, mixed>  $items
+     * @return array<int, int>
+     */
+    protected function normalize(array $items): array
+    {
+        $normalized = [];
+
+        foreach ($items as $itemId => $quantity) {
+            $id = (int) $itemId;
+            $qty = (int) $quantity;
+
+            if ($id > 0 && $qty > 0) {
+                $normalized[$id] = $qty;
+            }
+        }
+
+        return $normalized;
     }
 
     /**
