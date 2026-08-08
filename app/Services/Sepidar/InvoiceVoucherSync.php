@@ -6,6 +6,7 @@ use App\Models\Sepidar\ACC\Voucher;
 use App\Models\Sepidar\ACC\VoucherItem;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\SaleType;
+use Carbon\Carbon;
 use Morilog\Jalali\Jalalian;
 
 class InvoiceVoucherSync
@@ -45,9 +46,13 @@ class InvoiceVoucherSync
             $number = ((int) Voucher::query()
                 ->where('FiscalYearRef', $fiscalYearRef)
                 ->max('Number')) + 1;
+            $day = Carbon::parse($date);
             $dailyNumber = ((int) Voucher::query()
                 ->where('FiscalYearRef', $fiscalYearRef)
-                ->whereDate('Date', Jalalian::fromDateTime($date)->toCarbon()->toDateString())
+                ->whereBetween('Date', [
+                    $day->copy()->startOfDay()->format('Y-m-d H:i:s'),
+                    $day->copy()->endOfDay()->format('Y-m-d H:i:s'),
+                ])
                 ->max('DailyNumber')) + 1;
 
             $voucher = Voucher::query()->create([
