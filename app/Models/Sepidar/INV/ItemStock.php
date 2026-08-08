@@ -5,31 +5,23 @@ namespace App\Models\Sepidar\INV;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class ItemStockSummary extends Model
+class ItemStock extends Model
 {
-    public $table = 'INV.ItemStockSummary';
+    public $table = 'INV.ItemStock';
 
     public $connection = 'sqlsrv';
 
-    public $primaryKey = 'ItemStockSummaryID';
+    public $primaryKey = 'ItemStockID';
 
     public $incrementing = false;
 
     public $timestamps = false;
 
     protected $fillable = [
-        'ItemStockSummaryID',
-        'StockRef',
+        'ItemStockID',
         'ItemRef',
-        'TracingRef',
-        'Order',
-        'UnitRef',
-        'InputQuantity',
-        'OutputQuantity',
-        'SaleQuantity',
-        'SaleWithReserveQuantity',
-        'FiscalYearRef',
-        'FeedFromClosingOperation',
+        'StockRef',
+        'Version',
     ];
 
     public function item(): BelongsTo
