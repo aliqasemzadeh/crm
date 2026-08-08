@@ -1,10 +1,11 @@
 @php
     $issuer = $this->issuerName;
+    $invoiceUiPrefix = $invoiceUiPrefix ?? 'panels.accounting.invoice';
 @endphp
 
 {{-- Item search command modal --}}
 <flux:modal
-    name="panels.accounting.invoice.item-search.modal"
+    name="{{ $invoiceUiPrefix }}.item-search.modal"
     variant="bare"
     class="w-full max-md:my-0 max-md:h-[100dvh] max-md:max-w-none max-md:rounded-none md:my-[12vh] md:max-h-[80vh] md:max-w-[36rem] overflow-y-hidden"
     x-on:close="$wire.set('itemSearch', '', false)"
@@ -86,7 +87,7 @@
 </flux:modal>
 
 {{-- Party balance flyout --}}
-<flux:modal name="panels.accounting.invoice.party-balance.modal" class="md:w-96" flyout position="right">
+<flux:modal name="{{ $invoiceUiPrefix }}.party-balance.modal" class="md:w-96" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.party_financial_status') }}</flux:heading>
@@ -114,7 +115,7 @@
 </flux:modal>
 
 {{-- Create party flyout --}}
-<flux:modal name="panels.accounting.invoice.party-create.modal" class="md:w-96" flyout position="right">
+<flux:modal name="{{ $invoiceUiPrefix }}.party-create.modal" class="md:w-96" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.create_customer') }}</flux:heading>
@@ -132,7 +133,7 @@
 </flux:modal>
 
 {{-- Preview flyout --}}
-<flux:modal name="panels.accounting.invoice.preview.modal" class="md:w-2/3 lg:w-1/2" flyout position="right">
+<flux:modal name="{{ $invoiceUiPrefix }}.preview.modal" class="md:w-2/3 lg:w-1/2" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.invoice_preview') }}</flux:heading>
