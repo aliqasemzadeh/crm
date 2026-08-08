@@ -109,7 +109,7 @@ class InvoiceUpdater
                 'BankFeeForCurrencySale' => 0,
                 'BankFeeForCurrencySaleInBaseCurrency' => 0,
                 'IsAggregateDiscountInvoiceItem' => 0,
-                'TaxPayerCurrencyPurchaseRate' => null,
+                'TaxPayerCurrencyPurchaseRate' => 0,
             ];
 
             $totals['Price'] += $price;
