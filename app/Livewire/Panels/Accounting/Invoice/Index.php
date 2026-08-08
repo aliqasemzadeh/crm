@@ -16,7 +16,7 @@ class Index extends Component
 {
     use WithPagination;
 
-    public string $sortBy = 'Date';
+    public string $sortBy = 'CreationDate';
 
     public string $sortDirection = 'desc';
 
@@ -122,7 +122,7 @@ class Index extends Component
                     $query->orderBy($this->sortBy, $this->sortDirection);
                 }
             })
-            ->paginate(300);
+            ->paginate(20);
     }
 
     #[Layout('layouts.panels.accounting')]
