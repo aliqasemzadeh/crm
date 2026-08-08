@@ -73,4 +73,6 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             'subheading' => __('app.invoice_create_description'),
         ])
     </form>
+
+    @include('pages.panels.accounting.invoice._modals')
 </div>
