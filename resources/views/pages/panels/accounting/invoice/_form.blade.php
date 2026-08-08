@@ -16,16 +16,7 @@
     })->values()->all();
 @endphp
 
-<div
-    class="w-full"
-    wire:ignore
-    wire:key="invoice-form-calc-{{ $this->form_revision }}-{{ $this->tax_percent }}-{{ $this->price_mode }}"
-    x-data="invoiceFormCalculator({
-        taxPercent: {{ (float) $this->tax_percent }},
-        rows: @js($alpineRows),
-    })"
->
-    <form x-on:submit.prevent="prepareSave($event)">
+<div class="w-full">
     <div class="rounded-xl border border-zinc-300 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900 overflow-hidden">
         <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-4 sm:px-6 dark:border-zinc-700 dark:bg-zinc-800/60">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -130,14 +121,14 @@
                         </div>
 
                         <div class="space-y-2">
-            <flux:input
-                wire:model.live.debounce.400ms="tax_percent"
-                type="number"
-                step="any"
-                min="0"
-                label="{{ __('app.tax_percent') }}"
-                class="text-center"
-            />
+                            <flux:input
+                                wire:model.live.debounce.400ms="tax_percent"
+                                type="number"
+                                step="any"
+                                min="0"
+                                label="{{ __('app.tax_percent') }}"
+                                class="text-center"
+                            />
                         </div>
 
                         <div class="space-y-2">
@@ -161,7 +152,16 @@
                 </flux:accordion.item>
             </flux:accordion>
 
-            <div class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+            <div
+                wire:ignore
+                wire:key="invoice-form-calc-{{ $this->form_revision }}-{{ $this->tax_percent }}-{{ $this->price_mode }}"
+                x-data="invoiceFormCalculator({
+                    taxPercent: {{ (float) $this->tax_percent }},
+                    rows: @js($alpineRows),
+                })"
+            >
+                <form x-on:submit.prevent="prepareSave($event)" class="space-y-6">
+                <div class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
                 <table class="w-full min-w-[960px] text-sm">
                     <thead class="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                         <tr>
@@ -371,44 +371,45 @@
                         @endforeach
                     </tbody>
                 </table>
-            </div>
+                </div>
 
-            <div class="flex flex-col gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-700 md:flex-row md:items-end md:justify-between">
-                <div class="ms-auto w-full max-w-sm space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-zinc-500">{{ __('app.price') }}</span>
-                        <span class="font-medium tabular-nums" x-text="formatNumber(totals.price)"></span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-zinc-500">{{ __('app.discount') }}</span>
-                        <span class="font-medium tabular-nums" x-text="formatNumber(totals.discount)"></span>
-                    </div>
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-zinc-500">{{ __('app.tax') }}</span>
-                        <span class="font-medium tabular-nums" x-text="formatNumber(totals.tax)"></span>
-                    </div>
-                    <flux:separator variant="subtle" />
-                    <div class="flex items-center justify-between">
-                        <flux:heading size="sm">{{ __('app.net_amount') }}</flux:heading>
-                        <flux:heading size="lg" class="tabular-nums" x-text="formatNumber(totals.net)"></flux:heading>
+                <div class="flex flex-col gap-4 border-t border-zinc-200 pt-4 dark:border-zinc-700 md:flex-row md:items-end md:justify-between">
+                    <div class="ms-auto w-full max-w-sm space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-zinc-500">{{ __('app.price') }}</span>
+                            <span class="font-medium tabular-nums" x-text="formatNumber(totals.price)"></span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-zinc-500">{{ __('app.discount') }}</span>
+                            <span class="font-medium tabular-nums" x-text="formatNumber(totals.discount)"></span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-zinc-500">{{ __('app.tax') }}</span>
+                            <span class="font-medium tabular-nums" x-text="formatNumber(totals.tax)"></span>
+                        </div>
+                        <flux:separator variant="subtle" />
+                        <div class="flex items-center justify-between">
+                            <flux:heading size="sm">{{ __('app.net_amount') }}</flux:heading>
+                            <flux:heading size="lg" class="tabular-nums" x-text="formatNumber(totals.net)"></flux:heading>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <flux:button type="button" variant="ghost" href="{{ route($invoiceRoutePrefix.'.index') }}" wire:navigate icon="arrow-right">
-                    {{ __('app.back') }}
-                </flux:button>
-                <flux:button type="button" variant="primary" color="sky" icon="eye" x-on:click="preparePreview()">
-                    {{ __('app.preview') }}
-                </flux:button>
-                <flux:button type="submit" variant="primary" color="orange" class="w-full sm:w-auto" icon="save" wire:loading.attr="disabled" wire:target="save,commitClientRows">
-                    {{ __('app.save') }}
-                </flux:button>
+                <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <flux:button type="button" variant="ghost" href="{{ route($invoiceRoutePrefix.'.index') }}" wire:navigate icon="arrow-right">
+                        {{ __('app.back') }}
+                    </flux:button>
+                    <flux:button type="button" variant="primary" color="sky" icon="eye" x-on:click="preparePreview()">
+                        {{ __('app.preview') }}
+                    </flux:button>
+                    <flux:button type="submit" variant="primary" color="orange" class="w-full sm:w-auto" icon="save" wire:loading.attr="disabled" wire:target="save,commitClientRows">
+                        {{ __('app.save') }}
+                    </flux:button>
+                </div>
+                </form>
             </div>
         </div>
     </div>
-    </form>
 </div>
 
 <script>
