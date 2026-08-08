@@ -334,7 +334,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             <flux:button variant="primary" color="orange" icon="plus" wire:click="create">{{ __('app.create') }}</flux:button>
         </div>
 
-    <flux:card>
+    <flux:card class="panel-filter-card">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <flux:input wire:model.live="search" icon="search" placeholder="{{ __('app.search_placeholder') }}" />
 

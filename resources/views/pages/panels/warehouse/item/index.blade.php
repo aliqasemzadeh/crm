@@ -439,7 +439,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             <flux:text class="text-sm font-medium text-zinc-600 dark:text-zinc-300">{{ __('app.loading') }}</flux:text>
         </div>
 
-        <flux:card class="mb-4">
+        <flux:card class="panel-filter-card mb-4">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3 mb-3">
             <flux:input
                 wire:model.live.debounce.400ms="search"

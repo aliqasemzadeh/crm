@@ -12,6 +12,12 @@
 @theme {
     --font-sans: Vazirmatn, Tahoma, 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-panel-navy: #3d4f63;
+    --color-panel-navy-deep: #334155;
+    --color-panel-navy-text: #e2e8f0;
+    --color-panel-navy-muted: #94a3b8;
+    --color-panel-filter-strip: #64748b;
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -19,4 +25,117 @@
 
 [data-flux-main] {
     @apply  p-1 md:p-6 lg:p-8;
+}
+
+/* Soft navy sidebar — light mode only */
+:root:not(.dark) .panel-shell-sidebar,
+html:not(.dark) .panel-shell-sidebar {
+    background-color: var(--color-panel-navy);
+    border-inline-end: 1px solid var(--color-panel-navy-deep);
+    --color-accent-content: #ffffff;
+    --color-accent: #ffffff;
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item],
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item] {
+    color: #cbd5e1;
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item] svg,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item] svg {
+    color: currentColor;
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item]:hover,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item]:hover {
+    color: #ffffff;
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item][data-current],
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-item][data-current] {
+    color: #ffffff;
+    background-color: rgb(255 255 255 / 0.14);
+    border-color: rgb(255 255 255 / 0.2);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile],
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile] {
+    background-color: transparent;
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile]:hover,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile]:hover {
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-brand],
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-brand] *,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-brand],
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-brand] * {
+    color: #ffffff;
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-group] > button,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-group] > button {
+    color: var(--color-panel-navy-muted);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-group] > button:hover,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-group] > button:hover {
+    color: #ffffff;
+    background-color: rgb(255 255 255 / 0.08);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-group] .absolute.w-px,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-group] .absolute.w-px {
+    background-color: rgb(255 255 255 / 0.2);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-search],
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-search] {
+    color: var(--color-panel-navy-text);
+    background-color: rgb(255 255 255 / 0.1);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-search] *,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-search] * {
+    color: var(--color-panel-navy-muted);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile],
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile] *,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile],
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile] * {
+    color: var(--color-panel-navy-text);
+}
+
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile]:hover,
+:root:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile]:hover *,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile]:hover,
+html:not(.dark) .panel-shell-sidebar [data-flux-sidebar-profile]:hover * {
+    color: #ffffff;
+}
+
+/* Layout header polish — light mode */
+:root:not(.dark) .panel-shell-header,
+html:not(.dark) .panel-shell-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid rgb(226 232 240 / 0.8);
+    box-shadow: 0 1px 2px 0 rgb(148 163 184 / 0.25);
+}
+
+@media (min-width: 1024px) {
+    :root:not(.dark) .panel-shell-header,
+    html:not(.dark) .panel-shell-header {
+        background-color: #f8fafc;
+    }
+}
+
+/* Filter / search cards — mild top strip */
+:root:not(.dark) .panel-filter-card,
+html:not(.dark) .panel-filter-card {
+    border-top-width: 4px;
+    border-top-color: var(--color-panel-filter-strip);
+    box-shadow: 0 1px 2px 0 rgb(148 163 184 / 0.2);
 }
