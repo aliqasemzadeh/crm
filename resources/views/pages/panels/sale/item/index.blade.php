@@ -2,7 +2,7 @@
 
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
-use App\Services\Sale\SaleCart;
+use App\Services\Sale\SaleTemporaryInvoice;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -26,19 +26,19 @@ new #[Layout('layouts.panels.sale')] class extends Component
         $this->authorize('sales_item_index');
     }
 
-    public function addToCart(int $itemId, SaleCart $cart): void
+    public function sendToTemporaryInvoice(int $itemId, SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
         if (! Item::query()->whereKey($itemId)->exists()) {
-            Flux::toast(__('app.failed_to_add_to_cart'), variant: 'danger');
+            Flux::toast(__('app.failed_to_add_to_temporary_invoice'), variant: 'danger');
 
             return;
         }
 
-        $cart->add($itemId);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.product_added_to_cart'));
+        $draft->add($itemId);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
+        Flux::toast(__('app.added_to_temporary_invoice'));
     }
 
     public function sort(string $column): void
@@ -136,8 +136,8 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     <flux:table.cell class="w-1 whitespace-nowrap">
                         <div class="flex items-center gap-1">
                             @can('sales_invoice_create')
-                                <flux:tooltip content="{{ __('app.add_to_cart') }}">
-                                    <flux:button size="xs" variant="primary" color="teal" icon="shopping-cart" icon:variant="outline" wire:click="addToCart({{ $item->ItemID }})" />
+                                <flux:tooltip content="{{ __('app.send_to_temporary_invoice') }}">
+                                    <flux:button size="xs" variant="primary" color="teal" icon="file-text" icon:variant="outline" wire:click="sendToTemporaryInvoice({{ $item->ItemID }})" />
                                 </flux:tooltip>
                             @endcan
                             @can('sales_item_view')
