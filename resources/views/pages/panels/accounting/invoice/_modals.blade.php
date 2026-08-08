@@ -6,10 +6,10 @@
 <flux:modal
     name="panels.accounting.invoice.item-search.modal"
     variant="bare"
-    class="w-full max-md:my-0 max-md:h-[100dvh] max-md:max-w-none max-md:rounded-none md:my-[10vh] md:max-h-[80vh] md:max-w-3xl overflow-y-hidden"
+    class="w-full max-md:my-0 max-md:h-[100dvh] max-md:max-w-none max-md:rounded-none md:my-[12vh] md:max-h-[80vh] md:max-w-[36rem] overflow-y-hidden"
     x-on:close="$wire.set('itemSearch', '', false)"
 >
-    <flux:command class="border-none shadow-lg inline-flex flex-col max-md:h-[100dvh] md:max-h-[76vh]">
+    <flux:command :filter="false" class="border-none shadow-lg inline-flex flex-col max-md:h-[100dvh] md:max-h-[76vh]">
         <flux:command.input
             wire:model.live.debounce.300ms="itemSearch"
             placeholder="{{ __('app.search_item') }}"
@@ -22,58 +22,59 @@
 
         <flux:command.items wire:loading.remove wire:target="itemSearch">
             @if (strlen(trim($itemSearch)) < 3)
-                <div class="px-4 py-6 text-center text-sm text-zinc-500">
-                    {{ __('app.search_min_chars', ['count' => 3]) }}
-                </div>
+                <flux:command.item class="h-auto! min-h-10 pointer-events-none">
+                    <div class="w-full py-6 text-center text-sm font-medium text-zinc-500">
+                        {{ __('app.search_min_chars', ['count' => 3]) }}
+                    </div>
+                </flux:command.item>
             @elseif ($this->itemResults->isEmpty())
-                <div class="px-4 py-6 text-center text-sm text-zinc-500">
-                    {{ __('app.no_item_found') }}
-                </div>
+                <flux:command.item class="h-auto! min-h-10 pointer-events-none">
+                    <div class="w-full py-6 text-center text-sm font-medium text-zinc-500">
+                        {{ __('app.no_item_found') }}
+                    </div>
+                </flux:command.item>
             @else
                 @foreach ($this->itemResults as $item)
                     <flux:command.item
                         wire:key="cmd-item-{{ $item['id'] }}"
                         wire:click="selectItem({{ $item['id'] }})"
-                        class="cursor-pointer"
+                        class="h-auto! min-h-10 cursor-pointer"
                     >
-                        <div class="flex min-h-24 items-center gap-4 py-4">
+                        <div class="flex w-full items-center gap-3 py-1">
                             @if ($item['thumbnail'])
                                 <img
                                     src="data:image/jpeg;base64,{{ base64_encode($item['thumbnail']) }}"
                                     alt=""
-                                    class="size-20 shrink-0 rounded-lg object-cover shadow-sm"
+                                    class="size-10 shrink-0 rounded object-cover shadow-sm"
                                 >
                             @else
-                                <div class="flex size-20 shrink-0 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-                                    <flux:icon name="package" class="size-8 text-zinc-400" />
+                                <div class="flex size-10 shrink-0 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
+                                    <flux:icon name="package" variant="micro" class="text-zinc-400" />
                                 </div>
                             @endif
 
-                            <div class="min-w-0 flex-1 space-y-2.5">
-                                <div class="min-w-0">
-                                    <div class="truncate text-base font-medium leading-6">{{ $item['title'] }}</div>
-                                    <div class="mt-0.5 truncate text-xs text-zinc-500">{{ $item['code'] }}</div>
-                                </div>
-
-                                <div class="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-xs">
-                                    <div class="shrink-0 whitespace-nowrap">
-                                        <span class="text-zinc-500">{{ __('app.stock') }}:</span>
-                                        <span class="font-semibold tabular-nums text-teal-600 dark:text-teal-400">{{ number_format($item['stock']) }}</span>
-                                    </div>
-                                    <div class="shrink-0 whitespace-nowrap">
-                                        <span class="text-zinc-500">{{ __('app.last_sale_price') }}:</span>
-                                        <span class="font-semibold tabular-nums text-sky-600 dark:text-sky-400">{{ number_format($item['last_sale_price']) }}</span>
-                                    </div>
-                                    <div class="shrink-0 whitespace-nowrap">
-                                        <span class="text-zinc-500">{{ __('app.last_purchase_price') }}:</span>
-                                        <span class="font-semibold tabular-nums text-amber-600 dark:text-amber-400">{{ number_format($item['last_purchase_price']) }}</span>
-                                    </div>
-                                    <div class="shrink-0 whitespace-nowrap">
-                                        <span class="text-zinc-500">{{ __('app.site_price') }}:</span>
-                                        <span class="font-semibold tabular-nums text-rose-600 dark:text-rose-400">
+                            <div class="min-w-0 flex-1">
+                                <div class="truncate font-medium">{{ $item['title'] }}</div>
+                                <div class="mt-0.5 flex min-w-0 items-center gap-x-3 overflow-hidden text-xs text-zinc-500">
+                                    <span class="shrink-0 tabular-nums">{{ $item['code'] }}</span>
+                                    <span class="shrink-0 whitespace-nowrap">
+                                        <span>{{ __('app.stock') }}:</span>
+                                        <span class="font-semibold text-teal-600 dark:text-teal-400">{{ number_format($item['stock']) }}</span>
+                                    </span>
+                                    <span class="shrink-0 whitespace-nowrap">
+                                        <span>{{ __('app.last_sale_price') }}:</span>
+                                        <span class="font-semibold text-sky-600 dark:text-sky-400">{{ number_format($item['last_sale_price']) }}</span>
+                                    </span>
+                                    <span class="shrink-0 whitespace-nowrap">
+                                        <span>{{ __('app.last_purchase_price') }}:</span>
+                                        <span class="font-semibold text-amber-600 dark:text-amber-400">{{ number_format($item['last_purchase_price']) }}</span>
+                                    </span>
+                                    <span class="shrink-0 whitespace-nowrap">
+                                        <span>{{ __('app.site_price') }}:</span>
+                                        <span class="font-semibold text-rose-600 dark:text-rose-400">
                                             {{ $item['site_price'] !== null ? number_format($item['site_price']) : '—' }}
                                         </span>
-                                    </div>
+                                    </span>
                                 </div>
                             </div>
                         </div>
