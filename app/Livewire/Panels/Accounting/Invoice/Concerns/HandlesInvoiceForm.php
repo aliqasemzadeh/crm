@@ -111,7 +111,9 @@ trait HandlesInvoiceForm
 
     public function createParty(PartyCreator $creator): void
     {
-        $this->authorize('accounting_party_create');
+        if (! auth()->user()?->can('accounting_party_create') && ! auth()->user()?->can('accounting_invoice_create')) {
+            abort(403);
+        }
 
         $validated = $this->validate([
             'newPartyName' => ['required', 'string', 'max:255'],
@@ -254,13 +256,19 @@ trait HandlesInvoiceForm
     public function issuerName(): string
     {
         $user = auth()->user();
-        $name = $user?->sepidarUser?->Name;
+
+        if (! $user) {
+            return '-';
+        }
+
+        $user->loadMissing('sepidarUser');
+        $name = $user->sepidarUser?->Name;
 
         if (filled($name)) {
             return (string) $name;
         }
 
-        return $user?->name ?: '-';
+        return $user->name !== '' ? $user->name : '-';
     }
 
     public function partyName(?Party $party): string

@@ -24,8 +24,19 @@ class PartyCreator
         return DB::connection('sqlsrv')->transaction(function () use ($name, $lastName, $mobile, $creator, $now) {
             $template = Party::query()
                 ->whereNotNull('Name')
+                ->where(function ($query) {
+                    $query->whereNotNull('LastName')
+                        ->where('LastName', '<>', '');
+                })
                 ->orderByDesc('PartyId')
-                ->firstOrFail();
+                ->first();
+
+            if (! $template) {
+                $template = Party::query()
+                    ->whereNotNull('Name')
+                    ->orderByDesc('PartyId')
+                    ->firstOrFail();
+            }
 
             $partyId = ((int) Party::query()->max('PartyId')) + 1;
 
