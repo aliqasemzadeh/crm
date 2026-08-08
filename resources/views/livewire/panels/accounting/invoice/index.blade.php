@@ -69,55 +69,22 @@
     </div>
 
     <flux:modal name="panels.accounting.invoice.month-stats.modal" class="md:w-96" flyout position="right">
-        @php
-            $monthStats = $this->monthPeriodStats;
-        @endphp
         <div class="space-y-6">
             <div>
-                <flux:heading size="lg">{{ __('app.invoice_month_detail', ['month' => $monthStats['month_name']]) }}</flux:heading>
+                <flux:heading size="lg">
+                    {{ __('app.invoice_month_detail', ['month' => $selectedMonth ? __('app.jalali_months.'.$selectedMonth) : '']) }}
+                </flux:heading>
                 <flux:text class="mt-2">{{ __('app.invoice_month_detail_description') }}</flux:text>
             </div>
 
-            <flux:card class="bg-zinc-50 dark:bg-zinc-900 border-t-4 border-zinc-500">
-                <div class="flex justify-between items-center gap-4">
-                    <flux:heading size="sm">{{ __('app.invoice_month_total') }}</flux:heading>
-                    <flux:text size="lg" class="font-bold text-zinc-900 dark:text-white">
-                        {{ number_format($monthStats['total']) }}
-                        <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
-                    </flux:text>
-                </div>
-            </flux:card>
-
-            <flux:tabs variant="segmented" wire:model.live="periodMode">
-                <flux:tab name="weekly">{{ __('app.invoice_period_weekly') }}</flux:tab>
-                <flux:tab name="ten_days">{{ __('app.invoice_period_ten_days') }}</flux:tab>
-            </flux:tabs>
-
-            <div wire:loading.delay wire:target="periodMode, showMonthDetail" class="flex justify-center py-6">
-                <flux:icon.loader-circle class="animate-spin text-zinc-400" />
-            </div>
-
-            <div wire:loading.remove.delay wire:target="periodMode, showMonthDetail" class="space-y-3">
-                @forelse($monthStats['periods'] as $period)
-                    <flux:card class="border-t-4 border-sky-500">
-                        <div class="flex flex-col gap-2">
-                            <div class="flex items-start justify-between gap-3">
-                                <div>
-                                    <flux:heading size="sm">{{ $period['label'] }}</flux:heading>
-                                    <flux:text size="sm" class="text-zinc-500">{{ $period['range'] }}</flux:text>
-                                </div>
-                                <flux:badge color="sky" size="sm">{{ $period['percent'] }}%</flux:badge>
-                            </div>
-                            <flux:text size="lg" class="font-bold text-zinc-800 dark:text-zinc-100">
-                                {{ number_format($period['amount']) }}
-                                <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
-                            </flux:text>
-                        </div>
-                    </flux:card>
-                @empty
-                    <flux:text>{{ __('app.invoice_period_no_data') }}</flux:text>
-                @endforelse
-            </div>
+            @if($selectedMonth)
+                <livewire:panels.accounting.invoice.month-stats
+                    :month="$selectedMonth"
+                    :sale-type="$saleType"
+                    :key="'invoice-month-stats-'.$selectedMonth.'-'.$saleType"
+                    lazy="on-load"
+                />
+            @endif
         </div>
     </flux:modal>
 

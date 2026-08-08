@@ -1087,6 +1087,7 @@ return [
     'invoice_period_ten_days_label' => 'ده روز :ordinal :month',
     'invoice_period_range' => ':from تا :to',
     'invoice_period_no_data' => 'در این ماه فاکتوری ثبت نشده است.',
+    'invoice_period_calculating' => 'در حال محاسبه آمار...',
     'ordinals' => [
         1 => 'اول',
         2 => 'دوم',
