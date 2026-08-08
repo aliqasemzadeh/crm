@@ -83,7 +83,7 @@
             <flux:accordion transition>
                 <flux:accordion.item
                     :heading="__('app.user_hr_extra_section')"
-                    :expanded="filled($internal_phone_id) || filled($bale_code) || filled($personnel_code) || filled($timex_code)"
+                    :expanded="filled($internal_phone_id) || filled($bale_code) || filled($personnel_code) || filled($timex_code) || filled($sepidar_user_id)"
                 >
                     <div class="space-y-4 pt-2">
                         <flux:field>
@@ -111,6 +111,33 @@
                                 @endforeach
                             </flux:select>
                             <flux:error name="internal_phone_id" />
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label>{{ __('app.sepidar_user') }}</flux:label>
+                            <flux:select
+                                wire:model="sepidar_user_id"
+                                variant="combobox"
+                                :filter="false"
+                                clearable
+                                placeholder="{{ __('app.sepidar_user_placeholder') }}"
+                            >
+                                <x-slot name="input">
+                                    <flux:select.input
+                                        wire:model.live.debounce.300ms="sepidar_user_search"
+                                        placeholder="{{ __('app.search_sepidar_user') }}"
+                                    />
+                                </x-slot>
+                                @foreach ($this->sepidarUsers as $sepidarUser)
+                                    <flux:select.option value="{{ $sepidarUser->UserID }}" wire:key="sepidar-user-{{ $sepidarUser->UserID }}">
+                                        {{ $sepidarUser->Name }}
+                                        @if(filled($sepidarUser->UserName))
+                                            ({{ $sepidarUser->UserName }})
+                                        @endif
+                                    </flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            <flux:error name="sepidar_user_id" />
                         </flux:field>
 
                         <flux:field>

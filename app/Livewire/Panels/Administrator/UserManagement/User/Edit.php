@@ -220,6 +220,8 @@ class Edit extends Component
         $timex = trim((string) ($validated['timex_code'] ?? ''));
         $this->user->timex_code = $timex === '' ? null : $timex;
 
+        $this->user->sepidar_user_id = $validated['sepidar_user_id'] ?? null;
+
         if (! empty($validated['password'] ?? '')) {
             // Will be hashed automatically via the model cast
             $this->user->password = $validated['password'];
