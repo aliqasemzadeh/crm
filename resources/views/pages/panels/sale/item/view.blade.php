@@ -131,6 +131,30 @@ new #[Layout('layouts.panels.sale')] class extends Component
         </div>
 
         <div class="flex flex-shrink-0 flex-wrap gap-2">
+            @can('sales_item_image')
+                <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
+                    <flux:button
+                        size="xs"
+                        variant="primary"
+                        color="violet"
+                        icon="image"
+                        icon:variant="outline"
+                        wire:click="$dispatch('panels.sale.item.upload-image.assign-data', { id: '{{ $item->ItemID }}' })"
+                    />
+                </flux:tooltip>
+            @endcan
+            @can('sales_item_site_edit')
+                <flux:tooltip content="{{ __('app.website_edit') }}">
+                    <flux:button
+                        size="xs"
+                        variant="primary"
+                        color="rose"
+                        icon="globe"
+                        icon:variant="outline"
+                        wire:click="$dispatch('panels.sale.item-price.edit-site.assign-data', { id: '{{ $item->ItemID }}' })"
+                    />
+                </flux:tooltip>
+            @endcan
             @if ($item->siteUrl())
                 <flux:button
                     variant="primary"
@@ -153,6 +177,9 @@ new #[Layout('layouts.panels.sale')] class extends Component
             </flux:button>
         </div>
     </div>
+
+    <livewire:panels.sale.item.upload-image />
+    <livewire:panels.sale.item-price.edit-site />
 
     {{-- Price cards --}}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">

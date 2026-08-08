@@ -74,6 +74,8 @@ class ItemFee extends Component
 
     public function save()
     {
+        $this->authorize('sales_item_fee');
+
         $this->validate([
             'fee' => ['required', 'min:1', new ItemPriceNoteFeeRule($this->itemId)],
         ], [], [
@@ -118,6 +120,8 @@ class ItemFee extends Component
 
     public function saveSite($index)
     {
+        $this->authorize('sales_item_site_edit');
+
         $priceData = $this->prices[$index];
 
         $this->validate([
