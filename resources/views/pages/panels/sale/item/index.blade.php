@@ -130,7 +130,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                             @endcan
                             @can('sales_item_site_edit')
                                 <flux:tooltip content="{{ __('app.website_edit') }}">
-                                    <flux:button size="xs" variant="primary" color="rose" icon="globe" icon:variant="outline" wire:click="$dispatch('panels.sale.item-price.edit-site.assign-data', { id: '{{ $item->ItemID }}' })" />
+                                    <flux:button size="xs" variant="primary" color="rose" icon="globe-alt" icon:variant="outline" wire:click="$dispatch('panels.sale.item-price.edit-site.assign-data', { id: '{{ $item->ItemID }}' })" />
                                 </flux:tooltip>
                             @endcan
                             @can('sales_item_fetchers')
