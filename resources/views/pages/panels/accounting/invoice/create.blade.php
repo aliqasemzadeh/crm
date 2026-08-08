@@ -68,12 +68,10 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         <flux:separator variant="subtle" />
     </div>
 
-    <form wire:submit="save">
-        @include('pages.panels.accounting.invoice._form', [
-            'heading' => __('app.sales_invoice'),
-            'subheading' => __('app.invoice_create_description'),
-        ])
-    </form>
+    @include('pages.panels.accounting.invoice._form', [
+        'heading' => __('app.sales_invoice'),
+        'subheading' => __('app.invoice_create_description'),
+    ])
 
     @include('pages.panels.accounting.invoice._modals')
 </div>

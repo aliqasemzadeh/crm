@@ -106,16 +106,14 @@ new #[Layout('layouts.panels.sale')] class extends Component
         <flux:separator variant="subtle" />
     </div>
 
-    <form wire:submit="save">
-        @include('pages.panels.accounting.invoice._form', [
-            'heading' => __('app.sales_invoice'),
-            'subheading' => __('app.invoice_edit_description'),
-            'invoiceNumber' => $invoice->Number,
-            'invoiceUiPrefix' => 'panels.sale.invoice',
-            'invoiceRoutePrefix' => 'panels.sale.invoice',
-            'partyCreatePermissions' => ['sales_party_create', 'sales_invoice_create'],
-        ])
-    </form>
+    @include('pages.panels.accounting.invoice._form', [
+        'heading' => __('app.sales_invoice'),
+        'subheading' => __('app.invoice_edit_description'),
+        'invoiceNumber' => $invoice->Number,
+        'invoiceUiPrefix' => 'panels.sale.invoice',
+        'invoiceRoutePrefix' => 'panels.sale.invoice',
+        'partyCreatePermissions' => ['sales_party_create', 'sales_invoice_create'],
+    ])
 
     @include('pages.panels.accounting.invoice._modals', [
         'invoiceUiPrefix' => 'panels.sale.invoice',
