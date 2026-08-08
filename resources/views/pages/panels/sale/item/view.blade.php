@@ -31,6 +31,12 @@ new #[Layout('layouts.panels.sale')] class extends Component
         unset($this->sitePrice);
     }
 
+    #[On('panels.sale.item.upload-image.saved')]
+    public function refreshAfterImageUpload(): void
+    {
+        $this->item->load('image');
+    }
+
     #[Computed]
     public function stock(): float
     {

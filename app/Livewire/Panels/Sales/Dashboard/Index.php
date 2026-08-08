@@ -7,7 +7,12 @@ use Livewire\Component;
 
 class Index extends Component
 {
-    #[Layout('layouts.panels.sales')]
+    public function mount(): void
+    {
+        $this->authorize('sales_dashboard_index');
+    }
+
+    #[Layout('layouts.panels.sale')]
     public function render()
     {
         return view('livewire.panels.sales.dashboard.index');
