@@ -78,11 +78,17 @@
     <div class="flex w-full flex-col gap-2 px-3 py-2 lg:px-4">
         @include('partials.user-navbar')
 
-        @can('sales_item_index')
-            <div class="w-full max-w-3xl">
-                <livewire:panels.sale.item.search :key="'panels-sale-item-search'" />
-            </div>
-        @endcan
+        <div class="flex w-full items-start gap-2">
+            @can('sales_item_index')
+                <div class="w-full max-w-3xl">
+                    <livewire:panels.sale.item.search :key="'panels-sale-item-search'" />
+                </div>
+            @endcan
+
+            @can('sales_invoice_create')
+                <livewire:panels.sale.cart :key="'panels-sale-cart'" />
+            @endcan
+        </div>
     </div>
 </flux:header>
 

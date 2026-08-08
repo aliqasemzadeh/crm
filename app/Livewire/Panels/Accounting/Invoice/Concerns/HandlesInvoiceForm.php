@@ -131,7 +131,7 @@ trait HandlesInvoiceForm
         }
 
         $this->items[$index]['item_ref'] = $itemId;
-        $this->items[$index]['fee'] = $fee;
+        $this->items[$index]['fee'] = $this->normalizeDefaultFee($fee);
         $this->recalculateLineTax($index);
 
         $this->itemSearch = '';
@@ -139,6 +139,31 @@ trait HandlesInvoiceForm
         unset($this->itemResults, $this->selectedItems);
 
         Flux::modal($this->invoiceModal('item-search.modal'))->close();
+    }
+
+    /**
+     * When true, missing last-sale / site price leaves fee empty so the user must enter it.
+     */
+    protected function emptyFeeWhenMissing(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function feeValidationRules(): array
+    {
+        return ['required', 'numeric', 'gte:0'];
+    }
+
+    protected function normalizeDefaultFee(float|int $fee): float|int|string
+    {
+        if ($fee > 0) {
+            return $fee;
+        }
+
+        return $this->emptyFeeWhenMissing() ? '' : 0;
     }
 
     public function clearParty(): void
@@ -445,7 +470,7 @@ trait HandlesInvoiceForm
             'items' => ['required', 'array', 'min:1'],
             'items.*.item_ref' => ['required', 'integer'],
             'items.*.quantity' => ['required', 'numeric', 'gt:0'],
-            'items.*.fee' => ['required', 'numeric', 'gte:0'],
+            'items.*.fee' => $this->feeValidationRules(),
             'items.*.discount' => ['nullable', 'numeric', 'gte:0'],
             'items.*.tax' => ['nullable', 'numeric', 'gte:0'],
             'items.*.description' => ['nullable', 'string', 'max:500'],
