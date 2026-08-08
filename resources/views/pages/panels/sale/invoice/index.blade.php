@@ -12,7 +12,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
 {
     use WithPagination;
 
-    public string $sortBy = 'Date';
+    public string $sortBy = 'CreationDate';
 
     public string $sortDirection = 'desc';
 
@@ -69,7 +69,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     $query->orderBy($this->sortBy, $this->sortDirection);
                 }
             })
-            ->paginate(50);
+            ->paginate(20);
     }
 };
 ?>
