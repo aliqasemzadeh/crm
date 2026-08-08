@@ -15,6 +15,20 @@
                     <flux:icon.loader-circle class="animate-spin text-zinc-400" />
                 </div>
 
+                @can('accounting_invoice_create')
+                    <flux:tooltip content="{{ __('app.create_invoice') }}">
+                        <flux:button
+                            size="sm"
+                            variant="primary"
+                            color="orange"
+                            icon="plus"
+                            icon:variant="outline"
+                            href="{{ route('panels.accounting.invoice.create') }}"
+                            wire:navigate
+                        />
+                    </flux:tooltip>
+                @endcan
+
                 <flux:tabs variant="segmented" class="-my-px h-auto! max-md:hidden" wire:model.live="saleType">
                     <flux:tab name="all">{{ __('app.all') }}</flux:tab>
                     <flux:tab name="official">{{ __('app.official') }}</flux:tab>

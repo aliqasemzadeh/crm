@@ -1615,4 +1615,15 @@ return [
         'url' => 'آدرس',
         'no_logs_found' => 'هیچ لاگی برای این صفحه یافت نشد.',
     ],
+
+    'create_invoice' => 'ایجاد فاکتور',
+    'invoice_create_description' => 'فاکتور فروش جدید را با انتخاب مشتری و اقلام ثبت کنید.',
+    'add_invoice_item' => 'افزودن کالا',
+    'invoice_created' => 'فاکتور شماره :number با موفقیت ثبت شد.',
+    'invoice_create_failed' => 'ثبت فاکتور با خطا مواجه شد. لطفاً دوباره تلاش کنید.',
+    'item' => 'کالا',
+    'line_total' => 'جمع ردیف',
+    'search_customer' => 'جستجوی مشتری',
+    'search_item' => 'جستجوی کالا',
+    'change' => 'تغییر',
 ];

@@ -36,8 +36,8 @@
                 <flux:table.column>{{ __('app.action') }}</flux:table.column>
             </flux:table.columns>
             <flux:table.rows>
-                @foreach($fetchers as $itemFetcher)
-                    <flux:table.row>
+                @foreach($this->fetchers as $itemFetcher)
+                    <flux:table.row wire:key="fetcher-row-{{ $itemFetcher->id }}">
                         <flux:table.cell>{{ $itemFetcher->fetcher }}</flux:table.cell>
                         <flux:table.cell class="max-w-xs truncate" title="{{ $itemFetcher->link }}">{{ $itemFetcher->link }}</flux:table.cell>
                         <flux:table.cell>{{ $itemFetcher->price ? number_format($itemFetcher->price) : '-' }}</flux:table.cell>
@@ -47,7 +47,7 @@
                             @endif
                                 @if($itemFetcher->updated_at)
                                     <span
-                                        class="text-xs">{{ \Morilog\Jalali\Jalalian::fromDateTime($itemFetcher->update_at)->format('Y/m/d H:i:s') }}</span>
+                                        class="text-xs">{{ \Morilog\Jalali\Jalalian::fromDateTime($itemFetcher->updated_at)->format('Y/m/d H:i:s') }}</span>
                                 @endif
                         </flux:table.cell>
                         <flux:table.cell>
