@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Sepidar;
 
+use App\Models\Sepidar\ACC\Voucher;
 use App\Models\Sepidar\ACC\VoucherItem;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\InventoryDeliveryItem;
