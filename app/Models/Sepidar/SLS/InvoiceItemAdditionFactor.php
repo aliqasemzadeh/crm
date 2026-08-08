@@ -27,6 +27,6 @@ class InvoiceItemAdditionFactor extends Model
 
     public function invoiceItem(): BelongsTo
     {
-        return $this->belongsTo(InvoiceItem::class, 'InvoiceItemRef', 'InvoiceItemId');
+        return $this->belongsTo(InvoiceItem::class, 'InvoiceItemRef', 'InvoiceItemID');
     }
 }
