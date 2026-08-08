@@ -13,6 +13,7 @@ new class extends Component
     {
         $this->authorize('crm_cash_back_rule_create');
 
+        $this->form->normalizeAmounts();
         $validated = $this->form->validate();
 
         CashBackRule::query()->create($validated);
@@ -34,9 +35,27 @@ new class extends Component
             <flux:subheading>{{ __('app.cash_back_rules_description') }}</flux:subheading>
         </div>
 
-        <flux:input type="number" wire:model="form.start_amount" label="{{ __('app.cash_back_start_amount') }}" />
-        <flux:input type="number" wire:model="form.end_amount" label="{{ __('app.cash_back_end_amount') }}" />
-        <flux:input type="number" wire:model="form.cash_back_amount" label="{{ __('app.cash_back_amount') }}" />
+        <flux:input
+            type="text"
+            inputmode="numeric"
+            wire:model="form.start_amount"
+            label="{{ __('app.cash_back_start_amount') }}"
+            mask:dynamic="$money($input, '.', ',', 0)"
+        />
+        <flux:input
+            type="text"
+            inputmode="numeric"
+            wire:model="form.end_amount"
+            label="{{ __('app.cash_back_end_amount') }}"
+            mask:dynamic="$money($input, '.', ',', 0)"
+        />
+        <flux:input
+            type="text"
+            inputmode="numeric"
+            wire:model="form.cash_back_amount"
+            label="{{ __('app.cash_back_amount') }}"
+            mask:dynamic="$money($input, '.', ',', 0)"
+        />
 
         <flux:field variant="inline">
             <flux:label>{{ __('app.cash_back_is_percent') }}</flux:label>

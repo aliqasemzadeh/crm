@@ -6,17 +6,24 @@ use Livewire\Form;
 
 class CashBackRuleForm extends Form
 {
-    public ?int $start_amount = null;
+    public mixed $start_amount = null;
 
-    public ?int $end_amount = null;
+    public mixed $end_amount = null;
 
-    public ?int $cash_back_amount = null;
+    public mixed $cash_back_amount = null;
 
     public bool $is_percent = false;
 
     public ?int $activation_delay_days = null;
 
     public ?int $usage_duration_days = null;
+
+    public function normalizeAmounts(): void
+    {
+        $this->start_amount = $this->toInteger($this->start_amount);
+        $this->end_amount = $this->toInteger($this->end_amount);
+        $this->cash_back_amount = $this->toInteger($this->cash_back_amount);
+    }
 
     public function rules(): array
     {
@@ -40,5 +47,10 @@ class CashBackRuleForm extends Form
             'activation_delay_days' => __('app.cash_back_activation_delay_days'),
             'usage_duration_days' => __('app.cash_back_usage_duration_days'),
         ];
+    }
+
+    private function toInteger(mixed $value): int
+    {
+        return (int) str_replace(',', '', (string) ($value ?? 0));
     }
 }

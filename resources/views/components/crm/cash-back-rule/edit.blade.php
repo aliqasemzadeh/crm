@@ -18,9 +18,9 @@ new class extends Component
         $rule = CashBackRule::query()->findOrFail($id);
 
         $this->ruleId = $rule->id;
-        $this->form->start_amount = $rule->start_amount;
-        $this->form->end_amount = $rule->end_amount;
-        $this->form->cash_back_amount = $rule->cash_back_amount;
+        $this->form->start_amount = number_format($rule->start_amount);
+        $this->form->end_amount = number_format($rule->end_amount);
+        $this->form->cash_back_amount = number_format($rule->cash_back_amount);
         $this->form->is_percent = (bool) $rule->is_percent;
         $this->form->activation_delay_days = $rule->activation_delay_days;
         $this->form->usage_duration_days = $rule->usage_duration_days;
@@ -36,6 +36,7 @@ new class extends Component
             return;
         }
 
+        $this->form->normalizeAmounts();
         $validated = $this->form->validate();
 
         CashBackRule::query()->findOrFail($this->ruleId)->update($validated);
@@ -54,9 +55,27 @@ new class extends Component
             <flux:subheading>{{ __('app.cash_back_rules_description') }}</flux:subheading>
         </div>
 
-        <flux:input type="number" wire:model="form.start_amount" label="{{ __('app.cash_back_start_amount') }}" />
-        <flux:input type="number" wire:model="form.end_amount" label="{{ __('app.cash_back_end_amount') }}" />
-        <flux:input type="number" wire:model="form.cash_back_amount" label="{{ __('app.cash_back_amount') }}" />
+        <flux:input
+            type="text"
+            inputmode="numeric"
+            wire:model="form.start_amount"
+            label="{{ __('app.cash_back_start_amount') }}"
+            mask:dynamic="$money($input, '.', ',', 0)"
+        />
+        <flux:input
+            type="text"
+            inputmode="numeric"
+            wire:model="form.end_amount"
+            label="{{ __('app.cash_back_end_amount') }}"
+            mask:dynamic="$money($input, '.', ',', 0)"
+        />
+        <flux:input
+            type="text"
+            inputmode="numeric"
+            wire:model="form.cash_back_amount"
+            label="{{ __('app.cash_back_amount') }}"
+            mask:dynamic="$money($input, '.', ',', 0)"
+        />
 
         <flux:field variant="inline">
             <flux:label>{{ __('app.cash_back_is_percent') }}</flux:label>
