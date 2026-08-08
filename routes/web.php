@@ -56,6 +56,9 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/accounting/bank/index', \App\Livewire\Panels\Accounting\Bank\Index::class)->name('panels.accounting.bank.index');
     Route::livewire('/panels/accounting/invoice/index', \App\Livewire\Panels\Accounting\Invoice\Index::class)->name('panels.accounting.invoice.index');
     Route::livewire('/panels/accounting/invoice/create', 'pages::panels.accounting.invoice.create')->name('panels.accounting.invoice.create');
+    Route::livewire('/panels/accounting/invoice/edit/{invoice}', 'pages::panels.accounting.invoice.edit')->name('panels.accounting.invoice.edit');
+    Route::livewire('/panels/accounting/invoice/view/{invoice}', 'pages::panels.accounting.invoice.view')->name('panels.accounting.invoice.view');
+    Route::livewire('/panels/accounting/invoice/print/{invoice}', 'pages::panels.accounting.invoice.print')->name('panels.accounting.invoice.print');
     Route::livewire('/panels/accounting/inventory-receipt/index', \App\Livewire\Panels\Accounting\InventoryReceipt\Index::class)->name('panels.accounting.inventory-receipt.index');
     Route::livewire('/panels/accounting/item/index', \App\Livewire\Panels\Accounting\Item\Index::class)->name('panels.accounting.item.index');
     Route::livewire('/panels/accounting/item/{item}', 'pages::panels.accounting.item.show')->name('panels.accounting.item.show');

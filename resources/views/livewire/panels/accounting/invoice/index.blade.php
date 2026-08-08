@@ -141,7 +141,51 @@
             <flux:table.row :key="$invoice->id">
                 <flux:table.cell class="w-1 whitespace-nowrap">
                     <div class="flex items-center gap-2">
-                        <flux:button size="xs" variant="primary" color="sky" wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $invoice->InvoiceId }}' })">{{ __('app.view') }}</flux:button>
+                        <flux:tooltip content="{{ __('app.view') }}">
+                            <flux:button
+                                size="xs"
+                                variant="primary"
+                                color="sky"
+                                icon="eye"
+                                icon:variant="outline"
+                                wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $invoice->InvoiceId }}' })"
+                            />
+                        </flux:tooltip>
+                        <flux:tooltip content="{{ __('app.invoice_details') }}">
+                            <flux:button
+                                size="xs"
+                                variant="primary"
+                                color="teal"
+                                icon="file-text"
+                                icon:variant="outline"
+                                href="{{ route('panels.accounting.invoice.view', $invoice->InvoiceId) }}"
+                                wire:navigate
+                            />
+                        </flux:tooltip>
+                        @can('accounting_invoice_edit')
+                            <flux:tooltip content="{{ __('app.edit') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="orange"
+                                    icon="pencil"
+                                    icon:variant="outline"
+                                    href="{{ route('panels.accounting.invoice.edit', $invoice->InvoiceId) }}"
+                                    wire:navigate
+                                />
+                            </flux:tooltip>
+                        @endcan
+                        <flux:tooltip content="{{ __('app.print') }}">
+                            <flux:button
+                                size="xs"
+                                variant="primary"
+                                color="zinc"
+                                icon="printer"
+                                icon:variant="outline"
+                                href="{{ route('panels.accounting.invoice.print', $invoice->InvoiceId) }}"
+                                wire:navigate
+                            />
+                        </flux:tooltip>
                     </div>
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
