@@ -86,7 +86,7 @@ class CashBackDiscountCodeJob implements ShouldQueue
 
         $amountLabel = $rule->is_percent
             ? number_format($rule->cash_back_amount).'%'
-            : number_format($rule->cash_back_amount);
+            : number_format($rule->cash_back_amount).' '.__('app.toman');
 
         $message = __('app.cash_back_sms', [
             'amount' => $amountLabel,

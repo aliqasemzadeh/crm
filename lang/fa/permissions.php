@@ -100,6 +100,11 @@ return [
     'crm' => [
         'crm_access' => 'دسترسی CRM',
         'crm_access_dashboard_index' => 'داشبرد CRM',
+
+        'crm_cash_back_rule_index' => 'فهرست قواعد کش‌بک',
+        'crm_cash_back_rule_create' => 'ایجاد قاعده کش‌بک',
+        'crm_cash_back_rule_edit' => 'ویرایش قاعده کش‌بک',
+        'crm_cash_back_rule_delete' => 'حذف قاعده کش‌بک',
     ],
 
     'service_center' => [
