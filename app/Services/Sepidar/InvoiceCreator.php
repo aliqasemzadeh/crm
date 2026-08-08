@@ -112,7 +112,6 @@ class InvoiceCreator
                 'BankFeeForCurrencySaleInBaseCurrency' => 0,
                 'IsAggregateDiscountInvoiceItem' => 0,
                 'TaxPayerCurrencyPurchaseRate' => null,
-                'NetPrice' => $netPrice,
             ];
 
             $totals['Price'] += $price;
@@ -190,7 +189,6 @@ class InvoiceCreator
                 'SettlementType' => (int) config('sepidar.SettlementType', 1),
                 'Description' => $data['description'] ?? null,
                 'SignatureRef' => null,
-                'NetPrice' => $totals['NetPrice'],
             ]);
 
             $nextItemId = ((int) InvoiceItem::query()->max('InvoiceItemId')) + 1;
