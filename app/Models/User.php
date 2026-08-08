@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Issabel\Device as IssabelDevice;
+use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\Workspace\Task;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -38,6 +39,7 @@ class User extends Authenticatable
         'bale_code',
         'personnel_code',
         'timex_code',
+        'sepidar_user_id',
     ];
 
     /**
@@ -86,6 +88,16 @@ class User extends Authenticatable
     public function internalPhoneDevice(): BelongsTo
     {
         return $this->belongsTo(IssabelDevice::class, 'internal_phone_id', 'id');
+    }
+
+    public function sepidarUser(): BelongsTo
+    {
+        return $this->belongsTo(SepidarUser::class, 'sepidar_user_id', 'UserID');
+    }
+
+    public function resolveSepidarCreatorId(): int
+    {
+        return (int) ($this->sepidar_user_id ?: config('sepidar.Creator', 1));
     }
 
     public function tasks(): BelongsToMany
