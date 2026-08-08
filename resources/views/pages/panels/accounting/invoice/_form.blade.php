@@ -94,7 +94,9 @@
                     <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
                         @foreach ($form->items as $index => $row)
                             @php
-                                $selectedItem = $row['item_ref'] ? ($this->selectedItems[$row['item_ref']] ?? null) : null;
+                                $itemRef = $row['item_ref'] ? (int) $row['item_ref'] : null;
+                                $selectedItem = $itemRef ? ($this->selectedItems[$itemRef] ?? null) : null;
+                                $showSearch = ! $selectedItem || $itemSearchRow === $index;
                                 $qty = (float) str_replace(',', '', (string) ($row['quantity'] ?? 0));
                                 $fee = (float) str_replace(',', '', (string) ($row['fee'] ?? 0));
                                 $discount = (float) str_replace(',', '', (string) ($row['discount'] ?? 0));
@@ -102,8 +104,8 @@
                             @endphp
                             <tr class="align-top" wire:key="invoice-row-{{ $index }}">
                                 <td class="px-3 py-3 text-zinc-500">{{ $index + 1 }}</td>
-                                <td class="px-3 py-3 space-y-2 min-w-[220px]">
-                                    @if ($selectedItem && $itemSearchRow !== $index)
+                                <td class="px-3 py-3 space-y-2 min-w-[260px]">
+                                    @if ($selectedItem && ! $showSearch)
                                         <div class="flex items-center gap-2 rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-zinc-700">
                                             @if ($selectedItem->image?->Thumbnail)
                                                 <img
@@ -124,7 +126,9 @@
                                                 {{ __('app.change') }}
                                             </flux:button>
                                         </div>
-                                    @else
+                                    @endif
+
+                                    @if ($showSearch)
                                         <flux:select
                                             variant="combobox"
                                             :filter="false"
@@ -140,22 +144,36 @@
                                             </x-slot>
 
                                             @foreach ($this->itemResults as $item)
-                                                <flux:select.option value="{{ $item->ItemID }}" wire:key="item-{{ $index }}-{{ $item->ItemID }}">
-                                                    <div class="flex items-center gap-2">
-                                                        @if ($item->image?->Thumbnail)
+                                                <flux:select.option value="{{ $item['id'] }}" wire:key="item-{{ $index }}-{{ $item['id'] }}">
+                                                    <div class="flex items-start gap-2 py-0.5">
+                                                        @if ($item['thumbnail'])
                                                             <img
-                                                                src="data:image/jpeg;base64,{{ base64_encode($item->image->Thumbnail) }}"
+                                                                src="data:image/jpeg;base64,{{ base64_encode($item['thumbnail']) }}"
                                                                 alt=""
-                                                                class="size-8 rounded object-cover"
+                                                                class="size-10 shrink-0 rounded object-cover"
                                                             >
                                                         @else
-                                                            <div class="flex size-8 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
+                                                            <div class="flex size-10 shrink-0 items-center justify-center rounded bg-zinc-100 dark:bg-zinc-800">
                                                                 <flux:icon name="photo" variant="micro" class="text-zinc-400" />
                                                             </div>
                                                         @endif
-                                                        <div class="min-w-0">
-                                                            <div class="truncate">{{ $item->Title }}</div>
-                                                            <div class="text-xs text-zinc-500">{{ $item->Code }}</div>
+                                                        <div class="min-w-0 flex-1 space-y-1">
+                                                            <div class="truncate font-medium">{{ $item['title'] }}</div>
+                                                            <div class="text-xs text-zinc-500">{{ $item['code'] }}</div>
+                                                            <div class="grid grid-cols-3 gap-x-2 text-[11px]">
+                                                                <div>
+                                                                    <span class="text-zinc-500">{{ __('app.stock') }}:</span>
+                                                                    <span class="font-semibold text-teal-600 dark:text-teal-400">{{ number_format($item['stock']) }}</span>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="text-zinc-500">{{ __('app.last_sale_price') }}:</span>
+                                                                    <span class="font-semibold text-sky-600 dark:text-sky-400">{{ number_format($item['last_sale_price']) }}</span>
+                                                                </div>
+                                                                <div>
+                                                                    <span class="text-zinc-500">{{ __('app.last_purchase_price') }}:</span>
+                                                                    <span class="font-semibold text-amber-600 dark:text-amber-400">{{ number_format($item['last_purchase_price']) }}</span>
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </flux:select.option>
@@ -325,7 +343,7 @@
                 <flux:table.rows>
                     @foreach ($form->items as $index => $row)
                         @php
-                            $selectedItem = $row['item_ref'] ? ($this->selectedItems[$row['item_ref']] ?? null) : null;
+                            $selectedItem = $row['item_ref'] ? ($this->selectedItems[(int) $row['item_ref']] ?? null) : null;
                             $qty = (float) str_replace(',', '', (string) ($row['quantity'] ?? 0));
                             $fee = (float) str_replace(',', '', (string) ($row['fee'] ?? 0));
                             $discount = (float) str_replace(',', '', (string) ($row['discount'] ?? 0));

@@ -17,13 +17,11 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
     public Invoice $invoice;
 
-    public function mount(int $invoice): void
+    public function mount(Invoice $invoice): void
     {
         $this->authorize('accounting_invoice_edit');
 
-        $this->invoice = Invoice::query()
-            ->with(['items'])
-            ->findOrFail($invoice);
+        $this->invoice = $invoice->load(['items']);
 
         $this->form->customer_party_ref = (int) $this->invoice->CustomerPartyRef;
         $this->form->sale_type_ref = (int) $this->invoice->SaleTypeRef;

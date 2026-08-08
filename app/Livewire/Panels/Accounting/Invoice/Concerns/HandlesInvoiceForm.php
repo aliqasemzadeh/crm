@@ -4,6 +4,7 @@ namespace App\Livewire\Panels\Accounting\Invoice\Concerns;
 
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\Item;
+use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Models\Sepidar\SLS\PriceNoteItem;
 use App\Services\Sepidar\PartyCreator;
 use Flux\Flux;
@@ -76,6 +77,7 @@ trait HandlesInvoiceForm
         }
 
         $this->applyItemFee($index, $itemRef);
+        $this->form->items[$index]['item_ref'] = $itemRef;
         $this->itemSearch = '';
         $this->itemSearchRow = -1;
         unset($this->itemResults, $this->selectedItems);
@@ -193,7 +195,9 @@ trait HandlesInvoiceForm
             return collect();
         }
 
-        return Item::query()
+        $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
+
+        $items = Item::query()
             ->with('image')
             ->select(['ItemID', 'Title', 'Code', 'IranCode'])
             ->where(function ($query) use ($term) {
@@ -206,6 +210,25 @@ trait HandlesInvoiceForm
             ->orderBy('Title')
             ->limit(40)
             ->get();
+
+        $stocks = ItemStockSummary::query()
+            ->whereIn('ItemRef', $items->pluck('ItemID'))
+            ->where('FiscalYearRef', $fiscalYearRef)
+            ->selectRaw('ItemRef, SUM(CAST(Quantity AS DECIMAL(18,4))) as total_quantity')
+            ->groupBy('ItemRef')
+            ->pluck('total_quantity', 'ItemRef');
+
+        return $items->map(function (Item $item) use ($stocks) {
+            return [
+                'id' => (int) $item->ItemID,
+                'title' => $item->Title,
+                'code' => $item->Code,
+                'thumbnail' => $item->image?->Thumbnail,
+                'stock' => (float) ($stocks[$item->ItemID] ?? 0),
+                'last_sale_price' => (float) $item->getLastSalePrice(),
+                'last_purchase_price' => (float) $item->getLastPurchasePrice(),
+            ];
+        });
     }
 
     #[Computed]
@@ -214,6 +237,7 @@ trait HandlesInvoiceForm
         $ids = collect($this->form->items)
             ->pluck('item_ref')
             ->filter()
+            ->map(fn ($id) => (int) $id)
             ->unique()
             ->values()
             ->all();
@@ -227,7 +251,7 @@ trait HandlesInvoiceForm
             ->select(['ItemID', 'Title', 'Code'])
             ->whereIn('ItemID', $ids)
             ->get()
-            ->keyBy('ItemID')
+            ->keyBy(fn (Item $item) => (int) $item->ItemID)
             ->all();
     }
 
@@ -326,14 +350,14 @@ trait HandlesInvoiceForm
 
     protected function applyItemFee(int $index, int $itemRef): void
     {
-        $fee = PriceNoteItem::query()
-            ->where('ItemRef', $itemRef)
-            ->where('SaleTypeRef', $this->form->sale_type_ref)
-            ->value('Fee');
+        $item = Item::query()->find($itemRef);
+        $fee = $item?->getLastSalePrice();
 
-        if ($fee === null) {
-            $item = Item::query()->find($itemRef);
-            $fee = $item?->getLastSalePrice() ?? 0;
+        if ($fee === null || (float) $fee === 0.0) {
+            $fee = PriceNoteItem::query()
+                ->where('ItemRef', $itemRef)
+                ->where('SaleTypeRef', $this->form->sale_type_ref)
+                ->value('Fee');
         }
 
         if ($fee === null || (float) $fee === 0.0) {

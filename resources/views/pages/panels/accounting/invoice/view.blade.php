@@ -9,13 +9,11 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 {
     public Invoice $invoice;
 
-    public function mount(int $invoice): void
+    public function mount(Invoice $invoice): void
     {
         $this->authorize('accounting_invoice_index');
 
-        $this->invoice = Invoice::query()
-            ->with(['items.item.image', 'creator', 'modifier', 'customer'])
-            ->findOrFail($invoice);
+        $this->invoice = $invoice->load(['items.item.image', 'creator', 'modifier', 'customer']);
     }
 
     public function partyName(): string
