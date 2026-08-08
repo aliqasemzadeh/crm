@@ -86,7 +86,9 @@
             @endcan
 
             @can('sales_invoice_create')
-                <livewire:panels.sale.temporary-invoice :key="'panels-sale-temporary-invoice'" />
+                <div class="ms-auto shrink-0">
+                    <livewire:panels.sale.temporary-invoice :key="'panels-sale-temporary-invoice'" />
+                </div>
             @endcan
         </div>
     </div>
