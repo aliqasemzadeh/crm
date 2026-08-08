@@ -13,14 +13,14 @@ class InvoiceItem extends Model
 
     public $connection = 'sqlsrv';
 
-    public $primaryKey = 'InvoiceItemId';
+    public $primaryKey = 'InvoiceItemID';
 
     public $incrementing = false;
 
     public $timestamps = false;
 
     protected $fillable = [
-        'InvoiceItemId',
+        'InvoiceItemID',
         'InvoiceRef',
         'RowID',
         'ItemRef',
@@ -80,6 +80,6 @@ class InvoiceItem extends Model
 
     public function additionFactors(): HasMany
     {
-        return $this->hasMany(InvoiceItemAdditionFactor::class, 'InvoiceItemRef', 'InvoiceItemId');
+        return $this->hasMany(InvoiceItemAdditionFactor::class, 'InvoiceItemRef', 'InvoiceItemID');
     }
 }
