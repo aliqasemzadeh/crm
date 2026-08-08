@@ -41,6 +41,8 @@ class Search extends Component
 
         $fiscalYearRef = (string) config('sepidar.FiscalYearRef');
 
+        $stockSql = '(SELECT COALESCE(SUM(CAST(s.[Quantity] AS DECIMAL(18,4))), 0) FROM [INV].[ItemStockSummary] s WHERE s.[ItemRef] = [INV].[Item].[ItemID] AND s.[FiscalYearRef] = ?)';
+
         $items = Item::query()
             ->with(['image', 'grouping.parent', 'product'])
             ->where(function ($query) use ($term) {
@@ -49,6 +51,9 @@ class Search extends Component
                     ->orWhere('Code', 'like', '%'.$term.'%')
                     ->orWhere('IranCode', 'like', '%'.$term.'%');
             })
+            ->orderByRaw("CASE WHEN {$stockSql} > 0 THEN 0 ELSE 1 END", [$fiscalYearRef])
+            ->orderByRaw('CASE WHEN EXISTS (SELECT 1 FROM [INV].[ItemImage] WHERE [INV].[ItemImage].[ItemRef] = [INV].[Item].[ItemID]) THEN 0 ELSE 1 END')
+            ->orderByRaw("CASE WHEN [IranCode] IS NOT NULL AND LTRIM(RTRIM([IranCode])) <> '' THEN 0 ELSE 1 END")
             ->orderBy('Title')
             ->limit(10)
             ->get();
