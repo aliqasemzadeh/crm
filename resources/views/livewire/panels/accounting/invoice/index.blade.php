@@ -46,11 +46,18 @@
                 @endphp
                 <flux:card
                     wire:click="showMonthDetail({{ $monthNumber }})"
+                    wire:loading.class="pointer-events-none opacity-70"
+                    wire:target="showMonthDetail({{ $monthNumber }})"
                     class="flex flex-col items-center justify-center p-6 border-t-4 cursor-pointer transition hover:shadow-md {{ $colorClass }}"
                 >
-                    <flux:heading size="lg" class="mb-2">
-                        {{ __('app.jalali_months.' . $monthNumber) }}
-                    </flux:heading>
+                    <div class="relative mb-2 flex min-h-7 w-full items-center justify-center">
+                        <flux:heading size="lg" wire:loading.remove wire:target="showMonthDetail({{ $monthNumber }})">
+                            {{ __('app.jalali_months.' . $monthNumber) }}
+                        </flux:heading>
+                        <div wire:loading wire:target="showMonthDetail({{ $monthNumber }})" class="flex items-center justify-center">
+                            <flux:icon.loader-circle class="animate-spin size-5 text-zinc-500" />
+                        </div>
+                    </div>
                     <flux:text size="xl" class="font-bold text-zinc-800 dark:text-zinc-100">
                         {{ number_format($amount) }} <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') ?? 'ریال' }}</span>
                     </flux:text>
