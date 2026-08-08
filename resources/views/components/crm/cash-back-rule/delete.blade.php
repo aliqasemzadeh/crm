@@ -4,10 +4,8 @@ use Livewire\Component;
 
 new class extends Component
 {
-    //
+    // Delete handled on index with wire:confirm
 };
 ?>
 
-<div>
-    {{-- Be present above all else. - Naval Ravikant --}}
-</div>
+<div></div>

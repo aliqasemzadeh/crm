@@ -6,5 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class LastRecordCheck extends Model
 {
-    public $fillable = ['model'];
+    protected $fillable = [
+        'model',
+        'last_record_id',
+    ];
 }
