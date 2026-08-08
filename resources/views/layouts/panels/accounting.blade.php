@@ -154,7 +154,15 @@
     @include('partials.theme-icon')
 </flux:sidebar>
 <flux:header class="panel-shell-header block! dark:bg-zinc-900 dark:border-zinc-700">
-    @include('partials.user-navbar')
+    <div class="flex w-full flex-col gap-2 px-3 py-2 lg:px-4">
+        @include('partials.user-navbar')
+
+        @can('accounting_item_index')
+            <div class="w-full max-w-3xl">
+                <livewire:panels.accounting.item.search :key="'panels-accounting-item-search'" />
+            </div>
+        @endcan
+    </div>
 </flux:header>
 
 <flux:main>

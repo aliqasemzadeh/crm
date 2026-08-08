@@ -35,7 +35,11 @@
 
                         <flux:table.cell class="whitespace-nowrap">{{ $item->Code }}</flux:table.cell>
 
-                        <flux:table.cell>{{ $item->Title }}</flux:table.cell>
+                        <flux:table.cell>
+                            <a href="{{ route('panels.accounting.item.show', $item->ItemID) }}" wire:navigate class="font-medium text-sky-600 hover:underline dark:text-sky-400">
+                                {{ $item->Title }}
+                            </a>
+                        </flux:table.cell>
 
                         <flux:table.cell>{{ $item->grouping->Title ?? '-' }}</flux:table.cell>
 
@@ -53,8 +57,15 @@
 
                         <flux:table.cell>
                             <div class="flex items-center gap-2">
-                                <flux:button variant="ghost" size="sm" icon="file-text" wire:click="$dispatch('panels.accounting.grouping.item.invoice.assign-data', { id: '{{ $item->ItemID }}' })" tooltip="{{ __('app.invoices') }}"></flux:button>
-                                <flux:button variant="ghost" size="sm" icon="clipboard-list" wire:click="$dispatch('panels.accounting.grouping.item.receipt.assign-data', { id: '{{ $item->ItemID }}' })" tooltip="{{ __('app.receipts') }}"></flux:button>
+                                <flux:tooltip content="{{ __('app.item_details') }}">
+                                    <flux:button size="xs" variant="primary" color="indigo" icon="eye" icon:variant="outline" href="{{ route('panels.accounting.item.show', $item->ItemID) }}" wire:navigate />
+                                </flux:tooltip>
+                                <flux:tooltip content="{{ __('app.invoices') }}">
+                                    <flux:button size="xs" variant="primary" color="sky" icon="file-text" icon:variant="outline" wire:click="$dispatch('panels.accounting.grouping.item.invoice.assign-data', { id: '{{ $item->ItemID }}' })" />
+                                </flux:tooltip>
+                                <flux:tooltip content="{{ __('app.receipts') }}">
+                                    <flux:button size="xs" variant="primary" color="green" icon="clipboard-list" icon:variant="outline" wire:click="$dispatch('panels.accounting.grouping.item.receipt.assign-data', { id: '{{ $item->ItemID }}' })" />
+                                </flux:tooltip>
                             </div>
                         </flux:table.cell>
                     </flux:table.row>

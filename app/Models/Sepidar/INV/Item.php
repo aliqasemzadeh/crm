@@ -82,4 +82,45 @@ class Item extends Model
             return $this->invoiceItems()->latest('InvoiceItemId')->value('Fee') ?? 0;
         });
     }
+
+    public function stockQuantity(?string $fiscalYearRef = null): float
+    {
+        $fiscalYearRef ??= config('sepidar.FiscalYearRef');
+
+        return (float) $this->stockSummaries()
+            ->where('FiscalYearRef', $fiscalYearRef)
+            ->sum('Quantity');
+    }
+
+    public function siteUrl(): ?string
+    {
+        if (! $this->IranCode) {
+            return null;
+        }
+
+        return 'https://setaregan.co/Product/'.$this->IranCode;
+    }
+
+    /**
+     * Site MinPrice stored in toman; return rial for UI consistency with Sepidar fees.
+     */
+    public function siteMinPriceRial(): ?int
+    {
+        $minPrice = $this->product?->MinPrice;
+
+        if ($minPrice === null || $minPrice === '') {
+            return null;
+        }
+
+        return (int) $minPrice * 10;
+    }
+
+    public function mainGroupingTitle(): ?string
+    {
+        if (! $this->grouping) {
+            return null;
+        }
+
+        return $this->grouping->rootAncestor()->Title ?? $this->grouping->Title;
+    }
 }
