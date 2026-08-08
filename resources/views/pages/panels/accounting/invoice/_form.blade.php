@@ -18,7 +18,8 @@
 
 <div
     class="w-full"
-    wire:key="invoice-form-calc-{{ md5(json_encode($items).'|'.$this->tax_percent.'|'.$this->price_mode) }}"
+    wire:ignore
+    wire:key="invoice-form-calc-{{ $this->form_revision }}-{{ $this->tax_percent }}-{{ $this->price_mode }}"
     x-data="invoiceFormCalculator({
         taxPercent: {{ (float) $this->tax_percent }},
         rows: @js($alpineRows),

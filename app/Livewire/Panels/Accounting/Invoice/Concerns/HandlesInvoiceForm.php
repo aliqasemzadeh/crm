@@ -36,15 +36,19 @@ trait HandlesInvoiceForm
 
     public float $tax_percent = 0;
 
+    public int $form_revision = 0;
+
     public function addRow(): void
     {
         $this->items[] = $this->emptyRow();
+        $this->bumpFormRevision();
     }
 
     public function insertRowAfter(int $index): void
     {
         array_splice($this->items, $index + 1, 0, [$this->emptyRow()]);
         $this->items = array_values($this->items);
+        $this->bumpFormRevision();
     }
 
     public function removeRow(int $index): void
@@ -55,6 +59,7 @@ trait HandlesInvoiceForm
 
         unset($this->items[$index]);
         $this->items = array_values($this->items);
+        $this->bumpFormRevision();
     }
 
     public function sortItems(string $id, int $position): void
@@ -73,6 +78,7 @@ trait HandlesInvoiceForm
         $items = array_values($items);
         array_splice($items, $position, 0, [$item]);
         $this->items = array_values($items);
+        $this->bumpFormRevision();
     }
 
     public function updatedFormCustomerPartyRef(): void
@@ -91,12 +97,14 @@ trait HandlesInvoiceForm
     {
         $this->syncTaxPercentFromSaleType();
         $this->recalculateLineTaxes();
+        $this->bumpFormRevision();
     }
 
     public function updatedTaxPercent(): void
     {
         $this->tax_percent = max(0, (float) $this->tax_percent);
         $this->recalculateLineTaxes();
+        $this->bumpFormRevision();
     }
 
     public function updatedItems(mixed $value, string $key): void
@@ -157,6 +165,7 @@ trait HandlesInvoiceForm
         $this->items[$index]['item_ref'] = $itemId;
         $this->items[$index]['fee'] = $this->normalizeDefaultFee($fee);
         $this->recalculateLineTax($index);
+        $this->bumpFormRevision();
 
         $this->itemSearch = '';
         $this->itemSearchRow = -1;
@@ -182,6 +191,7 @@ trait HandlesInvoiceForm
         $fee = $this->resolveFeeForItem($itemId);
         $this->items[$index]['fee'] = $this->normalizeDefaultFee($fee);
         $this->recalculateLineTax($index);
+        $this->bumpFormRevision();
 
         Flux::toast(__('app.row_refreshed'));
     }
@@ -200,11 +210,18 @@ trait HandlesInvoiceForm
             $this->recalculateLineTax((int) $index);
         }
 
+        $this->bumpFormRevision();
+
         Flux::toast(
             $this->price_mode === 'site'
                 ? __('app.site_prices_applied')
                 : __('app.last_sale_prices_applied')
         );
+    }
+
+    protected function bumpFormRevision(): void
+    {
+        $this->form_revision++;
     }
 
     /**
@@ -270,6 +287,7 @@ trait HandlesInvoiceForm
         $this->items[$index]['fee'] = $this->normalizeDefaultFee(0);
         $this->items[$index]['tax'] = 0;
         unset($this->selectedItems);
+        $this->bumpFormRevision();
         $this->openItemSearch($index);
     }
 
