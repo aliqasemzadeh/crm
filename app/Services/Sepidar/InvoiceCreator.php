@@ -156,7 +156,7 @@ class InvoiceCreator
                 'Date' => $date,
                 'CurrencyRef' => (int) config('sepidar.CurrencyRef', 1),
                 'SLRef' => config('sepidar.InvoiceSLRef'),
-                'DeliveryLocationRef' => null,
+                'DeliveryLocationRef' => (int) config('sepidar.DeliveryLocationRef', 1),
                 'State' => (int) config('sepidar.InvoiceState', 1),
                 'Price' => $totals['Price'],
                 'PriceInBaseCurrency' => $totals['Price'] * $rate,
