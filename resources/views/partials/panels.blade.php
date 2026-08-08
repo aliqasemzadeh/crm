@@ -6,6 +6,9 @@
         @can('workspace_access')
             <flux:sidebar.item icon="columns-3-cog" href="{{ route('panels.workspace.dashboard.index') }}" :current="request()->routeIs('panels.workspace.*')"  wire:navigate>{{ __('app.workspace') }}</flux:sidebar.item>
         @endcan
+        @can('sales_access')
+            <flux:sidebar.item icon="shopping-bag" href="{{ route('panels.sale.dashboard.index') }}" :current="request()->routeIs('panels.sale.*')" wire:navigate>{{ __('app.sales') }}</flux:sidebar.item>
+        @endcan
         @can('administrator_access')
             <flux:sidebar.item icon="user-star" href="{{ route('panels.administrator.dashboard.index') }}" :current="request()->routeIs('panels.administrator.*')" wire:navigate>{{ __('app.administrator') }}</flux:sidebar.item>
         @endcan
@@ -24,8 +27,6 @@
     <flux:sidebar.item icon="handshake" href="{{ route('panels.crm.dashboard.index') }}" :current="request()->routeIs('panels.crm.*')" wire:navigate>{{ __('app.crm') }}</flux:sidebar.item>
     @endcan
 
-    @can('sales_access')
-        <flux:sidebar.item icon="shopping-bag" href="{{ route('panels.sale.dashboard.index') }}" :current="request()->routeIs('panels.sale.*')" wire:navigate>{{ __('app.sales') }}</flux:sidebar.item>
-    @endcan
+
 
 </flux:sidebar.nav>
