@@ -197,11 +197,11 @@ class InvoiceCreator
                 'SignatureRef' => null,
             ]);
 
-            $nextItemId = ((int) InvoiceItem::query()->max('InvoiceItemId')) + 1;
+            $nextItemId = ((int) InvoiceItem::query()->max('InvoiceItemID')) + 1;
 
             foreach ($linePayloads as $payload) {
                 InvoiceItem::query()->create(array_merge($payload, [
-                    'InvoiceItemId' => $nextItemId++,
+                    'InvoiceItemID' => $nextItemId++,
                     'InvoiceRef' => $invoiceId,
                 ]));
             }

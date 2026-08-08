@@ -91,7 +91,7 @@ class InvoiceInventoryDeliverySync
                     'InventoryDeliveryRef' => $deliveryId,
                     'IsReturn' => 0,
                     'RowNumber' => $rowNumber++,
-                    'BaseInvoiceItem' => (int) $invoiceItem->InvoiceItemId,
+                    'BaseInvoiceItem' => (int) $invoiceItem->getKey(),
                     'BaseInventoryDeliveryItem' => null,
                     'BaseReturnedInvoiceItem' => null,
                     'QuotationItemRef' => null,
@@ -111,7 +111,6 @@ class InvoiceInventoryDeliverySync
                     'WeighingRef' => null,
                     'ItemRequestItemRef' => null,
                     'ItemDescription' => null,
-                    'Fee' => null,
                 ]);
 
                 $stockKeys[] = [
@@ -130,7 +129,7 @@ class InvoiceInventoryDeliverySync
     {
         $invoiceItemIds = InvoiceItem::query()
             ->where('InvoiceRef', $invoiceId)
-            ->pluck('InvoiceItemId')
+            ->pluck('InvoiceItemID')
             ->all();
 
         if ($invoiceItemIds === []) {

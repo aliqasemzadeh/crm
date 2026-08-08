@@ -59,7 +59,7 @@ class InvoiceCreateFullSyncTest extends TestCase
         $this->assertNotNull($invoiceItem->StockRef);
 
         $deliveryItem = InventoryDeliveryItem::query()
-            ->where('BaseInvoiceItem', $invoiceItem->InvoiceItemId)
+            ->where('BaseInvoiceItem', $invoiceItem->getKey())
             ->first();
 
         $this->assertNotNull($deliveryItem);

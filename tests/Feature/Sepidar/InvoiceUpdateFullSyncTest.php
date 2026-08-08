@@ -82,7 +82,7 @@ class InvoiceUpdateFullSyncTest extends TestCase
 
         $invoiceItem = $updated->items()->first();
         $deliveryItems = InventoryDeliveryItem::query()
-            ->where('BaseInvoiceItem', $invoiceItem->InvoiceItemId)
+            ->where('BaseInvoiceItem', $invoiceItem->getKey())
             ->get();
 
         $this->assertCount(1, $deliveryItems);
