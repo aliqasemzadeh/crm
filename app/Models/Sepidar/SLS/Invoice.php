@@ -3,6 +3,7 @@
 namespace App\Models\Sepidar\SLS;
 
 use App\Livewire\Panels\Accounting\Invoice\Index;
+use App\Models\Sepidar\ACC\Voucher;
 use App\Models\Sepidar\FMK\User;
 use App\Models\Sepidar\GNR\DeliveryLocation;
 use App\Models\Sepidar\GNR\Party;
@@ -158,5 +159,15 @@ class Invoice extends Model
     public function modifier(): BelongsTo
     {
         return $this->belongsTo(User::class, 'LastModifier', 'UserID');
+    }
+
+    public function voucher(): BelongsTo
+    {
+        return $this->belongsTo(Voucher::class, 'VoucherRef', 'VoucherId');
+    }
+
+    public function saleType(): BelongsTo
+    {
+        return $this->belongsTo(SaleType::class, 'SaleTypeRef', 'SaleTypeId');
     }
 }
