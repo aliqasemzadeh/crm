@@ -1,4 +1,4 @@
-<flux:modal name="panels.accounting.price-note.edit-site.modal" class="md:w-96" flyout position="right">
+<flux:modal name="panels.sale.item-price.edit-site.modal" class="md:w-96" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.edit_irancode') }} : {{ $item_title ?? '' }}</flux:heading>

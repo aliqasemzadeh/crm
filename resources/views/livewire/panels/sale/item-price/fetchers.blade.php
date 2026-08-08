@@ -1,4 +1,4 @@
-<flux:modal name="panels.accounting.price-note.fetchers.modal" class="min-w-[80%]" flyout position="right">
+<flux:modal name="panels.sale.item-price.fetchers.modal" class="min-w-[80%]" flyout position="right">
     <div class="space-y-6">
         <div>
             <flux:heading size="lg">{{ __('app.fetchers') }}</flux:heading>
