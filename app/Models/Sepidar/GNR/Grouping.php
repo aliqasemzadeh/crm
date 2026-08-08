@@ -37,4 +37,33 @@ class Grouping extends Model
             }
         );
     }
+
+    public function rootAncestor(): self
+    {
+        $rootId = \Illuminate\Support\Facades\Cache::remember(
+            "grouping_{$this->GroupingID}_root_ancestor_id",
+            now()->addHours(6),
+            function () {
+                $current = $this;
+
+                while ($current->ParentGroupRef) {
+                    $parent = $current->parent()->first();
+
+                    if (! $parent) {
+                        break;
+                    }
+
+                    $current = $parent;
+                }
+
+                return $current->GroupingID;
+            }
+        );
+
+        if ((int) $rootId === (int) $this->GroupingID) {
+            return $this;
+        }
+
+        return static::query()->find($rootId) ?? $this;
+    }
 }
