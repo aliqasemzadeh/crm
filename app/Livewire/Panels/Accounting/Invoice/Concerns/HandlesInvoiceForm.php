@@ -273,7 +273,7 @@ trait HandlesInvoiceForm
             ->groupBy('ItemRef')
             ->pluck('total_quantity', 'ItemRef');
 
-        $lastSales = $this->batchLatestFees('[SLS].[InvoiceItem]', 'InvoiceItemId', 'ItemRef', 'Fee', $ids);
+        $lastSales = $this->batchLatestFees('[SLS].[InvoiceItem]', 'InvoiceItemID', 'ItemRef', 'Fee', $ids);
         $lastPurchases = $this->batchLatestFees('[INV].[InventoryReceiptItem]', 'InventoryReceiptItemID', 'ItemRef', 'Fee', $ids);
 
         return $items->map(function (Item $item) use ($stocks, $lastSales, $lastPurchases) {
