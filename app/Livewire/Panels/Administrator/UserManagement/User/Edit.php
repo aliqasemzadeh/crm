@@ -3,6 +3,7 @@
 namespace App\Livewire\Panels\Administrator\UserManagement\User;
 
 use App\Models\Issabel\Device;
+use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\User;
 use Flux\Flux;
 use Illuminate\Contracts\View\View;
@@ -49,6 +50,10 @@ class Edit extends Component
 
     public string $timex_code = '';
 
+    public ?int $sepidar_user_id = null;
+
+    public string $sepidar_user_search = '';
+
     #[On('panels.administrator.user-management.user.edit.assign-data')]
     public function assignData($id): void
     {
@@ -67,6 +72,8 @@ class Edit extends Component
         $this->bale_code = (string) ($this->user->bale_code ?? '');
         $this->personnel_code = (string) ($this->user->personnel_code ?? '');
         $this->timex_code = (string) ($this->user->timex_code ?? '');
+        $this->sepidar_user_id = $this->user->sepidar_user_id ? (int) $this->user->sepidar_user_id : null;
+        $this->sepidar_user_search = '';
         Flux::modal('panels.administrator.user-management.user.edit.modal')->show();
     }
 
@@ -112,6 +119,48 @@ class Edit extends Component
         }
     }
 
+    /**
+     * @return Collection<int, SepidarUser>
+     */
+    #[Computed]
+    public function sepidarUsers(): Collection
+    {
+        try {
+            $term = trim($this->sepidar_user_search);
+
+            $query = SepidarUser::query()
+                ->where(function ($q) {
+                    $q->where('IsDeleted', 0)->orWhereNull('IsDeleted');
+                })
+                ->orderBy('Name')
+                ->limit(25);
+
+            if ($term !== '') {
+                $query->where(function ($q) use ($term) {
+                    $q->where('Name', 'like', '%'.$term.'%')
+                        ->orWhere('UserName', 'like', '%'.$term.'%')
+                        ->orWhere('UserID', 'like', '%'.$term.'%');
+                });
+            }
+
+            $results = $query->get();
+
+            if ($this->sepidar_user_id
+                && ! $results->contains(fn (SepidarUser $u): bool => (int) $u->UserID === (int) $this->sepidar_user_id)) {
+                $extra = SepidarUser::query()->find($this->sepidar_user_id);
+                if ($extra) {
+                    $results = $results->prepend($extra)->take(25)->values();
+                }
+            }
+
+            return $results;
+        } catch (Throwable $e) {
+            report($e);
+
+            return collect();
+        }
+    }
+
     public function edit(): void
     {
         $this->authorize('administrator_user_management_edit');
@@ -133,6 +182,7 @@ class Edit extends Component
             'bale_code' => ['nullable', 'string', 'max:255'],
             'personnel_code' => ['nullable', 'string', 'max:255'],
             'timex_code' => ['nullable', 'string', 'max:255'],
+            'sepidar_user_id' => ['nullable', 'integer'],
         ]);
 
         if ($this->photo) {

@@ -14,6 +14,12 @@ class Party extends Model
     public $connection = 'sqlsrv';
     public $primaryKey = 'PartyId';
 
+    public $incrementing = false;
+
+    public $timestamps = false;
+
+    protected $keyType = 'int';
+
     public function dl(): BelongsTo
     {
         return $this->belongsTo(DL::class, 'DLRef', 'DLId');
