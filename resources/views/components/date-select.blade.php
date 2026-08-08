@@ -12,24 +12,10 @@
     $wireModel = $attributes->whereStartsWith('wire:model')->first();
     $wireModelName = $attributes->wire('model')->value();
     $name ??= $wireModel ? (string) str($wireModel)->afterLast('.') : null;
-
-    $fieldAttributes = $attributes->only(['name', 'label', 'description', 'variant', 'required']);
-
-    $inputAttributes = $attributes->except([
-        'name',
-        'label',
-        'description',
-        'variant',
-        'required',
-        'value',
-        'wire:model',
-        'wire:model.live',
-        'wire:model.blur',
-    ]);
 @endphp
 
 <div class="antialiased sans-serif" x-data="window.persianDatePicker({{ $wireModelName ? '$wire.entangle(\''.$wireModelName.'\')' : 'null' }}, '{{ $value }}')" x-cloak>
-    <flux:field :$name {{ $fieldAttributes }}>
+    <flux:field :$name>
         @if ($label)
             <flux:label>
                 {{ $label }}
@@ -48,18 +34,17 @@
             <div class="relative">
                 <flux:input
                     readonly
-                    @click="showDatepicker = !showDatepicker"
-                    @keydown.escape="showDatepicker = false"
+                    x-on:click="showDatepicker = !showDatepicker"
+                    x-on:keydown.escape="showDatepicker = false"
                     x-bind:value="datepickerValue"
                     :$placeholder
                     :$name
                     :$size
                     :required="$required"
                     :invalid="$errors->has($name)"
-                    @keydown.backspace.prevent="clearDate()"
-                    @keydown.delete.prevent="clearDate()"
+                    x-on:keydown.backspace.prevent="clearDate()"
+                    x-on:keydown.delete.prevent="clearDate()"
                     class="cursor-pointer"
-                    {{ $inputAttributes }}
                 >
                     <x-slot name="icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4">
@@ -85,7 +70,7 @@
             <div
                 class="absolute z-50 mt-2 w-[280px] rounded-md border border-zinc-200 bg-white p-3 text-zinc-950 shadow-md outline-none dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50"
                 x-show="showDatepicker"
-                @click.away="showDatepicker = false"
+                x-on:click.away="showDatepicker = false"
                 x-transition:enter="transition ease-out duration-100"
                 x-transition:enter-start="opacity-0 scale-95"
                 x-transition:enter-end="opacity-100 scale-100"
@@ -96,24 +81,24 @@
             >
                 <!-- Calendar Header -->
                 <div class="flex items-center justify-between pb-4">
-                    <button type="button" @click="previousMonth()" class="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity">
+                    <button type="button" x-on:click="previousMonth()" class="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
 
                     <div class="flex items-center gap-1">
-                        <select x-model.number="month" @change="getNoOfDays()" class="bg-transparent border-none p-0 text-sm font-medium focus:ring-0 cursor-pointer dark:bg-zinc-950">
+                        <select x-model.number="month" x-on:change="getNoOfDays()" class="bg-transparent border-none p-0 text-sm font-medium focus:ring-0 cursor-pointer dark:bg-zinc-950">
                             <template x-for="(name, index) in MONTH_NAMES" :key="index">
                                 <option :value="index + 1" x-text="name" :selected="index + 1 === month"></option>
                             </template>
                         </select>
-                        <select x-model.number="year" @change="getNoOfDays()" class="bg-transparent border-none p-0 text-sm font-medium focus:ring-0 cursor-pointer dark:bg-zinc-950">
+                        <select x-model.number="year" x-on:change="getNoOfDays()" class="bg-transparent border-none p-0 text-sm font-medium focus:ring-0 cursor-pointer dark:bg-zinc-950">
                             <template x-for="y in years" :key="y">
                                 <option :value="y" x-text="y" :selected="y === year"></option>
                             </template>
                         </select>
                     </div>
 
-                    <button type="button" @click="nextMonth()" class="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity">
+                    <button type="button" x-on:click="nextMonth()" class="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4"><path d="m15 18-6-6 6-6"/></svg>
                     </button>
                 </div>
@@ -134,7 +119,7 @@
                     <template x-for="(date, dateIndex) in no_of_days" :key="dateIndex">
                         <button
                             type="button"
-                            @click="getDateValue(date)"
+                            x-on:click="getDateValue(date)"
                             class="h-9 w-9 p-0 font-normal aria-selected:opacity-100 transition-colors rounded-md text-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 dark:focus-visible:ring-zinc-300"
                             :class="{
                                 'bg-zinc-900 text-zinc-50 hover:bg-zinc-900 hover:text-zinc-50 focus:bg-zinc-900 focus:text-zinc-50 dark:bg-zinc-50 dark:text-zinc-900 dark:hover:bg-zinc-50 dark:hover:text-zinc-900 dark:focus:bg-zinc-50 dark:focus:text-zinc-900': isSelected(date),

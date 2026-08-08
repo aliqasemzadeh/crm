@@ -16,17 +16,17 @@
                 </div>
 
                 @can('accounting_invoice_create')
-                    <flux:tooltip content="{{ __('app.create_invoice') }}">
-                        <flux:button
-                            size="sm"
-                            variant="primary"
-                            color="orange"
-                            icon="plus"
-                            icon:variant="outline"
-                            href="{{ route('panels.accounting.invoice.create') }}"
-                            wire:navigate
-                        />
-                    </flux:tooltip>
+                    <flux:button
+                        size="sm"
+                        variant="primary"
+                        color="orange"
+                        icon="plus"
+                        icon:variant="outline"
+                        href="{{ route('panels.accounting.invoice.create') }}"
+                        wire:navigate
+                    >
+                        <span class="max-md:hidden">{{ __('app.create_invoice') }}</span>
+                    </flux:button>
                 @endcan
 
                 <flux:tabs variant="segmented" class="-my-px h-auto! max-md:hidden" wire:model.live="saleType">
