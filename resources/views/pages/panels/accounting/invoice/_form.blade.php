@@ -3,9 +3,27 @@
     $invoiceUiPrefix = $invoiceUiPrefix ?? 'panels.accounting.invoice';
     $invoiceRoutePrefix = $invoiceRoutePrefix ?? 'panels.accounting.invoice';
     $partyCreatePermissions = $partyCreatePermissions ?? ['accounting_party_create', 'accounting_invoice_create'];
+
+    $alpineRows = collect($items)->map(function (array $row) {
+        return [
+            'quantity' => (float) str_replace(',', '', (string) ($row['quantity'] ?? 0)),
+            'fee' => (float) str_replace(',', '', (string) ($row['fee'] ?? 0)),
+            'discount' => (float) str_replace(',', '', (string) ($row['discount'] ?? 0)),
+            'tax' => (float) str_replace(',', '', (string) ($row['tax'] ?? 0)),
+            'discountPercent' => '',
+            'taxPercent' => '',
+        ];
+    })->values()->all();
 @endphp
 
-<div class="w-full">
+<div
+    class="w-full"
+    wire:key="invoice-form-calc-{{ md5(json_encode($items).'|'.$this->tax_percent.'|'.$this->price_mode) }}"
+    x-data="invoiceFormCalculator({
+        taxPercent: {{ (float) $this->tax_percent }},
+        rows: @js($alpineRows),
+    })"
+>
     <div class="rounded-xl border border-zinc-300 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900 overflow-hidden">
         <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-4 sm:px-6 dark:border-zinc-700 dark:bg-zinc-800/60">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -89,18 +107,70 @@
                 <flux:input wire:model="form.description" label="{{ __('app.description') }}" />
             </div>
 
+            <flux:accordion transition>
+                <flux:accordion.item :heading="__('app.invoice_settings')">
+                    <div class="grid grid-cols-1 gap-4 pt-2 md:grid-cols-2 lg:grid-cols-3">
+                        <div class="space-y-3">
+                            <flux:radio.group wire:model.live="price_mode" label="{{ __('app.price_mode') }}" variant="segmented">
+                                <flux:radio value="last_sale" label="{{ __('app.last_sale_price') }}" />
+                                <flux:radio value="site" label="{{ __('app.site_price') }}" />
+                            </flux:radio.group>
+                            <flux:button
+                                type="button"
+                                variant="primary"
+                                color="rose"
+                                icon="arrow-path"
+                                class="w-full"
+                                wire:click="applyPriceMode"
+                            >
+                                {{ __('app.apply_price_mode') }}
+                            </flux:button>
+                        </div>
+
+                        <div class="space-y-2">
+            <flux:input
+                wire:model.live.debounce.400ms="tax_percent"
+                type="number"
+                step="any"
+                min="0"
+                label="{{ __('app.tax_percent') }}"
+                class="text-center"
+            />
+                        </div>
+
+                        <div class="space-y-2">
+                            <flux:select
+                                wire:model="form.delivery_location_ref"
+                                searchable
+                                label="{{ __('app.delivery_location') }}"
+                                placeholder="{{ __('app.delivery_location') }}"
+                            >
+                                @foreach ($this->deliveryLocations as $location)
+                                    <flux:select.option value="{{ $location->DeliveryLocationID }}" wire:key="delivery-{{ $location->DeliveryLocationID }}">
+                                        {{ $location->Title }}
+                                    </flux:select.option>
+                                @endforeach
+                            </flux:select>
+                            @error('form.delivery_location_ref')
+                                <flux:text class="text-red-500">{{ $message }}</flux:text>
+                            @enderror
+                        </div>
+                    </div>
+                </flux:accordion.item>
+            </flux:accordion>
+
             <div class="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
-                <table class="w-full min-w-[900px] text-sm">
+                <table class="w-full min-w-[960px] text-sm">
                     <thead class="bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200">
                         <tr>
                             <th class="px-3 py-2 text-right font-medium w-10">#</th>
                             <th class="px-3 py-2 text-right font-medium">{{ __('app.item') }}</th>
-                            <th class="px-3 py-2 text-right font-medium w-24">{{ __('app.quantity') }}</th>
-                            <th class="px-3 py-2 text-right font-medium w-36">{{ __('app.fee') }}</th>
-                            <th class="px-3 py-2 text-right font-medium w-28">{{ __('app.discount') }}</th>
-                            <th class="px-3 py-2 text-right font-medium w-28">{{ __('app.tax') }}</th>
-                            <th class="px-3 py-2 text-right font-medium w-32">{{ __('app.line_total') }}</th>
-                            <th class="px-3 py-2 text-center font-medium w-28">{{ __('app.options') }}</th>
+                            <th class="px-3 py-2 text-center font-medium w-24">{{ __('app.quantity') }}</th>
+                            <th class="px-3 py-2 text-center font-medium w-36">{{ __('app.fee') }}</th>
+                            <th class="px-3 py-2 text-center font-medium w-36">{{ __('app.discount') }}</th>
+                            <th class="px-3 py-2 text-center font-medium w-36">{{ __('app.tax') }}</th>
+                            <th class="px-3 py-2 text-center font-medium w-32">{{ __('app.line_total') }}</th>
+                            <th class="px-3 py-2 text-center font-medium w-32">{{ __('app.options') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700" wire:sort="sortItems">
@@ -109,11 +179,6 @@
                                 $rowId = $row['row_id'] ?? ('row-'.$index);
                                 $itemRef = $row['item_ref'] ? (int) $row['item_ref'] : null;
                                 $selectedItem = $itemRef ? ($this->selectedItems[$itemRef] ?? null) : null;
-                                $qty = (float) str_replace(',', '', (string) ($row['quantity'] ?? 0));
-                                $fee = (float) str_replace(',', '', (string) ($row['fee'] ?? 0));
-                                $discount = (float) str_replace(',', '', (string) ($row['discount'] ?? 0));
-                                $tax = (float) str_replace(',', '', (string) ($row['tax'] ?? 0));
-                                $lineTotal = ($qty * $fee) - $discount + $tax;
                             @endphp
                             <tr
                                 class="align-top"
@@ -121,7 +186,7 @@
                                 wire:sort:item="{{ $rowId }}"
                             >
                                 <td class="px-3 py-3 text-zinc-500">{{ $index + 1 }}</td>
-                                <td class="px-3 py-3 space-y-2 min-w-[240px]" wire:sort:ignore>
+                                <td class="px-3 py-3 min-w-[240px]" wire:sort:ignore>
                                     @if ($selectedItem)
                                         <div class="flex items-center gap-2 rounded-lg border border-zinc-200 px-2 py-1.5 dark:border-zinc-700">
                                             @if ($selectedItem->image?->Thumbnail)
@@ -154,38 +219,107 @@
                                         </button>
                                     @endif
 
-                                    <flux:input
-                                        wire:model.blur="items.{{ $index }}.description"
-                                        placeholder="{{ __('app.description') }}"
-                                        size="sm"
-                                    />
-
                                     @error("items.$index.item_ref")
                                         <flux:text class="text-red-500">{{ $message }}</flux:text>
                                     @enderror
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
-                                    <flux:input wire:model.blur="items.{{ $index }}.quantity" type="number" step="any" min="0" size="sm" />
-                                </td>
-                                <td class="px-3 py-3" wire:sort:ignore>
                                     <flux:input
-                                        wire:model.blur="items.{{ $index }}.fee"
+                                        type="text"
+                                        inputmode="decimal"
                                         size="sm"
-                                        mask:dynamic="$money($input, '.', ',', 0)"
+                                        class="text-center"
+                                        x-model="rows[{{ $index }}].quantity"
+                                        x-on:input="onBaseChange({{ $index }})"
+                                        x-on:blur="syncRow({{ $index }}, 'quantity')"
                                     />
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
                                     <flux:input
-                                        wire:model.blur="items.{{ $index }}.discount"
                                         size="sm"
-                                        mask:dynamic="$money($input, '.', ',', 0)"
+                                        class="text-center"
+                                        x-model="rows[{{ $index }}].fee"
+                                        x-on:input="onBaseChange({{ $index }})"
+                                        x-on:blur="syncRow({{ $index }}, 'fee')"
                                     />
                                 </td>
-                                <td class="px-3 py-3">
-                                    <div class="pt-2 tabular-nums text-zinc-600 dark:text-zinc-300">{{ number_format($tax) }}</div>
+                                <td class="px-3 py-3" wire:sort:ignore>
+                                    <div class="flex items-start gap-1">
+                                        <flux:input
+                                            size="sm"
+                                            class="text-center"
+                                            x-model="rows[{{ $index }}].discount"
+                                            x-on:input="onBaseChange({{ $index }})"
+                                            x-on:blur="syncRow({{ $index }}, 'discount')"
+                                        />
+                                        <flux:dropdown>
+                                            <flux:tooltip content="{{ __('app.discount_percent') }}">
+                                                <flux:button type="button" size="xs" variant="ghost" color="amber" icon="calculator" icon:variant="outline" />
+                                            </flux:tooltip>
+                                            <flux:popover class="w-48 space-y-2 p-3">
+                                                <flux:input
+                                                    type="number"
+                                                    step="any"
+                                                    min="0"
+                                                    size="sm"
+                                                    class="text-center"
+                                                    placeholder="%"
+                                                    x-model="rows[{{ $index }}].discountPercent"
+                                                />
+                                                <flux:button
+                                                    type="button"
+                                                    variant="primary"
+                                                    color="amber"
+                                                    class="w-full"
+                                                    size="sm"
+                                                    x-on:click="applyDiscountPercent({{ $index }})"
+                                                >
+                                                    {{ __('app.apply_percent') }}
+                                                </flux:button>
+                                            </flux:popover>
+                                        </flux:dropdown>
+                                    </div>
                                 </td>
-                                <td class="px-3 py-3">
-                                    <div class="pt-2 font-semibold tabular-nums">{{ number_format($lineTotal) }}</div>
+                                <td class="px-3 py-3" wire:sort:ignore>
+                                    <div class="flex items-start gap-1">
+                                        <flux:input
+                                            size="sm"
+                                            class="text-center"
+                                            x-model="rows[{{ $index }}].tax"
+                                            x-on:input="recalcTotals()"
+                                            x-on:blur="syncRow({{ $index }}, 'tax')"
+                                        />
+                                        <flux:dropdown>
+                                            <flux:tooltip content="{{ __('app.tax_percent') }}">
+                                                <flux:button type="button" size="xs" variant="ghost" color="sky" icon="calculator" icon:variant="outline" />
+                                            </flux:tooltip>
+                                            <flux:popover class="w-48 space-y-2 p-3">
+                                                <flux:input
+                                                    type="number"
+                                                    step="any"
+                                                    min="0"
+                                                    size="sm"
+                                                    class="text-center"
+                                                    placeholder="%"
+                                                    x-model="rows[{{ $index }}].taxPercent"
+                                                    x-bind:placeholder="String(taxPercent)"
+                                                />
+                                                <flux:button
+                                                    type="button"
+                                                    variant="primary"
+                                                    color="sky"
+                                                    class="w-full"
+                                                    size="sm"
+                                                    x-on:click="applyTaxPercent({{ $index }})"
+                                                >
+                                                    {{ __('app.apply_percent') }}
+                                                </flux:button>
+                                            </flux:popover>
+                                        </flux:dropdown>
+                                    </div>
+                                </td>
+                                <td class="px-3 py-3 text-center">
+                                    <div class="pt-2 font-semibold tabular-nums" x-text="formatNumber(lineTotal({{ $index }}))"></div>
                                 </td>
                                 <td class="px-3 py-3">
                                     <div class="flex items-center justify-center gap-1 pt-1">
@@ -193,6 +327,18 @@
                                             <flux:icon name="grip-vertical" variant="micro" />
                                         </button>
                                         <div class="flex items-center gap-1" wire:sort:ignore>
+                                            <flux:tooltip content="{{ __('app.refresh_row') }}">
+                                                <flux:button
+                                                    type="button"
+                                                    size="xs"
+                                                    variant="primary"
+                                                    color="sky"
+                                                    icon="arrow-path"
+                                                    icon:variant="outline"
+                                                    wire:click="refreshRow({{ $index }})"
+                                                    :disabled="! $itemRef"
+                                                />
+                                            </flux:tooltip>
                                             <flux:tooltip content="{{ __('app.remove_row') }}">
                                                 <flux:button
                                                     type="button"
@@ -229,20 +375,20 @@
                 <div class="ms-auto w-full max-w-sm space-y-2 rounded-lg border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-zinc-500">{{ __('app.price') }}</span>
-                        <span class="font-medium tabular-nums">{{ number_format($this->totals['price']) }}</span>
+                        <span class="font-medium tabular-nums" x-text="formatNumber(totals.price)"></span>
                     </div>
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-zinc-500">{{ __('app.discount') }}</span>
-                        <span class="font-medium tabular-nums">{{ number_format($this->totals['discount']) }}</span>
+                        <span class="font-medium tabular-nums" x-text="formatNumber(totals.discount)"></span>
                     </div>
                     <div class="flex items-center justify-between text-sm">
                         <span class="text-zinc-500">{{ __('app.tax') }}</span>
-                        <span class="font-medium tabular-nums">{{ number_format($this->totals['tax']) }}</span>
+                        <span class="font-medium tabular-nums" x-text="formatNumber(totals.tax)"></span>
                     </div>
                     <flux:separator variant="subtle" />
                     <div class="flex items-center justify-between">
                         <flux:heading size="sm">{{ __('app.net_amount') }}</flux:heading>
-                        <flux:heading size="lg" class="tabular-nums">{{ number_format($this->totals['net']) }}</flux:heading>
+                        <flux:heading size="lg" class="tabular-nums" x-text="formatNumber(totals.net)"></flux:heading>
                     </div>
                 </div>
             </div>
@@ -261,3 +407,136 @@
         </div>
     </div>
 </div>
+
+@script
+<script>
+    Alpine.data('invoiceFormCalculator', (config) => ({
+        taxPercent: Number(config.taxPercent) || 0,
+        rows: (config.rows || []).map((row) => ({
+            quantity: row.quantity ?? 0,
+            fee: row.fee ?? 0,
+            discount: row.discount ?? 0,
+            tax: row.tax ?? 0,
+            discountPercent: row.discountPercent ?? '',
+            taxPercent: row.taxPercent ?? '',
+        })),
+        totals: { price: 0, discount: 0, tax: 0, net: 0 },
+
+        init() {
+            this.recalcTotals();
+        },
+
+        parse(value) {
+            if (typeof value === 'number') {
+                return Number.isFinite(value) ? value : 0;
+            }
+
+            return parseFloat(String(value ?? 0).replace(/,/g, '')) || 0;
+        },
+
+        formatNumber(value) {
+            const number = this.parse(value);
+
+            if (Math.abs(number - Math.round(number)) < 0.0000001) {
+                return Math.round(number).toLocaleString('en-US');
+            }
+
+            return number
+                .toLocaleString('en-US', { maximumFractionDigits: 4 })
+                .replace(/(\.\d*?[1-9])0+$/, '$1')
+                .replace(/\.0+$/, '');
+        },
+
+        lineTotal(index) {
+            const row = this.rows[index];
+
+            if (! row) {
+                return 0;
+            }
+
+            return (this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount) + this.parse(row.tax);
+        },
+
+        onBaseChange(index) {
+            this.recalculateTax(index);
+            this.recalcTotals();
+        },
+
+        recalculateTax(index) {
+            const row = this.rows[index];
+
+            if (! row) {
+                return;
+            }
+
+            const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
+            row.tax = Math.round(base * (this.parse(this.taxPercent) / 100));
+        },
+
+        recalculateAllTaxes() {
+            this.rows.forEach((_, index) => this.recalculateTax(index));
+            this.recalcTotals();
+            this.rows.forEach((_, index) => this.syncRow(index, 'tax'));
+        },
+
+        applyDiscountPercent(index) {
+            const row = this.rows[index];
+
+            if (! row) {
+                return;
+            }
+
+            const percent = this.parse(row.discountPercent);
+            row.discount = Math.round(this.parse(row.quantity) * this.parse(row.fee) * percent / 100);
+            this.onBaseChange(index);
+            this.syncRow(index, 'discount');
+            this.syncRow(index, 'tax');
+        },
+
+        applyTaxPercent(index) {
+            const row = this.rows[index];
+
+            if (! row) {
+                return;
+            }
+
+            const percent = row.taxPercent === '' || row.taxPercent === null
+                ? this.parse(this.taxPercent)
+                : this.parse(row.taxPercent);
+            const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
+            row.tax = Math.round(base * percent / 100);
+            this.recalcTotals();
+            this.syncRow(index, 'tax');
+        },
+
+        syncRow(index, field) {
+            const row = this.rows[index];
+
+            if (! row || ! this.$wire) {
+                return;
+            }
+
+            this.$wire.set(`items.${index}.${field}`, this.parse(row[field]));
+        },
+
+        recalcTotals() {
+            let price = 0;
+            let discount = 0;
+            let tax = 0;
+
+            this.rows.forEach((row) => {
+                price += this.parse(row.quantity) * this.parse(row.fee);
+                discount += this.parse(row.discount);
+                tax += this.parse(row.tax);
+            });
+
+            this.totals = {
+                price,
+                discount,
+                tax,
+                net: price - discount + tax,
+            };
+        },
+    }));
+</script>
+@endscript
