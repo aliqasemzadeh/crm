@@ -231,7 +231,7 @@
                                         class="text-center"
                                         x-model="rows[{{ $index }}].quantity"
                                         x-on:input="onBaseChange({{ $index }})"
-                                        x-on:blur="syncRow({{ $index }}, 'quantity')"
+                                        x-on:blur="syncBaseRow({{ $index }})"
                                     />
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
@@ -240,7 +240,7 @@
                                         class="text-center"
                                         x-model="rows[{{ $index }}].fee"
                                         x-on:input="onBaseChange({{ $index }})"
-                                        x-on:blur="syncRow({{ $index }}, 'fee')"
+                                        x-on:blur="syncBaseRow({{ $index }})"
                                     />
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
@@ -250,7 +250,7 @@
                                             class="text-center"
                                             x-model="rows[{{ $index }}].discount"
                                             x-on:input="onBaseChange({{ $index }})"
-                                            x-on:blur="syncRow({{ $index }}, 'discount')"
+                                            x-on:blur="syncBaseRow({{ $index }})"
                                         />
                                         <flux:dropdown>
                                             <flux:tooltip content="{{ __('app.discount_percent') }}">
@@ -397,10 +397,10 @@
                 <flux:button type="button" variant="ghost" href="{{ route($invoiceRoutePrefix.'.index') }}" wire:navigate icon="arrow-right">
                     {{ __('app.back') }}
                 </flux:button>
-                <flux:button type="button" variant="primary" color="sky" icon="eye" wire:click="openPreview">
+                <flux:button type="button" variant="primary" color="sky" icon="eye" x-on:click="preparePreview()">
                     {{ __('app.preview') }}
                 </flux:button>
-                <flux:button type="submit" variant="primary" color="orange" class="w-full sm:w-auto" icon="save" wire:loading.attr="disabled" wire:target="save">
+                <flux:button type="button" variant="primary" color="orange" class="w-full sm:w-auto" icon="save" x-on:click="prepareSave($event)" wire:loading.attr="disabled" wire:target="save,commitClientRows">
                     {{ __('app.save') }}
                 </flux:button>
             </div>
@@ -408,135 +408,162 @@
     </div>
 </div>
 
-@script
 <script>
-    Alpine.data('invoiceFormCalculator', (config) => ({
-        taxPercent: Number(config.taxPercent) || 0,
-        rows: (config.rows || []).map((row) => ({
-            quantity: row.quantity ?? 0,
-            fee: row.fee ?? 0,
-            discount: row.discount ?? 0,
-            tax: row.tax ?? 0,
-            discountPercent: row.discountPercent ?? '',
-            taxPercent: row.taxPercent ?? '',
-        })),
-        totals: { price: 0, discount: 0, tax: 0, net: 0 },
+    window.invoiceFormCalculator = function (config) {
+        return {
+            taxPercent: Number(config.taxPercent) || 0,
+            rows: (config.rows || []).map((row) => ({
+                quantity: row.quantity ?? 0,
+                fee: row.fee ?? 0,
+                discount: row.discount ?? 0,
+                tax: row.tax ?? 0,
+                discountPercent: row.discountPercent ?? '',
+                taxPercent: row.taxPercent ?? '',
+            })),
+            totals: { price: 0, discount: 0, tax: 0, net: 0 },
 
-        init() {
-            this.recalcTotals();
-        },
+            init() {
+                this.recalcTotals();
+            },
 
-        parse(value) {
-            if (typeof value === 'number') {
-                return Number.isFinite(value) ? value : 0;
-            }
+            parse(value) {
+                if (typeof value === 'number') {
+                    return Number.isFinite(value) ? value : 0;
+                }
 
-            return parseFloat(String(value ?? 0).replace(/,/g, '')) || 0;
-        },
+                return parseFloat(String(value ?? 0).replace(/,/g, '')) || 0;
+            },
 
-        formatNumber(value) {
-            const number = this.parse(value);
+            formatNumber(value) {
+                const number = this.parse(value);
 
-            if (Math.abs(number - Math.round(number)) < 0.0000001) {
-                return Math.round(number).toLocaleString('en-US');
-            }
+                if (Math.abs(number - Math.round(number)) < 0.0000001) {
+                    return Math.round(number).toLocaleString('en-US');
+                }
 
-            return number
-                .toLocaleString('en-US', { maximumFractionDigits: 4 })
-                .replace(/(\.\d*?[1-9])0+$/, '$1')
-                .replace(/\.0+$/, '');
-        },
+                return number
+                    .toLocaleString('en-US', { maximumFractionDigits: 4 })
+                    .replace(/(\.\d*?[1-9])0+$/, '$1')
+                    .replace(/\.0+$/, '');
+            },
 
-        lineTotal(index) {
-            const row = this.rows[index];
+            lineTotal(index) {
+                const row = this.rows[index];
 
-            if (! row) {
-                return 0;
-            }
+                if (! row) {
+                    return 0;
+                }
 
-            return (this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount) + this.parse(row.tax);
-        },
+                return (this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount) + this.parse(row.tax);
+            },
 
-        onBaseChange(index) {
-            this.recalculateTax(index);
-            this.recalcTotals();
-        },
+            onBaseChange(index) {
+                this.recalculateTax(index);
+                this.recalcTotals();
+            },
 
-        recalculateTax(index) {
-            const row = this.rows[index];
+            recalculateTax(index) {
+                const row = this.rows[index];
 
-            if (! row) {
-                return;
-            }
+                if (! row) {
+                    return;
+                }
 
-            const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
-            row.tax = Math.round(base * (this.parse(this.taxPercent) / 100));
-        },
+                const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
+                row.tax = Math.round(base * (this.parse(this.taxPercent) / 100));
+            },
 
-        recalculateAllTaxes() {
-            this.rows.forEach((_, index) => this.recalculateTax(index));
-            this.recalcTotals();
-            this.rows.forEach((_, index) => this.syncRow(index, 'tax'));
-        },
+            applyDiscountPercent(index) {
+                const row = this.rows[index];
 
-        applyDiscountPercent(index) {
-            const row = this.rows[index];
+                if (! row) {
+                    return;
+                }
 
-            if (! row) {
-                return;
-            }
+                const percent = this.parse(row.discountPercent);
+                row.discount = Math.round(this.parse(row.quantity) * this.parse(row.fee) * percent / 100);
+                this.onBaseChange(index);
+                this.syncRow(index, 'discount');
+                this.syncRow(index, 'tax');
+            },
 
-            const percent = this.parse(row.discountPercent);
-            row.discount = Math.round(this.parse(row.quantity) * this.parse(row.fee) * percent / 100);
-            this.onBaseChange(index);
-            this.syncRow(index, 'discount');
-            this.syncRow(index, 'tax');
-        },
+            applyTaxPercent(index) {
+                const row = this.rows[index];
 
-        applyTaxPercent(index) {
-            const row = this.rows[index];
+                if (! row) {
+                    return;
+                }
 
-            if (! row) {
-                return;
-            }
+                const percent = row.taxPercent === '' || row.taxPercent === null
+                    ? this.parse(this.taxPercent)
+                    : this.parse(row.taxPercent);
+                const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
+                row.tax = Math.round(base * percent / 100);
+                this.recalcTotals();
+                this.syncRow(index, 'tax');
+            },
 
-            const percent = row.taxPercent === '' || row.taxPercent === null
-                ? this.parse(this.taxPercent)
-                : this.parse(row.taxPercent);
-            const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
-            row.tax = Math.round(base * percent / 100);
-            this.recalcTotals();
-            this.syncRow(index, 'tax');
-        },
+            syncAllRows() {
+                if (! this.$wire) {
+                    return Promise.resolve();
+                }
 
-        syncRow(index, field) {
-            const row = this.rows[index];
+                const payload = this.rows.map((row) => ({
+                    quantity: this.parse(row.quantity),
+                    fee: this.parse(row.fee),
+                    discount: this.parse(row.discount),
+                    tax: this.parse(row.tax),
+                }));
 
-            if (! row || ! this.$wire) {
-                return;
-            }
+                return this.$wire.commitClientRows(payload);
+            },
 
-            this.$wire.set(`items.${index}.${field}`, this.parse(row[field]));
-        },
+            async preparePreview() {
+                await this.syncAllRows();
+                await this.$wire.openPreview();
+            },
 
-        recalcTotals() {
-            let price = 0;
-            let discount = 0;
-            let tax = 0;
+            async prepareSave(event) {
+                event.preventDefault();
+                await this.syncAllRows();
+                await this.$wire.save();
+            },
 
-            this.rows.forEach((row) => {
-                price += this.parse(row.quantity) * this.parse(row.fee);
-                discount += this.parse(row.discount);
-                tax += this.parse(row.tax);
-            });
+            syncRow(index, field) {
+                const row = this.rows[index];
 
-            this.totals = {
-                price,
-                discount,
-                tax,
-                net: price - discount + tax,
-            };
-        },
-    }));
+                if (! row || ! this.$wire) {
+                    return;
+                }
+
+                this.$wire.set(`items.${index}.${field}`, this.parse(row[field]));
+            },
+
+            syncBaseRow(index) {
+                this.syncRow(index, 'quantity');
+                this.syncRow(index, 'fee');
+                this.syncRow(index, 'discount');
+                this.syncRow(index, 'tax');
+            },
+
+            recalcTotals() {
+                let price = 0;
+                let discount = 0;
+                let tax = 0;
+
+                this.rows.forEach((row) => {
+                    price += this.parse(row.quantity) * this.parse(row.fee);
+                    discount += this.parse(row.discount);
+                    tax += this.parse(row.tax);
+                });
+
+                this.totals = {
+                    price,
+                    discount,
+                    tax,
+                    net: price - discount + tax,
+                };
+            },
+        };
+    };
 </script>
-@endscript
