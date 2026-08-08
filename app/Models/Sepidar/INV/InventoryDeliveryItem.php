@@ -43,7 +43,6 @@ class InventoryDeliveryItem extends Model
         'WeighingRef',
         'ItemRequestItemRef',
         'ItemDescription',
-        'Fee',
     ];
 
     public function delivery(): BelongsTo
@@ -58,6 +57,6 @@ class InventoryDeliveryItem extends Model
 
     public function invoiceItem(): BelongsTo
     {
-        return $this->belongsTo(InvoiceItem::class, 'BaseInvoiceItem', 'InvoiceItemId');
+        return $this->belongsTo(InvoiceItem::class, 'BaseInvoiceItem', 'InvoiceItemID');
     }
 }
