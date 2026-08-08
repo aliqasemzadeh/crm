@@ -24,6 +24,7 @@
         rows: @js($alpineRows),
     })"
 >
+    <form x-on:submit.prevent="prepareSave($event)">
     <div class="rounded-xl border border-zinc-300 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-900 overflow-hidden">
         <div class="border-b border-zinc-200 bg-zinc-50 px-4 py-4 sm:px-6 dark:border-zinc-700 dark:bg-zinc-800/60">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -400,12 +401,13 @@
                 <flux:button type="button" variant="primary" color="sky" icon="eye" x-on:click="preparePreview()">
                     {{ __('app.preview') }}
                 </flux:button>
-                <flux:button type="button" variant="primary" color="orange" class="w-full sm:w-auto" icon="save" x-on:click="prepareSave($event)" wire:loading.attr="disabled" wire:target="save,commitClientRows">
+                <flux:button type="submit" variant="primary" color="orange" class="w-full sm:w-auto" icon="save" wire:loading.attr="disabled" wire:target="save,commitClientRows">
                     {{ __('app.save') }}
                 </flux:button>
             </div>
         </div>
     </div>
+    </form>
 </div>
 
 <script>

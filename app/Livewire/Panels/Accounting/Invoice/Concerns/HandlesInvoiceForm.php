@@ -279,6 +279,20 @@ trait HandlesInvoiceForm
         Flux::modal($this->invoiceModal('party-balance.modal'))->show();
     }
 
+    public function commitClientRows(array $rows): void
+    {
+        foreach ($rows as $index => $row) {
+            if (! isset($this->items[$index]) || ! is_array($row)) {
+                continue;
+            }
+
+            $this->items[$index]['quantity'] = (float) str_replace(',', '', (string) ($row['quantity'] ?? 0));
+            $this->items[$index]['fee'] = (float) str_replace(',', '', (string) ($row['fee'] ?? 0));
+            $this->items[$index]['discount'] = (float) str_replace(',', '', (string) ($row['discount'] ?? 0));
+            $this->items[$index]['tax'] = (float) str_replace(',', '', (string) ($row['tax'] ?? 0));
+        }
+    }
+
     public function openPreview(): void
     {
         Flux::modal($this->invoiceModal('preview.modal'))->show();
