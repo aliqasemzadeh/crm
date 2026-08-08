@@ -102,7 +102,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             <flux:heading size="xl">{{ __('app.day_check.admin_check.title') }}</flux:heading>
         </div>
 
-        <flux:card>
+        <flux:card class="panel-filter-card">
             <div class="flex mb-4">
                 <flux:input wire:model.live="search" icon="search" placeholder="{{ __('app.day_check.admin_check.search_placeholder') }}" />
             </div>

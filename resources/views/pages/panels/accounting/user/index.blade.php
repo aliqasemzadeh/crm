@@ -93,7 +93,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         <flux:separator variant="subtle" />
     </div>
 
-    <flux:card class="mb-4">
+    <flux:card class="panel-filter-card mb-4">
         <flux:input
             wire:model.live.debounce.400ms="search"
             icon="search"
