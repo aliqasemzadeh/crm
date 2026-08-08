@@ -12,6 +12,12 @@ use Morilog\Jalali\Jalalian;
 
 class InvoiceUpdater
 {
+    public function __construct(
+        private readonly InvoiceInventoryDeliverySync $deliverySync,
+        private readonly InvoiceVoucherSync $voucherSync,
+        private readonly ItemStockSummaryUpdater $stockSummaryUpdater,
+    ) {}
+
     /**
      * @param  array{
      *     customer_party_ref: int,
@@ -43,6 +49,7 @@ class InvoiceUpdater
         $rate = 1;
         $modifier = (int) (auth()->user()?->resolveSepidarCreatorId() ?? config('sepidar.Creator', 1));
         $saleTypeRef = (int) $data['sale_type_ref'];
+        $fiscalYearRef = (int) ($invoice->FiscalYearRef ?: config('sepidar.FiscalYearRef'));
 
         $linePayloads = [];
         $totals = [
@@ -109,7 +116,7 @@ class InvoiceUpdater
                 'BankFeeForCurrencySale' => 0,
                 'BankFeeForCurrencySaleInBaseCurrency' => 0,
                 'IsAggregateDiscountInvoiceItem' => 0,
-                'TaxPayerCurrencyPurchaseRate' => 0,
+                'TaxPayerCurrencyPurchaseRate' => null,
             ];
 
             $totals['Price'] += $price;
@@ -132,9 +139,22 @@ class InvoiceUpdater
             $rate,
             $modifier,
             $saleTypeRef,
+            $fiscalYearRef,
             $linePayloads,
             $totals
         ) {
+            $oldStockKeys = $invoice->items()
+                ->get(['ItemRef', 'StockRef', 'TracingRef'])
+                ->map(fn (InvoiceItem $item) => [
+                    'stock_ref' => (int) ($item->StockRef ?? 0),
+                    'item_ref' => (int) $item->ItemRef,
+                    'tracing_ref' => $item->TracingRef !== null ? (int) $item->TracingRef : null,
+                    'fiscal_year_ref' => $fiscalYearRef,
+                ])
+                ->all();
+
+            $this->deliverySync->deleteForInvoice((int) $invoice->InvoiceId);
+
             $invoice->update([
                 'CustomerPartyRef' => $party->PartyId,
                 'CustomerRealName' => $customerName,
@@ -171,6 +191,12 @@ class InvoiceUpdater
                     'InvoiceRef' => $invoice->InvoiceId,
                 ]));
             }
+
+            $invoice = $invoice->fresh(['items', 'customer']);
+
+            $newStockKeys = $this->deliverySync->sync($invoice);
+            $this->voucherSync->sync($invoice->fresh(['customer']));
+            $this->stockSummaryUpdater->refresh(array_merge($oldStockKeys, $newStockKeys));
 
             return $invoice->fresh(['items', 'items.item', 'creator', 'modifier', 'customer']);
         });

@@ -2,7 +2,6 @@
 
 namespace App\Services\Sepidar;
 
-use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\InventoryDelivery;
 use App\Models\Sepidar\INV\InventoryDeliveryItem;
 use App\Models\Sepidar\SLS\Invoice;

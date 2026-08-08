@@ -3,7 +3,6 @@
 namespace App\Services\Sepidar;
 
 use App\Models\Sepidar\INV\ItemStock;
-use Illuminate\Support\Facades\DB;
 
 class ItemStockEnsure
 {

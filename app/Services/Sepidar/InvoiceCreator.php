@@ -13,6 +13,12 @@ use Morilog\Jalali\Jalalian;
 
 class InvoiceCreator
 {
+    public function __construct(
+        private readonly InvoiceInventoryDeliverySync $deliverySync,
+        private readonly InvoiceVoucherSync $voucherSync,
+        private readonly ItemStockSummaryUpdater $stockSummaryUpdater,
+    ) {}
+
     /**
      * @param  array{
      *     customer_party_ref: int,
@@ -111,7 +117,7 @@ class InvoiceCreator
                 'BankFeeForCurrencySale' => 0,
                 'BankFeeForCurrencySaleInBaseCurrency' => 0,
                 'IsAggregateDiscountInvoiceItem' => 0,
-                'TaxPayerCurrencyPurchaseRate' => 0,
+                'TaxPayerCurrencyPurchaseRate' => null,
             ];
 
             $totals['Price'] += $price;
@@ -199,6 +205,12 @@ class InvoiceCreator
                     'InvoiceRef' => $invoiceId,
                 ]));
             }
+
+            $invoice = $invoice->fresh(['items', 'customer']);
+
+            $stockKeys = $this->deliverySync->sync($invoice);
+            $this->voucherSync->sync($invoice->fresh(['customer']));
+            $this->stockSummaryUpdater->refresh($stockKeys);
 
             return $invoice->fresh(['items']);
         });
