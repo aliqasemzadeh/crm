@@ -1088,6 +1088,10 @@ return [
     'invoice_period_range' => ':from تا :to',
     'invoice_period_no_data' => 'در این ماه فاکتوری ثبت نشده است.',
     'invoice_period_calculating' => 'در حال محاسبه آمار...',
+    'date_range' => 'بازه تاریخ',
+    'date_range_from_to' => ':from تا :to',
+    'date_range_placeholder' => 'انتخاب بازه تاریخ',
+    'clear_date_range' => 'پاک کردن بازه',
     'ordinals' => [
         1 => 'اول',
         2 => 'دوم',
