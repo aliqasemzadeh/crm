@@ -2,6 +2,8 @@
 
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
+use App\Services\Sale\SaleCart;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -22,6 +24,21 @@ new #[Layout('layouts.panels.sale')] class extends Component
     public function mount(): void
     {
         $this->authorize('sales_item_index');
+    }
+
+    public function addToCart(int $itemId, SaleCart $cart): void
+    {
+        $this->authorize('sales_invoice_create');
+
+        if (! Item::query()->whereKey($itemId)->exists()) {
+            Flux::toast(__('app.failed_to_add_to_cart'), variant: 'danger');
+
+            return;
+        }
+
+        $cart->add($itemId);
+        $this->dispatch('panels.sale.cart.updated');
+        Flux::toast(__('app.product_added_to_cart'));
     }
 
     public function sort(string $column): void
@@ -118,9 +135,14 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     </flux:table.cell>
                     <flux:table.cell class="w-1 whitespace-nowrap">
                         <div class="flex items-center gap-1">
+                            @can('sales_invoice_create')
+                                <flux:tooltip content="{{ __('app.add_to_cart') }}">
+                                    <flux:button size="xs" variant="primary" color="teal" icon="shopping-cart" icon:variant="outline" wire:click="addToCart({{ $item->ItemID }})" />
+                                </flux:tooltip>
+                            @endcan
                             @can('sales_item_view')
                                 <flux:tooltip content="{{ __('app.view') }}">
-                                    <flux:button size="xs" variant="primary" color="teal" icon="eye" icon:variant="outline" href="{{ route('panels.sale.item.view', $item->ItemID) }}" wire:navigate />
+                                    <flux:button size="xs" variant="primary" color="sky" icon="eye" icon:variant="outline" href="{{ route('panels.sale.item.view', $item->ItemID) }}" wire:navigate />
                                 </flux:tooltip>
                             @endcan
                             @can('sales_item_image')

@@ -2,8 +2,11 @@
 
 use App\Livewire\Forms\Accounting\InvoiceForm;
 use App\Livewire\Panels\Accounting\Invoice\Concerns\HandlesInvoiceForm;
+use App\Models\Sepidar\INV\Item;
+use App\Services\Sale\SaleCart;
 use App\Services\Sepidar\InvoiceCreator;
 use Flux\Flux;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
@@ -19,18 +22,47 @@ new #[Layout('layouts.panels.sale')] class extends Component
         return 'panels.sale.invoice';
     }
 
-    public function mount(): void
+    protected function emptyFeeWhenMissing(): bool
+    {
+        return true;
+    }
+
+    protected function feeValidationRules(): array
+    {
+        return ['required', 'numeric', 'gt:0'];
+    }
+
+    public function mount(SaleCart $cart): void
     {
         $this->authorize('sales_invoice_create');
 
         $this->form->date = Jalalian::now()->format('Y/m/d');
         $this->form->sale_type_ref = 2;
-        $this->items = [
-            $this->emptyRow(),
-        ];
+        $this->items = $this->itemsFromCart($cart);
     }
 
-    public function save(InvoiceCreator $creator): void
+    public function applySitePrices(): void
+    {
+        $this->authorize('sales_invoice_create');
+
+        foreach ($this->items as $index => $row) {
+            $itemId = (int) ($row['item_ref'] ?? 0);
+
+            if ($itemId <= 0) {
+                continue;
+            }
+
+            $sitePrice = Item::query()->find($itemId)?->siteMinPriceRial();
+            $this->items[$index]['fee'] = $sitePrice !== null && $sitePrice > 0
+                ? (int) $sitePrice
+                : '';
+            $this->recalculateLineTax($index);
+        }
+
+        Flux::toast(__('app.site_prices_applied'));
+    }
+
+    public function save(InvoiceCreator $creator, SaleCart $cart): void
     {
         $this->authorize('sales_invoice_create');
 
@@ -45,9 +77,62 @@ new #[Layout('layouts.panels.sale')] class extends Component
             return;
         }
 
+        $cart->clear();
+        $this->dispatch('panels.sale.cart.updated');
+
         Flux::toast(__('app.invoice_created', ['number' => $invoice->Number]));
 
         $this->redirect(route('panels.sale.invoice.view', $invoice->InvoiceId), navigate: true);
+    }
+
+    /**
+     * @return list<array{row_id: string, item_ref: int|null, quantity: float|int, fee: float|int|string, discount: int, tax: int, description: string}>
+     */
+    protected function itemsFromCart(SaleCart $cart): array
+    {
+        $quantities = $cart->all();
+
+        if ($quantities === []) {
+            return [
+                $this->emptyRow(),
+            ];
+        }
+
+        $items = Item::query()
+            ->whereIn('ItemID', array_keys($quantities))
+            ->get()
+            ->keyBy('ItemID');
+
+        $rows = [];
+
+        foreach ($quantities as $itemId => $quantity) {
+            if (! $items->has($itemId)) {
+                continue;
+            }
+
+            $fee = (float) $items->get($itemId)->getLastSalePrice();
+
+            $rows[] = [
+                'row_id' => (string) Str::uuid(),
+                'item_ref' => $itemId,
+                'quantity' => $quantity,
+                'fee' => $this->normalizeDefaultFee($fee),
+                'discount' => 0,
+                'tax' => 0,
+                'description' => '',
+            ];
+        }
+
+        if ($rows === []) {
+            return [
+                $this->emptyRow(),
+            ];
+        }
+
+        $this->items = array_values($rows);
+        $this->recalculateLineTaxes();
+
+        return $this->items;
     }
 };
 ?>
@@ -70,6 +155,22 @@ new #[Layout('layouts.panels.sale')] class extends Component
         </div>
 
         <flux:separator variant="subtle" />
+    </div>
+
+    <flux:callout variant="warning" icon="triangle-alert" class="mb-4">
+        {{ __('app.invoice_price_attention_warning') }}
+    </flux:callout>
+
+    <div class="mb-6">
+        <flux:button
+            variant="primary"
+            color="rose"
+            icon="globe-alt"
+            class="w-full sm:w-auto"
+            wire:click="applySitePrices"
+        >
+            {{ __('app.apply_site_prices') }}
+        </flux:button>
     </div>
 
     <form wire:submit="save">

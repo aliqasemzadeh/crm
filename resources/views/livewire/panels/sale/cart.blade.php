@@ -79,14 +79,15 @@ new class extends Component
     }
 
     #[Computed]
-    public function count(SaleCart $cart): int
+    public function count(): int
     {
-        return $cart->count();
+        return app(SaleCart::class)->count();
     }
 
     #[Computed]
-    public function lines(SaleCart $cart)
+    public function lines()
     {
+        $cart = app(SaleCart::class);
         $quantities = $cart->all();
 
         if ($quantities === []) {
@@ -190,7 +191,7 @@ new class extends Component
 
                                 <div class="flex items-center justify-between gap-2">
                                     <div class="flex items-center gap-1">
-                                        <flux:tooltip content="{{ __('app.quantity_decreased') }}">
+                                        <flux:tooltip content="{{ __('app.decrease_quantity') }}">
                                             <flux:button
                                                 size="xs"
                                                 variant="filled"
@@ -200,7 +201,7 @@ new class extends Component
                                             />
                                         </flux:tooltip>
                                         <span class="min-w-8 text-center text-sm font-semibold tabular-nums">{{ $line['quantity'] }}</span>
-                                        <flux:tooltip content="{{ __('app.quantity_increased') }}">
+                                        <flux:tooltip content="{{ __('app.increase_quantity') }}">
                                             <flux:button
                                                 size="xs"
                                                 variant="filled"
