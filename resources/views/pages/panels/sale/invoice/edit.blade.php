@@ -30,10 +30,13 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
         $this->form->customer_party_ref = (int) $this->invoice->CustomerPartyRef;
         $this->form->sale_type_ref = (int) $this->invoice->SaleTypeRef;
+        $this->form->delivery_location_ref = (int) ($this->invoice->DeliveryLocationRef
+            ?: config('sepidar.DeliveryLocationRef', 1));
         $this->form->date = $this->invoice->Date
             ? Jalalian::fromDateTime($this->invoice->Date)->format('Y/m/d')
             : Jalalian::now()->format('Y/m/d');
         $this->form->description = (string) ($this->invoice->Description ?? '');
+        $this->syncTaxPercentFromSaleType();
         $this->items = $this->invoice->items->map(function ($item) {
             return [
                 'row_id' => (string) \Illuminate\Support\Str::uuid(),

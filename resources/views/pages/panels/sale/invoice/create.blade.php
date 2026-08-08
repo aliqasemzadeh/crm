@@ -38,28 +38,8 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
         $this->form->date = Jalalian::now()->format('Y/m/d');
         $this->form->sale_type_ref = 2;
+        $this->ensureInvoiceFormDefaults();
         $this->items = $this->itemsFromTemporaryInvoice($draft);
-    }
-
-    public function applySitePrices(): void
-    {
-        $this->authorize('sales_invoice_create');
-
-        foreach ($this->items as $index => $row) {
-            $itemId = (int) ($row['item_ref'] ?? 0);
-
-            if ($itemId <= 0) {
-                continue;
-            }
-
-            $sitePrice = Item::query()->find($itemId)?->siteMinPriceRial();
-            $this->items[$index]['fee'] = $sitePrice !== null && $sitePrice > 0
-                ? (int) $sitePrice
-                : '';
-            $this->recalculateLineTax($index);
-        }
-
-        Flux::toast(__('app.site_prices_applied'));
     }
 
     public function save(InvoiceCreator $creator, SaleTemporaryInvoice $draft): void
@@ -160,18 +140,6 @@ new #[Layout('layouts.panels.sale')] class extends Component
     <flux:callout variant="warning" icon="triangle-alert" class="mb-4">
         {{ __('app.invoice_price_attention_warning') }}
     </flux:callout>
-
-    <div class="mb-6">
-        <flux:button
-            variant="primary"
-            color="rose"
-            icon="globe-alt"
-            class="w-full sm:w-auto"
-            wire:click="applySitePrices"
-        >
-            {{ __('app.apply_site_prices') }}
-        </flux:button>
-    </div>
 
     <form wire:submit="save">
         @include('pages.panels.accounting.invoice._form', [

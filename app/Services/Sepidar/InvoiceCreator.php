@@ -23,6 +23,7 @@ class InvoiceCreator
      * @param  array{
      *     customer_party_ref: int,
      *     sale_type_ref: int,
+     *     delivery_location_ref?: int,
      *     date: string,
      *     description?: string|null,
      *     items: list<array{
@@ -162,7 +163,7 @@ class InvoiceCreator
                 'Date' => $date,
                 'CurrencyRef' => (int) config('sepidar.CurrencyRef', 1),
                 'SLRef' => config('sepidar.InvoiceSLRef'),
-                'DeliveryLocationRef' => (int) config('sepidar.DeliveryLocationRef', 1),
+                'DeliveryLocationRef' => (int) ($data['delivery_location_ref'] ?? config('sepidar.DeliveryLocationRef', 1)),
                 'State' => (int) config('sepidar.InvoiceState', 1),
                 'Price' => $totals['Price'],
                 'PriceInBaseCurrency' => $totals['Price'] * $rate,

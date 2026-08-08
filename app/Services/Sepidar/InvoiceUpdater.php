@@ -22,6 +22,7 @@ class InvoiceUpdater
      * @param  array{
      *     customer_party_ref: int,
      *     sale_type_ref: int,
+     *     delivery_location_ref?: int,
      *     date: string,
      *     description?: string|null,
      *     items: list<array{
@@ -162,8 +163,9 @@ class InvoiceUpdater
                 'SaleTypeRef' => $saleTypeRef,
                 'PartyAddressRef' => $addressId,
                 'Date' => $date,
-                'DeliveryLocationRef' => $invoice->DeliveryLocationRef
-                    ?: (int) config('sepidar.DeliveryLocationRef', 1),
+                'DeliveryLocationRef' => (int) ($data['delivery_location_ref']
+                    ?? $invoice->DeliveryLocationRef
+                    ?: config('sepidar.DeliveryLocationRef', 1)),
                 'Price' => $totals['Price'],
                 'PriceInBaseCurrency' => $totals['Price'] * $rate,
                 'Discount' => $totals['Discount'],

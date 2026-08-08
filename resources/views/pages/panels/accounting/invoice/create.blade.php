@@ -20,6 +20,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
         $this->form->date = Jalalian::now()->format('Y/m/d');
         $this->form->sale_type_ref = 2;
+        $this->ensureInvoiceFormDefaults();
         $this->items = [
             $this->emptyRow(),
         ];

@@ -10,6 +10,7 @@ return [
     'SettlementType' => env('SEPIDAR_SETTLEMENT_TYPE', 1),
     'DefaultStockRef' => env('SEPIDAR_DEFAULT_STOCK_REF', 2),
     'DeliveryLocationRef' => env('SEPIDAR_DELIVERY_LOCATION_REF', 1),
+    'TaxPercent' => env('SEPIDAR_TAX_PERCENT', 10),
     'TaxSLRef' => env('SEPIDAR_TAX_SL_REF', 531),
     'CogsSLRef' => env('SEPIDAR_COGS_SL_REF', 262),
     'VoucherType' => env('SEPIDAR_VOUCHER_TYPE', 2),
