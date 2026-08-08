@@ -158,6 +158,11 @@
                 x-data="invoiceFormCalculator({
                     taxPercent: {{ (float) $this->tax_percent }},
                     rows: @js($alpineRows),
+                    labels: {
+                        rial: @js(__('app.rial')),
+                        toman: @js(__('app.toman')),
+                        equivalent: @js(__('app.amount_equivalent_prefix')),
+                    },
                 })"
             >
                 <form x-on:submit.prevent="prepareSave($event)" class="space-y-6">
@@ -230,29 +235,42 @@
                                         type="text"
                                         inputmode="decimal"
                                         size="sm"
-                                        class="text-center"
+                                        class="text-center [&_input]:text-center"
+                                        mask:dynamic="$money($input, '.', ',', 4)"
                                         x-model="rows[{{ $index }}].quantity"
                                         x-on:input="onBaseChange({{ $index }})"
-                                        x-on:blur="syncBaseRow({{ $index }})"
+                                        x-on:blur="formatMoneyField({{ $index }}, 'quantity', 4); syncBaseRow({{ $index }})"
                                     />
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
-                                    <flux:input
-                                        size="sm"
-                                        class="text-center"
-                                        x-model="rows[{{ $index }}].fee"
-                                        x-on:input="onBaseChange({{ $index }})"
-                                        x-on:blur="syncBaseRow({{ $index }})"
-                                    />
+                                    <div class="space-y-1">
+                                        <flux:input
+                                            size="sm"
+                                            class="text-center [&_input]:text-center"
+                                            mask:dynamic="$money($input, '.', ',', 0)"
+                                            x-model="rows[{{ $index }}].fee"
+                                            x-on:input="onBaseChange({{ $index }})"
+                                            x-on:blur="formatMoneyField({{ $index }}, 'fee', 0); syncBaseRow({{ $index }})"
+                                        />
+                                        <div
+                                            class="text-[11px] leading-tight text-zinc-500 dark:text-zinc-400"
+                                            x-show="parse(rows[{{ $index }}].fee) > 0"
+                                            x-cloak
+                                        >
+                                            <div x-text="rialWords(rows[{{ $index }}].fee)"></div>
+                                            <div x-text="tomanEquivalentWords(rows[{{ $index }}].fee)"></div>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td class="px-3 py-3" wire:sort:ignore>
                                     <div class="flex items-start gap-1">
                                         <flux:input
                                             size="sm"
-                                            class="text-center"
+                                            class="text-center [&_input]:text-center"
+                                            mask:dynamic="$money($input, '.', ',', 0)"
                                             x-model="rows[{{ $index }}].discount"
                                             x-on:input="onBaseChange({{ $index }})"
-                                            x-on:blur="syncBaseRow({{ $index }})"
+                                            x-on:blur="formatMoneyField({{ $index }}, 'discount', 0); syncBaseRow({{ $index }})"
                                         />
                                         <flux:dropdown>
                                             <flux:tooltip content="{{ __('app.discount_percent') }}">
@@ -264,7 +282,7 @@
                                                     step="any"
                                                     min="0"
                                                     size="sm"
-                                                    class="text-center"
+                                                    class="text-center [&_input]:text-center"
                                                     placeholder="%"
                                                     x-model="rows[{{ $index }}].discountPercent"
                                                 />
@@ -286,10 +304,11 @@
                                     <div class="flex items-start gap-1">
                                         <flux:input
                                             size="sm"
-                                            class="text-center"
+                                            class="text-center [&_input]:text-center"
+                                            mask:dynamic="$money($input, '.', ',', 0)"
                                             x-model="rows[{{ $index }}].tax"
                                             x-on:input="recalcTotals()"
-                                            x-on:blur="syncRow({{ $index }}, 'tax')"
+                                            x-on:blur="formatMoneyField({{ $index }}, 'tax', 0); syncRow({{ $index }}, 'tax')"
                                         />
                                         <flux:dropdown>
                                             <flux:tooltip content="{{ __('app.tax_percent') }}">
@@ -301,7 +320,7 @@
                                                     step="any"
                                                     min="0"
                                                     size="sm"
-                                                    class="text-center"
+                                                    class="text-center [&_input]:text-center"
                                                     placeholder="%"
                                                     x-model="rows[{{ $index }}].taxPercent"
                                                     x-bind:placeholder="String(taxPercent)"
@@ -392,6 +411,14 @@
                             <flux:heading size="sm">{{ __('app.net_amount') }}</flux:heading>
                             <flux:heading size="lg" class="tabular-nums" x-text="formatNumber(totals.net)"></flux:heading>
                         </div>
+                        <div
+                            class="space-y-0.5 text-xs leading-tight text-zinc-500 dark:text-zinc-400"
+                            x-show="parse(totals.net) > 0"
+                            x-cloak
+                        >
+                            <div x-text="rialWords(totals.net)"></div>
+                            <div x-text="tomanEquivalentWords(totals.net)"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -414,8 +441,76 @@
 
 <script>
     window.invoiceFormCalculator = function (config) {
+        const labels = config.labels || { rial: 'ریال', toman: 'تومان', equivalent: 'معادل' };
+
+        const ones = ['', 'یک', 'دو', 'سه', 'چهار', 'پنج', 'شش', 'هفت', 'هشت', 'نه'];
+        const teens = ['ده', 'یازده', 'دوازده', 'سیزده', 'چهارده', 'پانزده', 'شانزده', 'هفده', 'هجده', 'نوزده'];
+        const tens = ['', '', 'بیست', 'سی', 'چهل', 'پنجاه', 'شصت', 'هفتاد', 'هشتاد', 'نود'];
+        const hundreds = ['', 'صد', 'دویست', 'سیصد', 'چهارصد', 'پانصد', 'ششصد', 'هفتصد', 'هشتصد', 'نهصد'];
+        const scales = ['', 'هزار', 'میلیون', 'میلیارد', 'تریلیون'];
+
+        function threeDigitsToWords(n) {
+            n = Math.floor(n);
+
+            if (n === 0) {
+                return '';
+            }
+
+            const parts = [];
+            const h = Math.floor(n / 100);
+            const rem = n % 100;
+
+            if (h > 0) {
+                parts.push(hundreds[h]);
+            }
+
+            if (rem >= 10 && rem <= 19) {
+                parts.push(teens[rem - 10]);
+            } else {
+                const t = Math.floor(rem / 10);
+                const o = rem % 10;
+
+                if (t > 0) {
+                    parts.push(tens[t]);
+                }
+
+                if (o > 0) {
+                    parts.push(ones[o]);
+                }
+            }
+
+            return parts.join(' و ');
+        }
+
+        function toPersianWords(value) {
+            let number = Math.floor(Math.abs(Number(value) || 0));
+
+            if (number === 0) {
+                return 'صفر';
+            }
+
+            const parts = [];
+            let scaleIndex = 0;
+
+            while (number > 0 && scaleIndex < scales.length) {
+                const chunk = number % 1000;
+
+                if (chunk > 0) {
+                    const chunkWords = threeDigitsToWords(chunk);
+                    const scale = scales[scaleIndex];
+                    parts.unshift(scale ? `${chunkWords} ${scale}` : chunkWords);
+                }
+
+                number = Math.floor(number / 1000);
+                scaleIndex++;
+            }
+
+            return parts.join(' و ');
+        }
+
         return {
             taxPercent: Number(config.taxPercent) || 0,
+            labels,
             rows: (config.rows || []).map((row) => ({
                 quantity: row.quantity ?? 0,
                 fee: row.fee ?? 0,
@@ -427,6 +522,12 @@
             totals: { price: 0, discount: 0, tax: 0, net: 0 },
 
             init() {
+                this.rows.forEach((row, index) => {
+                    this.formatMoneyField(index, 'quantity', 4);
+                    this.formatMoneyField(index, 'fee', 0);
+                    this.formatMoneyField(index, 'discount', 0);
+                    this.formatMoneyField(index, 'tax', 0);
+                });
                 this.recalcTotals();
             },
 
@@ -438,17 +539,52 @@
                 return parseFloat(String(value ?? 0).replace(/,/g, '')) || 0;
             },
 
-            formatNumber(value) {
+            formatNumber(value, decimals = null) {
                 const number = this.parse(value);
 
-                if (Math.abs(number - Math.round(number)) < 0.0000001) {
+                if (decimals === 0 || (decimals === null && Math.abs(number - Math.round(number)) < 0.0000001)) {
                     return Math.round(number).toLocaleString('en-US');
                 }
 
+                const maxDecimals = decimals === null ? 4 : decimals;
+
                 return number
-                    .toLocaleString('en-US', { maximumFractionDigits: 4 })
+                    .toLocaleString('en-US', {
+                        minimumFractionDigits: 0,
+                        maximumFractionDigits: maxDecimals,
+                    })
                     .replace(/(\.\d*?[1-9])0+$/, '$1')
                     .replace(/\.0+$/, '');
+            },
+
+            formatMoneyField(index, field, decimals = 0) {
+                const row = this.rows[index];
+
+                if (! row) {
+                    return;
+                }
+
+                row[field] = this.formatNumber(row[field], decimals);
+            },
+
+            rialWords(value) {
+                const amount = Math.round(this.parse(value));
+
+                if (amount <= 0) {
+                    return '';
+                }
+
+                return `${toPersianWords(amount)} ${this.labels.rial}`;
+            },
+
+            tomanEquivalentWords(value) {
+                const toman = Math.floor(this.parse(value) / 10);
+
+                if (toman <= 0) {
+                    return '';
+                }
+
+                return `${this.labels.equivalent} ${toPersianWords(toman)} ${this.labels.toman}`;
             },
 
             lineTotal(index) {
@@ -474,7 +610,7 @@
                 }
 
                 const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
-                row.tax = Math.round(base * (this.parse(this.taxPercent) / 100));
+                row.tax = this.formatNumber(Math.round(base * (this.parse(this.taxPercent) / 100)), 0);
             },
 
             applyDiscountPercent(index) {
@@ -485,7 +621,10 @@
                 }
 
                 const percent = this.parse(row.discountPercent);
-                row.discount = Math.round(this.parse(row.quantity) * this.parse(row.fee) * percent / 100);
+                row.discount = this.formatNumber(
+                    Math.round(this.parse(row.quantity) * this.parse(row.fee) * percent / 100),
+                    0
+                );
                 this.onBaseChange(index);
                 this.syncRow(index, 'discount');
                 this.syncRow(index, 'tax');
@@ -502,7 +641,7 @@
                     ? this.parse(this.taxPercent)
                     : this.parse(row.taxPercent);
                 const base = Math.max((this.parse(row.quantity) * this.parse(row.fee)) - this.parse(row.discount), 0);
-                row.tax = Math.round(base * percent / 100);
+                row.tax = this.formatNumber(Math.round(base * percent / 100), 0);
                 this.recalcTotals();
                 this.syncRow(index, 'tax');
             },
