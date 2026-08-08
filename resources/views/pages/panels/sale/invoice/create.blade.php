@@ -1,13 +1,88 @@
 <?php
 
+use App\Livewire\Forms\Accounting\InvoiceForm;
+use App\Livewire\Panels\Accounting\Invoice\Concerns\HandlesInvoiceForm;
+use App\Services\Sepidar\InvoiceCreator;
+use Flux\Flux;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Morilog\Jalali\Jalalian;
 
-new class extends Component
+new #[Layout('layouts.panels.sale')] class extends Component
 {
-    //
+    use HandlesInvoiceForm;
+
+    public InvoiceForm $form;
+
+    protected function invoiceUiPrefix(): string
+    {
+        return 'panels.sale.invoice';
+    }
+
+    public function mount(): void
+    {
+        $this->authorize('sales_invoice_create');
+
+        $this->form->date = Jalalian::now()->format('Y/m/d');
+        $this->form->sale_type_ref = 2;
+        $this->items = [
+            $this->emptyRow(),
+        ];
+    }
+
+    public function save(InvoiceCreator $creator): void
+    {
+        $this->authorize('sales_invoice_create');
+
+        $this->validateInvoice();
+
+        try {
+            $invoice = $creator->create($this->formPayload());
+        } catch (\Throwable $e) {
+            report($e);
+            Flux::toast(__('app.invoice_create_failed'), variant: 'danger');
+
+            return;
+        }
+
+        Flux::toast(__('app.invoice_created', ['number' => $invoice->Number]));
+
+        $this->redirect(route('panels.sale.invoice.view', $invoice->InvoiceId), navigate: true);
+    }
 };
 ?>
 
+<x-slot name="title">
+    {{ __('app.create_invoice') }}
+</x-slot>
+
 <div>
-    {{-- It always seems impossible until it is done. - Nelson Mandela --}}
+    <div class="relative mb-6 w-full">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <flux:heading size="xl" level="1">{{ __('app.create_invoice') }}</flux:heading>
+                <flux:subheading size="lg" class="mb-6">{{ __('app.invoice_create_description') }}</flux:subheading>
+            </div>
+
+            <flux:button variant="ghost" href="{{ route('panels.sale.invoice.index') }}" wire:navigate icon="arrow-right">
+                {{ __('app.back') }}
+            </flux:button>
+        </div>
+
+        <flux:separator variant="subtle" />
+    </div>
+
+    <form wire:submit="save">
+        @include('pages.panels.accounting.invoice._form', [
+            'heading' => __('app.sales_invoice'),
+            'subheading' => __('app.invoice_create_description'),
+            'invoiceUiPrefix' => 'panels.sale.invoice',
+            'invoiceRoutePrefix' => 'panels.sale.invoice',
+            'partyCreatePermissions' => ['sales_party_create', 'sales_invoice_create'],
+        ])
+    </form>
+
+    @include('pages.panels.accounting.invoice._modals', [
+        'invoiceUiPrefix' => 'panels.sale.invoice',
+    ])
 </div>
