@@ -293,7 +293,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     </div>
                 </dl>
 
-                @can('sales_item_site_edit')
+                @canany(['sales_item_site_edit', 'sales_item_fee'])
                     <livewire:panels.sale.item-price.item-fee :itemId="$item->ItemID" :key="'item-fee-'.$item->ItemID" />
                 @else
                     <div class="overflow-x-auto">
