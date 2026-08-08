@@ -1623,6 +1623,12 @@ return [
     ],
 
     'create_invoice' => 'ایجاد فاکتور',
+    'create_invoice_from_cart' => 'ایجاد فاکتور از سبد',
+    'invoice_price_attention_warning' => 'به قیمت‌ها توجه داشته باشید. قیمت پیش‌فرض بر اساس آخرین فروش است؛ در صورت نبود قیمت، وارد کردن مبلغ الزامی است.',
+    'apply_site_prices' => 'قیمت‌ها را بر اساس قیمت سایت تنظیم کن',
+    'site_prices_applied' => 'قیمت‌ها بر اساس قیمت سایت به‌روزرسانی شد.',
+    'increase_quantity' => 'افزایش تعداد',
+    'decrease_quantity' => 'کاهش تعداد',
     'edit_invoice' => 'ویرایش فاکتور',
     'invoice_create_description' => 'فاکتور فروش جدید را با انتخاب مشتری و اقلام ثبت کنید.',
     'invoice_edit_description' => 'اقلام و مشخصات فاکتور را ویرایش کنید.',

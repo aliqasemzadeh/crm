@@ -177,7 +177,7 @@ trait HandlesInvoiceForm
     public function clearItem(int $index): void
     {
         $this->items[$index]['item_ref'] = null;
-        $this->items[$index]['fee'] = 0;
+        $this->items[$index]['fee'] = $this->normalizeDefaultFee(0);
         $this->items[$index]['tax'] = 0;
         unset($this->selectedItems);
         $this->openItemSearch($index);

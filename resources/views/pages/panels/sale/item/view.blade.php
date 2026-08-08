@@ -4,6 +4,8 @@ use App\Models\Sepidar\INV\InventoryReceiptItem;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Models\Sepidar\SLS\InvoiceItem;
+use App\Services\Sale\SaleCart;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
@@ -17,11 +19,23 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
     public Item $item;
 
+    public int $cartQuantity = 1;
+
     public function mount(Item $item): void
     {
         $this->authorize('sales_item_view');
 
         $this->item = $item->load(['image', 'grouping', 'product', 'creator']);
+    }
+
+    public function addToCart(SaleCart $cart): void
+    {
+        $this->authorize('sales_invoice_create');
+
+        $quantity = max(1, (int) $this->cartQuantity);
+        $cart->add((int) $this->item->ItemID, $quantity);
+        $this->dispatch('panels.sale.cart.updated');
+        Flux::toast(__('app.product_added_to_cart'));
     }
 
     #[On('panels.sale.item.view.site-price-updated')]
@@ -136,7 +150,25 @@ new #[Layout('layouts.panels.sale')] class extends Component
             </div>
         </div>
 
-        <div class="flex flex-shrink-0 flex-wrap gap-2">
+        <div class="flex flex-shrink-0 flex-wrap items-center gap-2">
+            @can('sales_invoice_create')
+                <div class="flex items-center gap-1">
+                    <flux:input
+                        type="number"
+                        min="1"
+                        wire:model="cartQuantity"
+                        class="w-20"
+                    />
+                    <flux:button
+                        variant="primary"
+                        color="teal"
+                        icon="shopping-cart"
+                        wire:click="addToCart"
+                    >
+                        {{ __('app.add_to_cart') }}
+                    </flux:button>
+                </div>
+            @endcan
             @can('sales_item_image')
                 <flux:tooltip content="{{ __('app.warehouse_item_upload_image') }}">
                     <flux:button

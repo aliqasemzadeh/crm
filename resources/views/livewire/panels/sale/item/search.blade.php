@@ -2,6 +2,8 @@
 
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
+use App\Services\Sale\SaleCart;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
@@ -26,6 +28,21 @@ new class extends Component
     public function close(): void
     {
         $this->open = false;
+    }
+
+    public function addToCart(int $itemId, SaleCart $cart): void
+    {
+        $this->authorize('sales_invoice_create');
+
+        if (! Item::query()->whereKey($itemId)->exists()) {
+            Flux::toast(__('app.failed_to_add_to_cart'), variant: 'danger');
+
+            return;
+        }
+
+        $cart->add($itemId);
+        $this->dispatch('panels.sale.cart.updated');
+        Flux::toast(__('app.product_added_to_cart'));
     }
 
     #[Computed]
@@ -123,62 +140,77 @@ new class extends Component
         <ul class="divide-y divide-zinc-100 dark:divide-zinc-800">
             @foreach ($this->results as $result)
                 <li>
-                    <a
-                        href="{{ $result['url'] }}"
-                        wire:navigate
-                        wire:click="$set('open', false)"
-                        class="flex gap-3 p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/80"
-                    >
-                        <div class="shrink-0">
-                            @if ($result['thumbnail'])
-                                <img
-                                    src="data:image/jpeg;base64,{{ base64_encode($result['thumbnail']) }}"
-                                    alt="{{ $result['title'] }}"
-                                    class="size-14 rounded-md object-cover shadow-sm"
-                                >
-                            @else
-                                <div class="flex size-14 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
-                                    <flux:icon name="package" class="size-6 text-zinc-400" />
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="min-w-0 flex-1 space-y-1">
-                            <div class="flex flex-wrap items-center gap-2">
-                                <span class="truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $result['title'] }}</span>
-                                <span class="text-xs text-zinc-500">{{ $result['code'] }}</span>
+                    <div class="flex gap-3 p-3 transition hover:bg-zinc-50 dark:hover:bg-zinc-800/80">
+                        <a
+                            href="{{ $result['url'] }}"
+                            wire:navigate
+                            wire:click="$set('open', false)"
+                            class="flex min-w-0 flex-1 gap-3"
+                        >
+                            <div class="shrink-0">
+                                @if ($result['thumbnail'])
+                                    <img
+                                        src="data:image/jpeg;base64,{{ base64_encode($result['thumbnail']) }}"
+                                        alt="{{ $result['title'] }}"
+                                        class="size-14 rounded-md object-cover shadow-sm"
+                                    >
+                                @else
+                                    <div class="flex size-14 items-center justify-center rounded-md bg-zinc-100 dark:bg-zinc-800">
+                                        <flux:icon name="package" class="size-6 text-zinc-400" />
+                                    </div>
+                                @endif
                             </div>
 
-                            @if ($result['main_grouping'])
-                                <flux:badge size="sm" color="zinc" class="max-w-full truncate">
-                                    {{ $result['main_grouping'] }}
-                                </flux:badge>
-                            @endif
+                            <div class="min-w-0 flex-1 space-y-1">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="truncate font-medium text-zinc-900 dark:text-zinc-100">{{ $result['title'] }}</span>
+                                    <span class="text-xs text-zinc-500">{{ $result['code'] }}</span>
+                                </div>
 
-                            <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs sm:grid-cols-4">
-                                <div>
-                                    <span class="text-zinc-500">{{ __('app.stock') }}:</span>
-                                    <span class="font-semibold text-teal-600 dark:text-teal-400">{{ number_format($result['stock']) }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-zinc-500">{{ __('app.last_sale_price') }}:</span>
-                                    <span class="font-semibold text-sky-600 dark:text-sky-400">{{ number_format($result['last_sale_price']) }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-zinc-500">{{ __('app.last_purchase_price') }}:</span>
-                                    <span class="font-semibold text-amber-600 dark:text-amber-400">{{ number_format($result['last_purchase_price']) }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-zinc-500">{{ __('app.site_price') }}:</span>
-                                    <span class="font-semibold text-rose-600 dark:text-rose-400">
-                                        {{ $result['site_price'] !== null ? number_format($result['site_price']) : '—' }}
-                                    </span>
+                                @if ($result['main_grouping'])
+                                    <flux:badge size="sm" color="zinc" class="max-w-full truncate">
+                                        {{ $result['main_grouping'] }}
+                                    </flux:badge>
+                                @endif
+
+                                <div class="grid grid-cols-2 gap-x-3 gap-y-1 text-xs sm:grid-cols-4">
+                                    <div>
+                                        <span class="text-zinc-500">{{ __('app.stock') }}:</span>
+                                        <span class="font-semibold text-teal-600 dark:text-teal-400">{{ number_format($result['stock']) }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-zinc-500">{{ __('app.last_sale_price') }}:</span>
+                                        <span class="font-semibold text-sky-600 dark:text-sky-400">{{ number_format($result['last_sale_price']) }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-zinc-500">{{ __('app.last_purchase_price') }}:</span>
+                                        <span class="font-semibold text-amber-600 dark:text-amber-400">{{ number_format($result['last_purchase_price']) }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-zinc-500">{{ __('app.site_price') }}:</span>
+                                        <span class="font-semibold text-rose-600 dark:text-rose-400">
+                                            {{ $result['site_price'] !== null ? number_format($result['site_price']) : '—' }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
 
-                        @if ($result['site_url'])
-                            <div class="flex shrink-0 items-start" @click.stop>
+                        <div class="flex shrink-0 items-start gap-1">
+                            @can('sales_invoice_create')
+                                <flux:tooltip content="{{ __('app.add_to_cart') }}">
+                                    <flux:button
+                                        size="xs"
+                                        variant="primary"
+                                        color="teal"
+                                        icon="shopping-cart"
+                                        icon:variant="outline"
+                                        wire:click="addToCart({{ $result['id'] }})"
+                                    />
+                                </flux:tooltip>
+                            @endcan
+
+                            @if ($result['site_url'])
                                 <flux:tooltip content="{{ __('app.website') }}">
                                     <flux:button
                                         size="xs"
@@ -190,9 +222,9 @@ new class extends Component
                                         rel="noopener noreferrer"
                                     />
                                 </flux:tooltip>
-                            </div>
-                        @endif
-                    </a>
+                            @endif
+                        </div>
+                    </div>
                 </li>
             @endforeach
         </ul>
