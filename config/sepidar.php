@@ -9,4 +9,5 @@ return [
     'InvoiceState' => env('SEPIDAR_INVOICE_STATE', 1),
     'SettlementType' => env('SEPIDAR_SETTLEMENT_TYPE', 1),
     'DefaultStockRef' => env('SEPIDAR_DEFAULT_STOCK_REF', 2),
+    'DeliveryLocationRef' => env('SEPIDAR_DELIVERY_LOCATION_REF', 1),
 ];

@@ -142,6 +142,8 @@ class InvoiceUpdater
                 'SaleTypeRef' => $saleTypeRef,
                 'PartyAddressRef' => $addressId,
                 'Date' => $date,
+                'DeliveryLocationRef' => $invoice->DeliveryLocationRef
+                    ?: (int) config('sepidar.DeliveryLocationRef', 1),
                 'Price' => $totals['Price'],
                 'PriceInBaseCurrency' => $totals['Price'] * $rate,
                 'Discount' => $totals['Discount'],

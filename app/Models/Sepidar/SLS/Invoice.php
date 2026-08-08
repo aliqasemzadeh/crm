@@ -4,6 +4,7 @@ namespace App\Models\Sepidar\SLS;
 
 use App\Livewire\Panels\Accounting\Invoice\Index;
 use App\Models\Sepidar\FMK\User;
+use App\Models\Sepidar\GNR\DeliveryLocation;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyAddress;
 use Illuminate\Database\Eloquent\Model;
@@ -112,6 +113,11 @@ class Invoice extends Model
     public function address(): BelongsTo
     {
         return $this->belongsTo(PartyAddress::class, 'PartyAddressRef', 'PartyAddressId');
+    }
+
+    public function deliveryLocation(): BelongsTo
+    {
+        return $this->belongsTo(DeliveryLocation::class, 'DeliveryLocationRef', 'DeliveryLocationID');
     }
 
     public function items(): HasMany
