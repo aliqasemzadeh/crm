@@ -41,7 +41,7 @@ class InvoiceCreator
         $date = $this->parseDate($data['date']);
         $now = now();
         $rate = 1;
-        $creator = (int) config('sepidar.Creator', 1);
+        $creator = (int) (auth()->user()?->resolveSepidarCreatorId() ?? config('sepidar.Creator', 1));
         $fiscalYearRef = (int) config('sepidar.FiscalYearRef');
         $saleTypeRef = (int) $data['sale_type_ref'];
 
