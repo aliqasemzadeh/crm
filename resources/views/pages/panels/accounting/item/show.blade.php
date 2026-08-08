@@ -2,9 +2,11 @@
 
 use App\Models\Sepidar\INV\InventoryReceiptItem;
 use App\Models\Sepidar\INV\Item;
+use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Models\Sepidar\SLS\InvoiceItem;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Morilog\Jalali\Jalalian;
@@ -22,10 +24,20 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         $this->item = $item->load(['image', 'grouping', 'product', 'creator']);
     }
 
+    #[On('panels.accounting.item.show.site-price-updated')]
+    public function refreshSitePrice(): void
+    {
+        $this->item->load('product');
+        unset($this->sitePrice);
+    }
+
     #[Computed]
     public function stock(): float
     {
-        return $this->item->stockQuantity();
+        return (float) ItemStockSummary::query()
+            ->where('ItemRef', $this->item->ItemID)
+            ->where('FiscalYearRef', config('sepidar.FiscalYearRef'))
+            ->sum('Quantity');
     }
 
     #[Computed]
@@ -50,19 +62,6 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     public function mainGrouping(): ?string
     {
         return $this->item->mainGroupingTitle();
-    }
-
-    #[Computed]
-    public function sitePrices()
-    {
-        if (! $this->item->IranCode) {
-            return collect();
-        }
-
-        return $this->item->productPrices()
-            ->with(['color', 'guarantee'])
-            ->orderByDesc('PriceChangeDate')
-            ->get();
     }
 
     #[Computed]
@@ -267,37 +266,41 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                     </div>
                 </dl>
 
-                <div class="overflow-x-auto">
-                    <flux:table>
-                        <flux:table.columns>
-                            <flux:table.column>{{ __('app.color') }}</flux:table.column>
-                            <flux:table.column>{{ __('app.warranty') }}</flux:table.column>
-                            <flux:table.column>{{ __('app.site_price') }}</flux:table.column>
-                            <flux:table.column>{{ __('app.site_stock') }}</flux:table.column>
-                        </flux:table.columns>
-                        <flux:table.rows>
-                            @forelse ($this->sitePrices as $price)
-                                <flux:table.row :key="$price->Id">
-                                    <flux:table.cell>
-                                        <div class="flex items-center gap-2">
-                                            @if ($price->color?->Code)
-                                                <span class="size-3 rounded-full border border-zinc-200" style="background-color: {{ $price->color->Code }}"></span>
-                                            @endif
-                                            {{ $price->color?->Title ?? '—' }}
-                                        </div>
-                                    </flux:table.cell>
-                                    <flux:table.cell>{{ $price->guarantee?->Title ?? '—' }}</flux:table.cell>
-                                    <flux:table.cell class="whitespace-nowrap">{{ number_format((int) $price->Price * 10) }}</flux:table.cell>
-                                    <flux:table.cell>{{ number_format((int) $price->Quantity) }}</flux:table.cell>
-                                </flux:table.row>
-                            @empty
-                                <flux:table.row>
-                                    <flux:table.cell colspan="4" class="text-center text-zinc-500">{{ __('app.no_results') }}</flux:table.cell>
-                                </flux:table.row>
-                            @endforelse
-                        </flux:table.rows>
-                    </flux:table>
-                </div>
+                @can('accounting_price_note_site_edit')
+                    <livewire:panels.accounting.price-note.item-fee :itemId="$item->ItemID" :key="'item-fee-'.$item->ItemID" />
+                @else
+                    <div class="overflow-x-auto">
+                        <flux:table>
+                            <flux:table.columns>
+                                <flux:table.column>{{ __('app.color') }}</flux:table.column>
+                                <flux:table.column>{{ __('app.warranty') }}</flux:table.column>
+                                <flux:table.column>{{ __('app.site_price') }}</flux:table.column>
+                                <flux:table.column>{{ __('app.site_stock') }}</flux:table.column>
+                            </flux:table.columns>
+                            <flux:table.rows>
+                                @forelse ($item->productPrices()->with(['color', 'guarantee'])->get() as $price)
+                                    <flux:table.row :key="$price->Id">
+                                        <flux:table.cell>
+                                            <div class="flex items-center gap-2">
+                                                @if ($price->color?->Code)
+                                                    <span class="size-3 rounded-full border border-zinc-200" style="background-color: {{ $price->color->Code }}"></span>
+                                                @endif
+                                                {{ $price->color?->Title ?? '—' }}
+                                            </div>
+                                        </flux:table.cell>
+                                        <flux:table.cell>{{ $price->guarantee?->Title ?? '—' }}</flux:table.cell>
+                                        <flux:table.cell class="whitespace-nowrap">{{ number_format((int) $price->Price * 10) }}</flux:table.cell>
+                                        <flux:table.cell>{{ number_format((int) $price->Quantity) }}</flux:table.cell>
+                                    </flux:table.row>
+                                @empty
+                                    <flux:table.row>
+                                        <flux:table.cell colspan="4" class="text-center text-zinc-500">{{ __('app.no_results') }}</flux:table.cell>
+                                    </flux:table.row>
+                                @endforelse
+                            </flux:table.rows>
+                        </flux:table>
+                    </div>
+                @endcan
             @endif
         </flux:card>
     </div>
