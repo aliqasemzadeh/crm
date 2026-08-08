@@ -1,5 +1,8 @@
 @php
     $issuer = $this->issuerName;
+    $invoiceUiPrefix = $invoiceUiPrefix ?? 'panels.accounting.invoice';
+    $invoiceRoutePrefix = $invoiceRoutePrefix ?? 'panels.accounting.invoice';
+    $partyCreatePermissions = $partyCreatePermissions ?? ['accounting_party_create', 'accounting_invoice_create'];
 @endphp
 
 <div class="w-full">
@@ -61,8 +64,8 @@
                                 </flux:select.option>
                             @endforeach
 
-                            @canany(['accounting_party_create', 'accounting_invoice_create'])
-                                <flux:select.option.create modal="panels.accounting.invoice.party-create.modal" min-length="0">
+                            @canany($partyCreatePermissions)
+                                <flux:select.option.create modal="{{ $invoiceUiPrefix }}.party-create.modal" min-length="0">
                                     {{ __('app.create_customer') }}
                                 </flux:select.option.create>
                             @endcanany
@@ -245,7 +248,7 @@
             </div>
 
             <div class="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <flux:button type="button" variant="ghost" href="{{ route('panels.accounting.invoice.index') }}" wire:navigate icon="arrow-right">
+                <flux:button type="button" variant="ghost" href="{{ route($invoiceRoutePrefix.'.index') }}" wire:navigate icon="arrow-right">
                     {{ __('app.back') }}
                 </flux:button>
                 <flux:button type="button" variant="primary" color="sky" icon="eye" wire:click="openPreview">
