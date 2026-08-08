@@ -4,7 +4,7 @@ use App\Models\Sepidar\INV\InventoryReceiptItem;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Models\Sepidar\SLS\InvoiceItem;
-use App\Services\Sale\SaleCart;
+use App\Services\Sale\SaleTemporaryInvoice;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -19,7 +19,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
     public Item $item;
 
-    public int $cartQuantity = 1;
+    public int $temporaryQuantity = 1;
 
     public function mount(Item $item): void
     {
@@ -28,14 +28,14 @@ new #[Layout('layouts.panels.sale')] class extends Component
         $this->item = $item->load(['image', 'grouping', 'product', 'creator']);
     }
 
-    public function addToCart(SaleCart $cart): void
+    public function sendToTemporaryInvoice(SaleTemporaryInvoice $draft): void
     {
         $this->authorize('sales_invoice_create');
 
-        $quantity = max(1, (int) $this->cartQuantity);
-        $cart->add((int) $this->item->ItemID, $quantity);
-        $this->dispatch('panels.sale.cart.updated');
-        Flux::toast(__('app.product_added_to_cart'));
+        $quantity = max(1, (int) $this->temporaryQuantity);
+        $draft->add((int) $this->item->ItemID, $quantity);
+        $this->dispatch('panels.sale.temporary-invoice.updated');
+        Flux::toast(__('app.added_to_temporary_invoice'));
     }
 
     #[On('panels.sale.item.view.site-price-updated')]
@@ -156,16 +156,16 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     <flux:input
                         type="number"
                         min="1"
-                        wire:model="cartQuantity"
+                        wire:model="temporaryQuantity"
                         class="w-20"
                     />
                     <flux:button
                         variant="primary"
                         color="teal"
-                        icon="shopping-cart"
-                        wire:click="addToCart"
+                        icon="file-text"
+                        wire:click="sendToTemporaryInvoice"
                     >
-                        {{ __('app.add_to_cart') }}
+                        {{ __('app.send_to_temporary_invoice') }}
                     </flux:button>
                 </div>
             @endcan
