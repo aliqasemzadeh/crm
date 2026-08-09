@@ -105,6 +105,9 @@ return [
         'crm_cash_back_rule_create' => 'ایجاد قاعده کش‌بک',
         'crm_cash_back_rule_edit' => 'ویرایش قاعده کش‌بک',
         'crm_cash_back_rule_delete' => 'حذف قاعده کش‌بک',
+
+        'crm_cash_back_generator_index' => 'فهرست تولیدکننده کش‌بک',
+        'crm_cash_back_generator_create' => 'اجرای تولیدکننده کش‌بک',
     ],
 
     'service_center' => [
