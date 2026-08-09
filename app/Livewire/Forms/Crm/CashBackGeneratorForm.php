@@ -18,6 +18,8 @@ class CashBackGeneratorForm extends Form
 
     public string $sms_text = '';
 
+    public string $site_url = 'https://setaregan.co';
+
     public function normalizeAmounts(): void
     {
         $this->min_total_amount = $this->toInteger($this->min_total_amount);
@@ -33,6 +35,7 @@ class CashBackGeneratorForm extends Form
             'discount_amount' => ['required', 'integer', 'min:1'],
             'usage_duration_days' => ['required', 'integer', 'min:1'],
             'sms_text' => ['required', 'string', 'min:3'],
+            'site_url' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -45,6 +48,7 @@ class CashBackGeneratorForm extends Form
             'discount_amount' => __('app.cash_back_amount'),
             'usage_duration_days' => __('app.cash_back_usage_duration_days'),
             'sms_text' => __('app.cash_back_generator_sms_text'),
+            'site_url' => __('app.cash_back_generator_site_url'),
         ];
     }
 

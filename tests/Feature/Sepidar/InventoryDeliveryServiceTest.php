@@ -2,18 +2,17 @@
 
 namespace Tests\Feature\Sepidar;
 
-use App\Models\Sepidar\ACC\VoucherItem;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\InventoryDeliveryItem;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
-use App\Services\Sepidar\InvoiceCreator;
-use App\Services\Sepidar\InvoiceUpdater;
+use App\Models\Sepidar\SLS\Invoice;
+use App\Services\Sepidar\InventoryDeliveryService;
 use Morilog\Jalali\Jalalian;
 use Tests\Concerns\UsesSepidarSqlsrvTransaction;
 use Tests\TestCase;
 
-class InvoiceUpdateFullSyncTest extends TestCase
+class InventoryDeliveryServiceTest extends TestCase
 {
     use UsesSepidarSqlsrvTransaction;
 
@@ -29,26 +28,32 @@ class InvoiceUpdateFullSyncTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_update_invoice_resyncs_voucher_without_delivery_or_stock_change(): void
+    public function test_create_update_and_delete_standalone_delivery_updates_stock(): void
     {
         [$party, $item, $stockRef, $before] = $this->fixture();
+        $service = app(InventoryDeliveryService::class);
 
-        $creator = app(InvoiceCreator::class);
-        $updater = app(InvoiceUpdater::class);
-
-        $invoice = $creator->create([
-            'customer_party_ref' => (int) $party->PartyId,
-            'sale_type_ref' => 2,
+        $delivery = $service->create([
+            'stock_ref' => $stockRef,
+            'receiver_party_ref' => (int) $party->PartyId,
             'date' => Jalalian::now()->format('Y/m/d'),
-            'description' => 'CRM integration test update',
+            'description' => 'CRM warehouse exit test',
             'items' => [[
                 'item_ref' => (int) $item->ItemID,
                 'quantity' => 2,
-                'fee' => 1500000,
-                'discount' => 0,
-                'tax' => 0,
+                'description' => null,
             ]],
         ]);
+
+        $this->assertSame(0, Invoice::query()->where('Description', 'CRM warehouse exit test')->count());
+
+        $deliveryItem = InventoryDeliveryItem::query()
+            ->where('InventoryDeliveryRef', $delivery->InventoryDeliveryID)
+            ->first();
+
+        $this->assertNotNull($deliveryItem);
+        $this->assertNull($deliveryItem->BaseInvoiceItem);
+        $this->assertEquals(2.0, (float) $deliveryItem->Quantity);
 
         $afterCreate = ItemStockSummary::query()
             ->where('ItemRef', $item->ItemID)
@@ -57,46 +62,27 @@ class InvoiceUpdateFullSyncTest extends TestCase
             ->first();
 
         $this->assertEqualsWithDelta(
-            (float) $before->OutputQuantity,
+            (float) $before->OutputQuantity + 2,
             (float) $afterCreate->OutputQuantity,
             0.0001
         );
+        $this->assertEqualsWithDelta(
+            (float) $before->Quantity - 2,
+            (float) $afterCreate->Quantity,
+            0.0001
+        );
 
-        $updated = $updater->update($invoice, [
-            'customer_party_ref' => (int) $party->PartyId,
-            'sale_type_ref' => 2,
+        $updated = $service->update($delivery, [
+            'stock_ref' => $stockRef,
+            'receiver_party_ref' => (int) $party->PartyId,
             'date' => Jalalian::now()->format('Y/m/d'),
-            'description' => 'CRM integration test update qty=1',
+            'description' => 'CRM warehouse exit test qty=1',
             'items' => [[
                 'item_ref' => (int) $item->ItemID,
                 'quantity' => 1,
-                'fee' => 1500000,
-                'discount' => 0,
-                'tax' => 0,
+                'description' => null,
             ]],
         ]);
-
-        $this->assertSame(1, $updated->items()->count());
-        $this->assertNotNull($updated->VoucherRef);
-
-        $invoiceItem = $updated->items()->first();
-        $this->assertNull($invoiceItem->StockRef);
-
-        $deliveryItems = InventoryDeliveryItem::query()
-            ->where('BaseInvoiceItem', $invoiceItem->getKey())
-            ->get();
-
-        $this->assertCount(0, $deliveryItems);
-
-        $voucherItems = VoucherItem::query()
-            ->where('VoucherRef', $updated->VoucherRef)
-            ->get();
-
-        $this->assertEquals(
-            (float) $voucherItems->sum('Debit'),
-            (float) $voucherItems->sum('Credit')
-        );
-        $this->assertEquals(1500000.0, (float) $voucherItems->sum('Credit'));
 
         $afterUpdate = ItemStockSummary::query()
             ->where('ItemRef', $item->ItemID)
@@ -105,13 +91,32 @@ class InvoiceUpdateFullSyncTest extends TestCase
             ->first();
 
         $this->assertEqualsWithDelta(
-            (float) $before->OutputQuantity,
+            (float) $before->OutputQuantity + 1,
             (float) $afterUpdate->OutputQuantity,
             0.0001
         );
         $this->assertEqualsWithDelta(
-            (float) $before->Quantity,
+            (float) $before->Quantity - 1,
             (float) $afterUpdate->Quantity,
+            0.0001
+        );
+
+        $service->delete((int) $updated->InventoryDeliveryID);
+
+        $afterDelete = ItemStockSummary::query()
+            ->where('ItemRef', $item->ItemID)
+            ->where('StockRef', $stockRef)
+            ->where('FiscalYearRef', config('sepidar.FiscalYearRef'))
+            ->first();
+
+        $this->assertEqualsWithDelta(
+            (float) $before->OutputQuantity,
+            (float) $afterDelete->OutputQuantity,
+            0.0001
+        );
+        $this->assertEqualsWithDelta(
+            (float) $before->Quantity,
+            (float) $afterDelete->Quantity,
             0.0001
         );
     }

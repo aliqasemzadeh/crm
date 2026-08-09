@@ -7,7 +7,6 @@ use App\Models\Sepidar\ACC\VoucherItem;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\InventoryDeliveryItem;
 use App\Models\Sepidar\INV\Item;
-use App\Models\Sepidar\INV\ItemStock;
 use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Services\Sepidar\InvoiceCreator;
 use Illuminate\Support\Facades\DB;
@@ -31,7 +30,7 @@ class InvoiceCreateFullSyncTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_create_invoice_updates_delivery_voucher_and_stock_summary(): void
+    public function test_create_invoice_creates_voucher_without_delivery_or_stock_change(): void
     {
         [$party, $item, $stockRef, $before] = $this->fixture();
         $fiscalYearRef = (int) config('sepidar.FiscalYearRef');
@@ -60,21 +59,12 @@ class InvoiceCreateFullSyncTest extends TestCase
         $this->assertSame(1, $invoice->items()->count());
 
         $invoiceItem = $invoice->items()->first();
-        $this->assertNotNull($invoiceItem->StockRef);
+        $this->assertNull($invoiceItem->StockRef);
 
-        $deliveryItem = InventoryDeliveryItem::query()
-            ->where('BaseInvoiceItem', $invoiceItem->getKey())
-            ->first();
-
-        $this->assertNotNull($deliveryItem);
-        $this->assertEquals($qty, (float) $deliveryItem->Quantity);
-        $this->assertEquals(0, (float) $deliveryItem->RemainingQuantity);
-
-        $this->assertTrue(
-            ItemStock::query()
-                ->where('ItemRef', $item->ItemID)
-                ->where('StockRef', $stockRef)
-                ->exists()
+        $this->assertNull(
+            InventoryDeliveryItem::query()
+                ->where('BaseInvoiceItem', $invoiceItem->getKey())
+                ->first()
         );
 
         $voucher = Voucher::query()->findOrFail($invoice->VoucherRef);
@@ -96,12 +86,12 @@ class InvoiceCreateFullSyncTest extends TestCase
 
         $this->assertNotNull($after);
         $this->assertEqualsWithDelta(
-            (float) $before->OutputQuantity + $qty,
+            (float) $before->OutputQuantity,
             (float) $after->OutputQuantity,
             0.0001
         );
         $this->assertEqualsWithDelta(
-            (float) $before->Quantity - $qty,
+            (float) $before->Quantity,
             (float) $after->Quantity,
             0.0001
         );

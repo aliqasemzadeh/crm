@@ -139,3 +139,11 @@ html:not(.dark) .panel-filter-card {
     border-top-color: var(--color-panel-filter-strip);
     box-shadow: 0 1px 2px 0 rgb(148 163 184 / 0.2);
 }
+
+/* Keep Flux option/command lists scrollable so activatable scroll stays inside the list */
+ui-options[data-flux-options],
+ui-options[data-flux-command-items],
+[data-flux-options],
+[data-flux-command-items] {
+    overflow-y: auto;
+}
