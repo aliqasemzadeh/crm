@@ -23,6 +23,7 @@ class CashBackGeneratorJob implements ShouldQueue
         public int $discountAmount,
         public int $usageDurationDays,
         public string $smsText,
+        public string $siteUrl = '',
     ) {
     }
 
@@ -92,16 +93,14 @@ class CashBackGeneratorJob implements ShouldQueue
                 continue;
             }
 
-            $message = str_replace(
-                [':code', ':amount', ':from', ':to', ':name'],
-                [
-                    $code,
-                    number_format($this->discountAmount).' '.__('app.toman'),
-                    Jalalian::fromDateTime($codeFromDate)->format('Y/m/d'),
-                    Jalalian::fromDateTime($codeToDate)->format('Y/m/d'),
-                    trim((string) $customer->customer_name),
-                ],
-                $this->smsText
+            $message = self::buildMessage(
+                $this->smsText,
+                $this->siteUrl,
+                $code,
+                $this->discountAmount,
+                $codeFromDate,
+                $codeToDate,
+                trim((string) $customer->customer_name),
             );
 
             SendSmsMessageJob::dispatch($mobile, $message);
@@ -115,6 +114,36 @@ class CashBackGeneratorJob implements ShouldQueue
             'min_total_amount' => $this->minTotalAmount,
             'discount_amount' => $this->discountAmount,
         ]);
+    }
+
+    public static function buildMessage(
+        string $smsText,
+        string $siteUrl,
+        string $code,
+        int $discountAmount,
+        Carbon $fromDate,
+        Carbon $toDate,
+        string $name,
+    ): string {
+        $message = str_replace(
+            [':code', ':amount', ':from', ':to', ':name'],
+            [
+                $code,
+                number_format($discountAmount).' '.__('app.toman'),
+                Jalalian::fromDateTime($fromDate)->format('Y/m/d'),
+                Jalalian::fromDateTime($toDate)->format('Y/m/d'),
+                $name,
+            ],
+            $smsText
+        );
+
+        $siteUrl = trim($siteUrl);
+
+        if ($siteUrl !== '') {
+            $message = rtrim($message).PHP_EOL.$siteUrl;
+        }
+
+        return $message;
     }
 
     private function generateUniqueCode(): string

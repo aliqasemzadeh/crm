@@ -4,7 +4,6 @@ namespace App\Services\Sepidar;
 
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyAddress;
-use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\InvoiceItem;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +12,7 @@ use Morilog\Jalali\Jalalian;
 class InvoiceUpdater
 {
     public function __construct(
-        private readonly InvoiceInventoryDeliverySync $deliverySync,
+        private readonly InventoryDeliveryService $deliveryService,
         private readonly InvoiceVoucherSync $voucherSync,
         private readonly ItemStockSummaryUpdater $stockSummaryUpdater,
     ) {}
@@ -50,7 +49,6 @@ class InvoiceUpdater
         $rate = 1;
         $modifier = (int) (auth()->user()?->resolveSepidarCreatorId() ?? config('sepidar.Creator', 1));
         $saleTypeRef = (int) $data['sale_type_ref'];
-        $fiscalYearRef = (int) ($invoice->FiscalYearRef ?: config('sepidar.FiscalYearRef'));
 
         $linePayloads = [];
         $totals = [
@@ -72,13 +70,11 @@ class InvoiceUpdater
             $addition = 0;
             $netPrice = $price - $discount + $addition + $tax + $duty;
 
-            $stockRef = $this->resolveStockRef((int) $row['item_ref']);
-
             $linePayloads[] = [
                 'RowID' => $index + 1,
                 'ItemRef' => (int) $row['item_ref'],
                 'TracingRef' => null,
-                'StockRef' => $stockRef,
+                'StockRef' => null,
                 'Quantity' => $quantity,
                 'SecondaryQuantity' => $quantity,
                 'Fee' => $fee,
@@ -140,21 +136,10 @@ class InvoiceUpdater
             $rate,
             $modifier,
             $saleTypeRef,
-            $fiscalYearRef,
             $linePayloads,
             $totals
         ) {
-            $oldStockKeys = $invoice->items()
-                ->get(['ItemRef', 'StockRef', 'TracingRef'])
-                ->map(fn (InvoiceItem $item) => [
-                    'stock_ref' => (int) ($item->StockRef ?? 0),
-                    'item_ref' => (int) $item->ItemRef,
-                    'tracing_ref' => $item->TracingRef !== null ? (int) $item->TracingRef : null,
-                    'fiscal_year_ref' => $fiscalYearRef,
-                ])
-                ->all();
-
-            $this->deliverySync->deleteForInvoice((int) $invoice->InvoiceId);
+            $deliveryStockKeys = $this->deliveryService->deleteForInvoice((int) $invoice->InvoiceId);
 
             $invoice->update([
                 'CustomerPartyRef' => $party->PartyId,
@@ -195,9 +180,11 @@ class InvoiceUpdater
 
             $invoice = $invoice->fresh(['items', 'customer']);
 
-            $newStockKeys = $this->deliverySync->sync($invoice);
             $this->voucherSync->sync($invoice->fresh(['customer']));
-            $this->stockSummaryUpdater->refresh(array_merge($oldStockKeys, $newStockKeys));
+
+            if ($deliveryStockKeys !== []) {
+                $this->stockSummaryUpdater->refresh($deliveryStockKeys);
+            }
 
             return $invoice->fresh(['items', 'items.item', 'creator', 'modifier', 'customer']);
         });
@@ -231,27 +218,5 @@ class InvoiceUpdater
             trim((string) ($party->Name_En ?? '')),
             trim((string) ($party->LastName_En ?? '')),
         ], static fn (string $part): bool => $part !== '')));
-    }
-
-    private function resolveStockRef(int $itemRef): ?int
-    {
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
-
-        $summary = ItemStockSummary::query()
-            ->where('ItemRef', $itemRef)
-            ->where('FiscalYearRef', $fiscalYearRef)
-            ->where('Quantity', '>', 0)
-            ->orderByDesc('Quantity')
-            ->first();
-
-        $stockRef = $summary?->getAttribute('StockRef');
-
-        if ($stockRef) {
-            return (int) $stockRef;
-        }
-
-        $fallback = config('sepidar.DefaultStockRef');
-
-        return $fallback !== null && $fallback !== '' ? (int) $fallback : null;
     }
 }

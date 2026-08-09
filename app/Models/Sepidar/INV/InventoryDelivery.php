@@ -2,6 +2,7 @@
 
 namespace App\Models\Sepidar\INV;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -41,5 +42,12 @@ class InventoryDelivery extends Model
     public function items(): HasMany
     {
         return $this->hasMany(InventoryDeliveryItem::class, 'InventoryDeliveryRef', 'InventoryDeliveryID');
+    }
+
+    public function scopeStandalone(Builder $query): Builder
+    {
+        return $query
+            ->whereDoesntHave('items', fn (Builder $q) => $q->whereNotNull('BaseInvoiceItem'))
+            ->whereHas('items');
     }
 }
