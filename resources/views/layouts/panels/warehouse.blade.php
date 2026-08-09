@@ -17,6 +17,9 @@
             <flux:sidebar.item icon="boxes" href="{{ route('panels.warehouse.item.index') }}" :current="request()->routeIs('panels.warehouse.item.*')" wire:navigate>{{ __('app.items') }}</flux:sidebar.item>
             <flux:sidebar.item icon="calendar" href="{{ route('panels.warehouse.history.index') }}" :current="request()->routeIs('panels.warehouse.history.*')" wire:navigate>{{ __('app.warehouse_history_nav') }}</flux:sidebar.item>
         @endcan
+        @can('warehouse_inventory_delivery_index')
+            <flux:sidebar.item icon="truck" href="{{ route('panels.warehouse.invoice.index') }}" :current="request()->routeIs('panels.warehouse.invoice.*')" wire:navigate>{{ __('app.warehouse_delivery_nav') }}</flux:sidebar.item>
+        @endcan
         @can('warehouse_item_day_check')
             <flux:sidebar.item icon="clipboard-check" href="{{ route('panels.warehouse.check.index') }}" :current="request()->routeIs('panels.warehouse.check.*')" wire:navigate>{{ __('app.day_check.title') }}</flux:sidebar.item>
         @endcan

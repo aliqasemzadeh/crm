@@ -94,6 +94,11 @@ return [
         'warehouse_dashboard_index' => 'داشبورد انبار',
         'warehouse_item_index' => 'فهرست کالاهای انبار',
 
+        'warehouse_inventory_delivery_index' => 'فهرست خروج انبار',
+        'warehouse_inventory_delivery_create' => 'ثبت خروج انبار',
+        'warehouse_inventory_delivery_edit' => 'ویرایش خروج انبار',
+        'warehouse_inventory_delivery_delete' => 'حذف خروج انبار',
+
         'warehouse_item_day_check_admin' => ' ادمین بررسی روزانه کالاها',
     ],
 
@@ -108,6 +113,8 @@ return [
 
         'crm_cash_back_generator_index' => 'فهرست تولیدکننده کش‌بک',
         'crm_cash_back_generator_create' => 'اجرای تولیدکننده کش‌بک',
+
+        'crm_return_index' => 'جستجوی مشتریان',
     ],
 
     'service_center' => [
@@ -231,6 +238,10 @@ return [
         'warehouse_dashboard_index' => 'داشبورد انبار',
         'warehouse_item_index' => 'فهرست کالاهای انبار',
         'warehouse_item_day_check' => 'بررسی روزانه کالاها',
+        'warehouse_inventory_delivery_index' => 'فهرست خروج انبار',
+        'warehouse_inventory_delivery_create' => 'ثبت خروج انبار',
+        'warehouse_inventory_delivery_edit' => 'ویرایش خروج انبار',
+        'warehouse_inventory_delivery_delete' => 'حذف خروج انبار',
     ],
 
     'sales' => [
