@@ -2,6 +2,7 @@
 
 use App\Livewire\Forms\Warehouse\InventoryDeliveryForm;
 use App\Models\Sepidar\GNR\Party;
+use App\Models\Sepidar\INV\InventoryDelivery;
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Services\Sepidar\InventoryDeliveryService;
@@ -10,11 +11,15 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\On;
 use Livewire\Component;
+use Morilog\Jalali\Jalalian;
 
 new class extends Component
 {
     public InventoryDeliveryForm $form;
+
+    public ?int $deliveryId = null;
 
     public string $itemSearch = '';
 
@@ -23,6 +28,45 @@ new class extends Component
     public function mount(): void
     {
         $this->form->ensureDefaults();
+    }
+
+    #[On('panels.warehouse.inventory-delivery.edit.assign-data')]
+    public function assignData(int $id): void
+    {
+        $this->authorize('warehouse_inventory_delivery_edit');
+
+        $delivery = InventoryDelivery::query()
+            ->standalone()
+            ->with('items')
+            ->findOrFail($id);
+
+        $this->deliveryId = (int) $delivery->InventoryDeliveryID;
+        $this->form->stock_ref = (int) $delivery->StockRef;
+        $this->form->date = $delivery->Date
+            ? Jalalian::fromDateTime($delivery->Date)->format('Y/m/d')
+            : Jalalian::now()->format('Y/m/d');
+        $this->form->description = (string) ($delivery->Description ?? '');
+
+        $receiverDlRef = $delivery->ReceiverDLRef;
+        $this->form->receiver_party_ref = $receiverDlRef
+            ? Party::query()->where('DLRef', $receiverDlRef)->value('PartyId')
+            : null;
+
+        $this->form->items = $delivery->items->map(fn ($item) => [
+            'item_ref' => (int) $item->ItemRef,
+            'quantity' => (float) $item->Quantity,
+            'description' => (string) ($item->Description ?? ''),
+        ])->values()->all();
+
+        if ($this->form->items === []) {
+            $this->form->items = [$this->form->emptyRow()];
+        }
+
+        $this->itemSearch = '';
+        $this->partySearch = '';
+        unset($this->itemResults, $this->partyResults, $this->selectedItems, $this->selectedParty, $this->stocks);
+
+        Flux::modal('panels.warehouse.inventory-delivery.edit.modal')->show();
     }
 
     public function addRow(): void
@@ -42,28 +86,29 @@ new class extends Component
 
     public function save(InventoryDeliveryService $service): void
     {
-        $this->authorize('warehouse_inventory_delivery_create');
+        $this->authorize('warehouse_inventory_delivery_edit');
+
+        if (! $this->deliveryId) {
+            return;
+        }
 
         $this->form->validate();
 
+        $delivery = InventoryDelivery::query()->standalone()->findOrFail($this->deliveryId);
+
         try {
-            $delivery = $service->create($this->form->payload());
+            $updated = $service->update($delivery, $this->form->payload());
         } catch (\Throwable $e) {
             report($e);
-            Flux::toast(__('app.warehouse_delivery_create_failed'), variant: 'danger');
+            Flux::toast(__('app.warehouse_delivery_update_failed'), variant: 'danger');
 
             return;
         }
 
-        $this->form->reset();
-        $this->form->ensureDefaults();
-        $this->itemSearch = '';
-        $this->partySearch = '';
-        unset($this->itemResults, $this->partyResults, $this->selectedItems, $this->selectedParty, $this->stocks);
-
+        $this->deliveryId = (int) $updated->InventoryDeliveryID;
         $this->dispatch('panels.warehouse.inventory-delivery.index.render');
-        Flux::modal('panels.warehouse.inventory-delivery.create.modal')->close();
-        Flux::toast(__('app.warehouse_delivery_created', ['number' => $delivery->Number]));
+        Flux::modal('panels.warehouse.inventory-delivery.edit.modal')->close();
+        Flux::toast(__('app.warehouse_delivery_updated', ['number' => $updated->Number]));
     }
 
     #[Computed]
@@ -194,16 +239,16 @@ new class extends Component
 };
 ?>
 
-<flux:modal name="panels.warehouse.inventory-delivery.create.modal" flyout position="right" class="md:w-[32rem]">
+<flux:modal name="panels.warehouse.inventory-delivery.edit.modal" flyout position="right" class="md:w-[32rem]">
     <form wire:submit="save" class="space-y-6">
         <div>
-            <flux:heading size="lg">{{ __('app.create_warehouse_delivery') }}</flux:heading>
+            <flux:heading size="lg">{{ __('app.edit_warehouse_delivery') }}</flux:heading>
             <flux:subheading>{{ __('app.warehouse_delivery_form_description') }}</flux:subheading>
         </div>
 
         <flux:select wire:model="form.stock_ref" searchable label="{{ __('app.warehouse_stock') }}">
             @foreach ($this->stocks as $stockId => $stockTitle)
-                <flux:select.option value="{{ $stockId }}" wire:key="create-stock-{{ $stockId }}">{{ $stockTitle }}</flux:select.option>
+                <flux:select.option value="{{ $stockId }}" wire:key="edit-stock-{{ $stockId }}">{{ $stockTitle }}</flux:select.option>
             @endforeach
         </flux:select>
 
@@ -220,7 +265,7 @@ new class extends Component
                         <flux:select.input wire:model.live.debounce.300ms="partySearch" placeholder="{{ __('app.search_customer') }}" />
                     </x-slot>
                     @foreach ($this->partyResults as $party)
-                        <flux:select.option value="{{ $party->PartyId }}" wire:key="create-party-{{ $party->PartyId }}">
+                        <flux:select.option value="{{ $party->PartyId }}" wire:key="edit-party-{{ $party->PartyId }}">
                             {{ $this->partyName($party) }}
                         </flux:select.option>
                     @endforeach
@@ -242,7 +287,7 @@ new class extends Component
             </div>
 
             @foreach ($form->items as $index => $row)
-                <div class="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" wire:key="create-delivery-row-{{ $index }}">
+                <div class="space-y-2 rounded-lg border border-zinc-200 p-3 dark:border-zinc-700" wire:key="edit-delivery-row-{{ $index }}">
                     <flux:select
                         variant="combobox"
                         :filter="false"
@@ -256,14 +301,14 @@ new class extends Component
 
                         @php($selected = $row['item_ref'] ? $this->selectedItems->get((int) $row['item_ref']) : null)
                         @if ($selected)
-                            <flux:select.option value="{{ $selected->ItemID }}" wire:key="create-selected-item-{{ $selected->ItemID }}">
+                            <flux:select.option value="{{ $selected->ItemID }}" wire:key="edit-selected-item-{{ $selected->ItemID }}">
                                 {{ $selected->Title }} ({{ $selected->Code }})
                             </flux:select.option>
                         @endif
 
                         @foreach ($this->itemResults as $item)
                             @if (! $selected || (int) $selected->ItemID !== (int) $item->ItemID)
-                                <flux:select.option value="{{ $item->ItemID }}" wire:key="create-item-{{ $index }}-{{ $item->ItemID }}">
+                                <flux:select.option value="{{ $item->ItemID }}" wire:key="edit-item-{{ $index }}-{{ $item->ItemID }}">
                                     {{ $item->Title }} ({{ $item->Code }})
                                 </flux:select.option>
                             @endif

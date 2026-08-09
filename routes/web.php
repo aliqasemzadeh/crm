@@ -16,6 +16,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/crm/follow-up/index', 'pages::panels.crm.follow-up.index')->name('panels.crm.follow-up.index');
     Route::livewire('/panels/crm/cash-back-rule/index', 'pages::panels.crm.cash-back-rule.index')->name('panels.crm.cash-back-rule.index');
     Route::livewire('/panels/crm/cash-back-generator/index', 'pages::panels.crm.cash-back-generator.index')->name('panels.crm.cash-back-generator.index');
+    Route::livewire('/panels/crm/return/index', 'pages::panels.crm.return.index')->name('panels.crm.return.index');
 
     Route::livewire('/', 'pages::panels.user.dashboard.index')->name('home');
     Route::livewire('/panels/user/dashboard/index', 'pages::panels.user.dashboard.index')->name('panels.user.dashboard.index');
@@ -39,6 +40,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/warehouse/dashboard/index', 'pages::panels.warehouse.dashboard.index')->name('panels.warehouse.dashboard.index');
     Route::livewire('/panels/warehouse/item/index', 'pages::panels.warehouse.item.index')->name('panels.warehouse.item.index');
     Route::livewire('/panels/warehouse/history/index', 'pages::panels.warehouse.history.index')->name('panels.warehouse.history.index');
+    Route::livewire('/panels/warehouse/invoice/index', 'pages::panels.warehouse.invoice.index')->name('panels.warehouse.invoice.index');
     Route::livewire('/panels/warehouse/check/index', 'pages::panels.warehouse.check.index')->name('panels.warehouse.check.index');
     Route::livewire('/panels/warehouse/admin-check/index', 'pages::panels.warehouse.admin-check.index')->name('panels.warehouse.admin-check.index');
 
