@@ -55,10 +55,31 @@ class CustomerSearchForm extends Form
             'date_to' => ['nullable', 'string'],
             'no_purchase_since' => ['nullable', 'string'],
             'min_count' => ['nullable', 'integer', 'min:0'],
-            'max_count' => ['nullable', 'integer', 'min:0', 'gte:min_count'],
+            'max_count' => ['nullable', 'integer', 'min:0'],
             'min_amount' => ['nullable', 'integer', 'min:0'],
-            'max_amount' => ['nullable', 'integer', 'min:0', 'gte:min_amount'],
+            'max_amount' => ['nullable', 'integer', 'min:0'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $this->normalize();
+
+            if ($this->min_count !== null && $this->max_count !== null && $this->max_count < $this->min_count) {
+                $validator->errors()->add('max_count', __('validation.gte.numeric', [
+                    'attribute' => __('app.customer_search_max_count'),
+                    'value' => $this->min_count,
+                ]));
+            }
+
+            if ($this->min_amount !== null && $this->max_amount !== null && $this->max_amount < $this->min_amount) {
+                $validator->errors()->add('max_amount', __('validation.gte.numeric', [
+                    'attribute' => __('app.customer_search_max_amount'),
+                    'value' => $this->min_amount,
+                ]));
+            }
+        });
     }
 
     public function validationAttributes(): array
