@@ -216,7 +216,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         </div>
 
         @if (! $filtersApplied)
-            <flux:callout icon="info" color="sky">
+            <flux:callout variant="secondary" icon="info">
                 {{ __('app.customer_search_filters_hint') }}
             </flux:callout>
         @else
