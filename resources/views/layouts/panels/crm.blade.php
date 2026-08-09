@@ -13,6 +13,7 @@
         <flux:sidebar.item icon="home" href="{{ route('panels.crm.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
         <flux:sidebar.item icon="phone-call" href="{{ route('panels.crm.follow-up.index') }}" wire:navigate>{{ __('app.follow_ups') }}</flux:sidebar.item>
             <flux:sidebar.item icon="badge-percent" href="{{ route('panels.crm.cash-back-rule.index') }}" wire:navigate>{{ __('app.cash_back_rules') }}</flux:sidebar.item>
+            <flux:sidebar.item icon="gift" href="{{ route('panels.crm.cash-back-generator.index') }}" wire:navigate>{{ __('app.cash_back_generator') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
