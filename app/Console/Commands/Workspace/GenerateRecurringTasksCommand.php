@@ -3,6 +3,7 @@
 namespace App\Console\Commands\Workspace;
 
 use App\Jobs\Notification\SendSmsMessageJob;
+use App\Models\Calender\Day;
 use App\Models\Workspace\Task;
 use App\Models\Workspace\TaskChecklist;
 use Carbon\Carbon;
@@ -18,8 +19,8 @@ class GenerateRecurringTasksCommand extends Command
     public function handle(): int
     {
         Log::info('Command app:workspace:generate-recurring-tasks started.');
-        if (now()->isFriday()) {
-            $this->info('Today is Friday. Skipping command execution.');
+        if (Day::isNonWorkingDay()) {
+            $this->info('Today is a non-working day (Friday or holiday). Skipping command execution.');
             return self::SUCCESS;
         }
 
@@ -138,7 +139,7 @@ class GenerateRecurringTasksCommand extends Command
         if ($task->repeat_type === 'daily') {
             $next = $from->copy()->addDay()->startOfDay();
 
-            return $this->skipFriday($next);
+            return $this->skipNonWorkingDay($next);
         }
 
         if ($task->repeat_type === 'weekly') {
@@ -149,7 +150,7 @@ class GenerateRecurringTasksCommand extends Command
 
             $next = $from->copy()->addDays($daysUntil)->startOfDay();
 
-            return $this->skipFriday($next);
+            return $this->skipNonWorkingDay($next);
         }
 
         if ($task->repeat_type === 'monthly') {
@@ -159,17 +160,17 @@ class GenerateRecurringTasksCommand extends Command
 
             $next = $target->copy()->day($safeDay)->startOfDay();
 
-            return $this->skipFriday($next);
+            return $this->skipNonWorkingDay($next);
         }
 
         return null;
     }
 
-    private function skipFriday(Carbon $date): Carbon
+    private function skipNonWorkingDay(Carbon $date): Carbon
     {
         $d = $date->copy()->startOfDay();
 
-        while ((int) $d->dayOfWeek === Carbon::FRIDAY) {
+        while (Day::isNonWorkingDay($d)) {
             $d->addDay();
         }
 

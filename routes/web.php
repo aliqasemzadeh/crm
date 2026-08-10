@@ -32,6 +32,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/administrator/setting-management/function/index', \App\Livewire\Panels\Administrator\SettingManagement\Function\Index::class)->name('panels.administrator.setting-management.function.index');
     Route::livewire('/panels/administrator/setting-management/option/index', \App\Livewire\Panels\Administrator\SettingManagement\Option\Index::class)->name('panels.administrator.setting-management.option.index');
     Route::livewire('/panels/administrator/announcement/index', \App\Livewire\Panels\Administrator\Announcement\Index::class)->name('panels.administrator.announcement.index');
+    Route::livewire('/panels/administrator/calender/index', 'pages::panels.administrator.calender.index')->name('panels.administrator.calender.index');
 
     Route::livewire('/panels/service-center/dashboard/index', 'pages::panels.service-center.dashboard.index')->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');

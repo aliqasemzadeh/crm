@@ -17,6 +17,9 @@
             <flux:sidebar.item href="{{ route('panels.administrator.user-management.permission.index') }}" wire:navigate>{{ __('app.permissions') }}</flux:sidebar.item>
         </flux:sidebar.group>
         <flux:sidebar.item icon="megaphone" href="{{ route('panels.administrator.announcement.index') }}" wire:navigate>{{ __('app.announcements') }}</flux:sidebar.item>
+        @can('administrator_calender_index')
+            <flux:sidebar.item icon="calendar" href="{{ route('panels.administrator.calender.index') }}" wire:navigate>{{ __('app.calender_days') }}</flux:sidebar.item>
+        @endcan
         <flux:sidebar.group expandable heading="{{ __('app.setting_management') }}" class="grid" :expanded="request()->routeIs('panels.administrator.setting-management.*')">
             <flux:sidebar.item href="{{ route('panels.administrator.setting-management.function.index') }}" wire:navigate>{{ __('app.functions') }}</flux:sidebar.item>
             <flux:sidebar.item href="{{ route('panels.administrator.setting-management.option.index') }}" wire:navigate>{{ __('app.options') }}</flux:sidebar.item>

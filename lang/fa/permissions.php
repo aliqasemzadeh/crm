@@ -45,6 +45,12 @@ return [
         'administrator_announcement_delete' => 'حذف اطلاعیه',
         'administrator_announcement_users' => 'مشاهده بینندگان اطلاعیه',
 
+        'administrator_calender_management' => 'مدیریت تقویم',
+        'administrator_calender_index' => 'فهرست روزهای تعطیل',
+        'administrator_calender_create' => 'ایجاد روز تعطیل',
+        'administrator_calender_edit' => 'ویرایش روز تعطیل',
+        'administrator_calender_delete' => 'حذف روز تعطیل',
+
         'administrator_content_management' => 'مدیریت محتوا',
 
         'administrator_content_category_index' => 'فهرست دسته‌بندی‌های محتوا',
