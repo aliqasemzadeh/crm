@@ -79,6 +79,7 @@ new class extends Component
             $fromDate,
             $toDate,
             __('app.cash_back_generator_test_name'),
+            (int) $this->form->usage_duration_days,
         );
 
         SendSmsMessageJob::dispatch(trim($this->test_mobile), $message);

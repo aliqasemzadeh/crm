@@ -5,6 +5,7 @@ namespace App\Jobs\SetareganCo;
 use App\Jobs\Notification\SendSmsMessageJob;
 use App\Models\SetareganCo\DiscountCode;
 use App\Models\SetareganCo\Order;
+use App\Support\PersianAmountFormatter;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
@@ -101,6 +102,7 @@ class CashBackGeneratorJob implements ShouldQueue
                 $codeFromDate,
                 $codeToDate,
                 trim((string) $customer->customer_name),
+                $this->usageDurationDays,
             );
 
             SendSmsMessageJob::dispatch($mobile, $message);
@@ -124,15 +126,19 @@ class CashBackGeneratorJob implements ShouldQueue
         Carbon $fromDate,
         Carbon $toDate,
         string $name,
+        int $usageDurationDays,
     ): string {
         $message = str_replace(
-            [':code', ':amount', ':from', ':to', ':name'],
+            [':code', ':amount_character', ':amount', ':from', ':to', ':name', ':duration_days', ':duration_hours'],
             [
                 $code,
+                PersianAmountFormatter::formatCharacter($discountAmount),
                 number_format($discountAmount).' '.__('app.toman'),
                 Jalalian::fromDateTime($fromDate)->format('Y/m/d'),
                 Jalalian::fromDateTime($toDate)->format('Y/m/d'),
                 $name,
+                $usageDurationDays.' '.__('app.day'),
+                ($usageDurationDays * 24).' '.__('app.hour'),
             ],
             $smsText
         );

@@ -34,7 +34,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     public function discountCodes()
     {
         return DiscountCode::query()
-            ->where('Code', 'like', 'SRSCB%')
             ->when($this->search !== '', function ($query) {
                 $search = $this->search;
                 $query->where(function ($q) use ($search) {
