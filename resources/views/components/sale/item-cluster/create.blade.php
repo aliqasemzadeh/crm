@@ -177,7 +177,7 @@ new class extends Component
                                 size="xs"
                                 variant="ghost"
                                 color="red"
-                                icon="x"
+                                icon="x-mark"
                                 wire:click="removeItem({{ $selected['id'] }})"
                             />
                         </div>
