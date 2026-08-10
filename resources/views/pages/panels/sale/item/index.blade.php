@@ -179,7 +179,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                 $query->whereIn('CodingGroupRef', $grouping->getAllChildrenIds());
             })
             ->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
-            ->paginate(20);
+            ->paginate(100);
     }
 };
 ?>
