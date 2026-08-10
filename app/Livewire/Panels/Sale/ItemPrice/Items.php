@@ -6,6 +6,7 @@ use App\Models\Sepidar\INV\Item;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Reactive;
 use Livewire\Component;
 use Illuminate\Support\Facades\Cache;
 
@@ -15,6 +16,10 @@ class Items extends Component
     public string $search = '';
 
     public $groupingId;
+
+    /** @var array<int, int> */
+    #[Reactive]
+    public array $selectedItemIds = [];
 
     #[On('panels.sale.item-price.items.refresh')]
     public function refresh(): void
@@ -26,6 +31,11 @@ class Items extends Component
     public function mount($groupingId): void
     {
         $this->groupingId = $groupingId;
+    }
+
+    public function toggleItem(int $itemId, bool $checked): void
+    {
+        $this->dispatch('panels.sale.item-price.selection.toggle', itemId: $itemId, checked: $checked);
     }
 
     #[Computed]
