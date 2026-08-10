@@ -33,8 +33,6 @@ class CashBackGeneratorJob implements ShouldQueue
     public function handle(): void
     {
         $fromDate = Carbon::parse($this->fromDate)->startOfDay();
-        $codeFromDate = now()->startOfDay();
-        $codeToDate = $codeFromDate->copy()->addDays($this->usageDurationDays)->endOfDay();
 
         $customers = self::eligibleCustomersQuery(
             $this->fromDate,
@@ -58,25 +56,12 @@ class CashBackGeneratorJob implements ShouldQueue
                 continue;
             }
 
-            $code = $this->generateUniqueCode();
-
-            DiscountCode::query()->create([
-                'ProductGroupId' => null,
-                'ProductSubGroupId' => null,
-                'ProductId' => null,
-                'BrandId' => null,
-                'Code' => $code,
-                'FromDate' => $codeFromDate,
-                'ToDate' => $codeToDate,
-                'DiscountAmount' => $this->discountAmount,
-                'IsPercent' => false,
-                'RemainCount' => 1,
-                'NationalCode' => $nationalCode,
-                'ForSpecialOffer' => $this->forSpecialOffer,
-                'Status' => true,
-                'ForPackage' => false,
-                'ShowInHomePage' => false,
-            ]);
+            $createdCode = self::createCashBackCode(
+                $nationalCode,
+                $this->discountAmount,
+                $this->usageDurationDays,
+                $this->forSpecialOffer,
+            );
 
             $created++;
 
@@ -89,10 +74,10 @@ class CashBackGeneratorJob implements ShouldQueue
             $message = self::buildMessage(
                 $this->smsText,
                 $this->siteUrl,
-                $code,
+                $createdCode['code'],
                 $this->discountAmount,
-                $codeFromDate,
-                $codeToDate,
+                $createdCode['from'],
+                $createdCode['to'],
                 trim((string) $customer->customer_name),
                 $this->usageDurationDays,
             );
@@ -165,6 +150,53 @@ class CashBackGeneratorJob implements ShouldQueue
             ->exists();
     }
 
+    /**
+     * @return array{code: string, from: Carbon, to: Carbon}
+     */
+    public static function createCashBackCode(
+        string $nationalCode,
+        int $discountAmount,
+        int $usageDurationDays,
+        bool $forSpecialOffer = false,
+    ): array {
+        $from = now()->startOfDay();
+        $to = $from->copy()->addDays($usageDurationDays)->endOfDay();
+        $code = self::generateUniqueCode();
+
+        DiscountCode::query()->create([
+            'ProductGroupId' => null,
+            'ProductSubGroupId' => null,
+            'ProductId' => null,
+            'BrandId' => null,
+            'Code' => $code,
+            'FromDate' => $from,
+            'ToDate' => $to,
+            'DiscountAmount' => $discountAmount,
+            'IsPercent' => false,
+            'RemainCount' => 1,
+            'NationalCode' => $nationalCode,
+            'ForSpecialOffer' => $forSpecialOffer,
+            'Status' => true,
+            'ForPackage' => false,
+            'ShowInHomePage' => false,
+        ]);
+
+        return [
+            'code' => $code,
+            'from' => $from,
+            'to' => $to,
+        ];
+    }
+
+    public static function generateUniqueCode(): string
+    {
+        do {
+            $code = 'SRSCB'.Str::upper(Str::random(10));
+        } while (DiscountCode::query()->where('Code', $code)->exists());
+
+        return $code;
+    }
+
     public static function buildMessage(
         string $smsText,
         string $siteUrl,
@@ -199,14 +231,5 @@ class CashBackGeneratorJob implements ShouldQueue
         }
 
         return $message;
-    }
-
-    private function generateUniqueCode(): string
-    {
-        do {
-            $code = 'SRSCB'.Str::upper(Str::random(10));
-        } while (DiscountCode::query()->where('Code', $code)->exists());
-
-        return $code;
     }
 }

@@ -121,6 +121,7 @@ return [
         'crm_cash_back_generator_create' => 'اجرای تولیدکننده کش‌بک',
 
         'crm_return_index' => 'جستجوی مشتریان',
+        'crm_return_generate' => 'ارسال کد تخفیف از جستجوی مشتریان',
     ],
 
     'service_center' => [
