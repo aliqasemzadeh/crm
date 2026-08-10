@@ -3,6 +3,7 @@
 namespace App\Console\Commands\Warehouse;
 
 use App\Jobs\Notification\SendSmsMessageJob;
+use App\Models\Calender\Day;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
@@ -36,8 +37,10 @@ class DayCheckCreationCommand extends Command
             return;
         }
 
-        if (now()->isFriday()) {
-            $this->info('Today is Friday. Skipping command execution.');
+        if (Day::isNonWorkingDay()) {
+            $this->info('Today is a non-working day (Friday or holiday). Skipping command execution.');
+            Log::info('Command app:day-check-creation-command skipped (non-working day).');
+
             return;
         }
 
