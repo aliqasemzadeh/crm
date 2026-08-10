@@ -8,6 +8,7 @@ use App\Models\SetareganCo\Order;
 use App\Support\PersianAmountFormatter;
 use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -25,6 +26,7 @@ class CashBackGeneratorJob implements ShouldQueue
         public int $usageDurationDays,
         public string $smsText,
         public string $siteUrl = '',
+        public bool $forSpecialOffer = false,
     ) {
     }
 
@@ -34,15 +36,11 @@ class CashBackGeneratorJob implements ShouldQueue
         $codeFromDate = now()->startOfDay();
         $codeToDate = $codeFromDate->copy()->addDays($this->usageDurationDays)->endOfDay();
 
-        $customers = Order::query()
-            ->where('IsPayed', 1)
-            ->where('Date', '>=', $fromDate)
-            ->whereNotNull('NationalCode')
-            ->where('NationalCode', '!=', '')
-            ->selectRaw('NationalCode, COUNT(*) as orders_count, SUM(TotalAmount) as total_amount, MAX(Mobile) as mobile, MAX(CustomerName) as customer_name')
-            ->groupBy('NationalCode')
-            ->havingRaw('COUNT(*) >= ? AND SUM(TotalAmount) >= ?', [$this->minOrderCount, $this->minTotalAmount])
-            ->cursor();
+        $customers = self::eligibleCustomersQuery(
+            $this->fromDate,
+            $this->minOrderCount,
+            $this->minTotalAmount,
+        )->cursor();
 
         $created = 0;
         $skipped = 0;
@@ -55,13 +53,7 @@ class CashBackGeneratorJob implements ShouldQueue
                 continue;
             }
 
-            $hasUnusedCode = DiscountCode::query()
-                ->where('NationalCode', $nationalCode)
-                ->where('Code', 'like', 'SRSCB%')
-                ->where('RemainCount', '>', 0)
-                ->exists();
-
-            if ($hasUnusedCode) {
+            if (self::hasUnusedCashBackCode($nationalCode)) {
                 $skipped++;
                 continue;
             }
@@ -80,7 +72,7 @@ class CashBackGeneratorJob implements ShouldQueue
                 'IsPercent' => false,
                 'RemainCount' => 1,
                 'NationalCode' => $nationalCode,
-                'ForSpecialOffer' => false,
+                'ForSpecialOffer' => $this->forSpecialOffer,
                 'Status' => true,
                 'ForPackage' => false,
                 'ShowInHomePage' => false,
@@ -115,7 +107,62 @@ class CashBackGeneratorJob implements ShouldQueue
             'min_order_count' => $this->minOrderCount,
             'min_total_amount' => $this->minTotalAmount,
             'discount_amount' => $this->discountAmount,
+            'for_special_offer' => $this->forSpecialOffer,
         ]);
+    }
+
+    public static function eligibleCustomersQuery(
+        string $fromDate,
+        int $minOrderCount,
+        int $minTotalAmount,
+    ): Builder {
+        $fromDate = Carbon::parse($fromDate)->startOfDay();
+
+        return Order::query()
+            ->where('IsPayed', 1)
+            ->where('Date', '>=', $fromDate)
+            ->whereNotNull('NationalCode')
+            ->where('NationalCode', '!=', '')
+            ->selectRaw('NationalCode, COUNT(*) as orders_count, SUM(TotalAmount) as total_amount, MAX(Mobile) as mobile, MAX(CustomerName) as customer_name')
+            ->groupBy('NationalCode')
+            ->havingRaw('COUNT(*) >= ? AND SUM(TotalAmount) >= ?', [$minOrderCount, $minTotalAmount]);
+    }
+
+    public static function estimateEligibleCustomerCount(
+        string $fromDate,
+        int $minOrderCount,
+        int $minTotalAmount,
+    ): int {
+        $nationalCodes = self::eligibleCustomersQuery($fromDate, $minOrderCount, $minTotalAmount)
+            ->pluck('NationalCode')
+            ->map(fn ($code) => trim((string) $code))
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($nationalCodes->isEmpty()) {
+            return 0;
+        }
+
+        $blockedCodes = DiscountCode::query()
+            ->where('Code', 'like', 'SRSCB%')
+            ->where('RemainCount', '>', 0)
+            ->whereIn('NationalCode', $nationalCodes->all())
+            ->pluck('NationalCode')
+            ->map(fn ($code) => trim((string) $code))
+            ->filter()
+            ->unique();
+
+        return $nationalCodes->diff($blockedCodes)->count();
+    }
+
+    public static function hasUnusedCashBackCode(string $nationalCode): bool
+    {
+        return DiscountCode::query()
+            ->where('NationalCode', $nationalCode)
+            ->where('Code', 'like', 'SRSCB%')
+            ->where('RemainCount', '>', 0)
+            ->exists();
     }
 
     public static function buildMessage(
