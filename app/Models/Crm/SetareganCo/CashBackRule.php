@@ -15,6 +15,8 @@ class CashBackRule extends Model
         'is_percent',
         'activation_delay_days',
         'usage_duration_days',
+        'sms_text',
+        'site_url',
     ];
 
     protected function casts(): array
