@@ -11,6 +11,9 @@
             </flux:table.column>
         </flux:table.columns>
         <flux:table.columns sticky>
+            @can('sales_item_cluster_create')
+                <flux:table.column class="w-10"></flux:table.column>
+            @endcan
             <flux:table.column>{{ __('app.image') }}</flux:table.column>
             <flux:table.column>{{ __('app.action') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
@@ -24,6 +27,14 @@
                 @if($lastStockSummary = \App\Models\Sepidar\INV\ItemStockSummary::where('ItemRef', $item->ItemID)->where('FiscalYearRef', config('sepidar.FiscalYearRef'))->first())
 
                         <flux:table.row class="odd:bg-zinc-50 even:bg-white dark:odd:bg-zinc-800/50 dark:even:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800">
+                            @can('sales_item_cluster_create')
+                                <flux:table.cell>
+                                    <flux:checkbox
+                                        :checked="in_array((int) $item->ItemID, $selectedItemIds, true)"
+                                        wire:click="toggleItem({{ (int) $item->ItemID }}, {{ in_array((int) $item->ItemID, $selectedItemIds, true) ? 'false' : 'true' }})"
+                                    />
+                                </flux:table.cell>
+                            @endcan
                             <flux:table.cell>
                                 <livewire:panels.sale.item-price.item-image :itemId="$item->ItemID" :key="'item-image-'.$item->ItemID" />
                             </flux:table.cell>
