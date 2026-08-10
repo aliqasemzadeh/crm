@@ -6,10 +6,10 @@ use App\Jobs\Notification\SendSmsMessageJob;
 use App\Models\Crm\SetareganCo\CashBackRule;
 use App\Models\SetareganCo\DiscountCode;
 use App\Models\SetareganCo\Order;
+use App\Support\PersianAmountFormatter;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Str;
-use Morilog\Jalali\Jalalian;
 
 class CashBackDiscountCodeJob implements ShouldQueue
 {
@@ -84,18 +84,41 @@ class CashBackDiscountCodeJob implements ShouldQueue
             return;
         }
 
-        $amountLabel = $rule->is_percent
-            ? number_format($rule->cash_back_amount).'%'
-            : number_format($rule->cash_back_amount).' '.__('app.toman');
+        [$amountLabel, $amountCharacter] = $this->amountPlaceholders($rule);
 
-        $message = __('app.cash_back_sms', [
-            'amount' => $amountLabel,
-            'code' => $code,
-            'from' => Jalalian::fromDateTime($fromDate)->format('Y/m/d'),
-            'to' => Jalalian::fromDateTime($toDate)->format('Y/m/d'),
-        ]);
+        $message = CashBackGeneratorJob::buildMessage(
+            $rule->sms_text ?: __('app.cash_back_sms'),
+            (string) ($rule->site_url ?? ''),
+            $code,
+            (int) $rule->cash_back_amount,
+            $fromDate,
+            $toDate,
+            trim((string) $order->CustomerName),
+            (int) $rule->usage_duration_days,
+            $amountLabel,
+            $amountCharacter,
+        );
 
         SendSmsMessageJob::dispatch($mobile, $message);
+    }
+
+    /**
+     * @return array{0: string, 1: string}
+     */
+    private function amountPlaceholders(CashBackRule $rule): array
+    {
+        $amount = (int) $rule->cash_back_amount;
+
+        if ($rule->is_percent) {
+            $label = number_format($amount).'%';
+
+            return [$label, $label.' '.__('app.percent')];
+        }
+
+        return [
+            number_format($amount).' '.__('app.toman'),
+            PersianAmountFormatter::formatCharacter($amount),
+        ];
     }
 
     private function generateUniqueCode(): string

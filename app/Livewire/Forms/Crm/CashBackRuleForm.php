@@ -18,6 +18,10 @@ class CashBackRuleForm extends Form
 
     public ?int $usage_duration_days = null;
 
+    public string $sms_text = '';
+
+    public string $site_url = 'https://setaregan.co';
+
     public function normalizeAmounts(): void
     {
         $this->start_amount = $this->toInteger($this->start_amount);
@@ -34,6 +38,8 @@ class CashBackRuleForm extends Form
             'is_percent' => ['boolean'],
             'activation_delay_days' => ['required', 'integer', 'min:0'],
             'usage_duration_days' => ['required', 'integer', 'min:1'],
+            'sms_text' => ['required', 'string', 'min:3'],
+            'site_url' => ['nullable', 'string', 'max:255'],
         ];
     }
 
@@ -46,6 +52,8 @@ class CashBackRuleForm extends Form
             'is_percent' => __('app.cash_back_is_percent'),
             'activation_delay_days' => __('app.cash_back_activation_delay_days'),
             'usage_duration_days' => __('app.cash_back_usage_duration_days'),
+            'sms_text' => __('app.cash_back_generator_sms_text'),
+            'site_url' => __('app.cash_back_generator_site_url'),
         ];
     }
 

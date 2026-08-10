@@ -174,13 +174,15 @@ class CashBackGeneratorJob implements ShouldQueue
         Carbon $toDate,
         string $name,
         int $usageDurationDays,
+        ?string $amountLabel = null,
+        ?string $amountCharacter = null,
     ): string {
         $message = str_replace(
             [':code', ':amount_character', ':amount', ':from', ':to', ':name', ':duration_days', ':duration_hours'],
             [
                 $code,
-                PersianAmountFormatter::formatCharacter($discountAmount),
-                number_format($discountAmount).' '.__('app.toman'),
+                $amountCharacter ?? PersianAmountFormatter::formatCharacter($discountAmount),
+                $amountLabel ?? (number_format($discountAmount).' '.__('app.toman')),
                 Jalalian::fromDateTime($fromDate)->format('Y/m/d'),
                 Jalalian::fromDateTime($toDate)->format('Y/m/d'),
                 $name,
