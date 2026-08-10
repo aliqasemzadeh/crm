@@ -57,6 +57,10 @@ return new #[Layout('layouts.panels.sale')] class extends Component
 };
 ?>
 
+<x-slot name="title">
+    {{ __('app.sales') }} — {{ __('app.item_clusters') }}
+</x-slot>
+
 <div>
     <div class="relative mb-6 w-full">
         <div class="flex items-center justify-between">

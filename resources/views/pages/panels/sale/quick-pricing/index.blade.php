@@ -3,6 +3,7 @@
 use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\Local\INV\Cluster;
 use App\Models\Sepidar\SLS\PriceNoteItem;
+use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -25,6 +26,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
     {
         $this->authorize('sales_item_fee');
         $this->dispatch('panels.sale.quick-pricing.save-all');
+        Flux::toast(__('app.saved_successfully', ['name' => __('app.quick_pricing')]));
     }
 
     #[Computed]
@@ -87,6 +89,10 @@ return new #[Layout('layouts.panels.sale')] class extends Component
     }
 };
 ?>
+
+<x-slot name="title">
+    {{ __('app.sales') }} — {{ __('app.quick_pricing') }}
+</x-slot>
 
 <div>
     <div class="relative mb-6 w-full">

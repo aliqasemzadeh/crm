@@ -17,7 +17,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->json('item_refs');
             $table->boolean('is_active')->default(true);
-            $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
+            // No FK: users table may be MyISAM and reject foreign keys.
+            $table->unsignedBigInteger('created_by')->nullable()->index();
             $table->timestamps();
         });
     }
