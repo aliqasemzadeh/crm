@@ -33,8 +33,9 @@ class Items extends Component
         $this->groupingId = $groupingId;
     }
 
-    public function toggleItem(int $itemId, bool $checked): void
+    public function toggleItem(int $itemId): void
     {
+        $checked = ! in_array($itemId, $this->selectedItemIds, true);
         $this->dispatch('panels.sale.item-price.selection.toggle', itemId: $itemId, checked: $checked);
     }
 
