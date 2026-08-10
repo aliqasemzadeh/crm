@@ -10,16 +10,16 @@ use Livewire\Component;
 
 return new #[Layout('layouts.panels.sale')] class extends Component
 {
-    public ?int $clusterId = null;
+    public array $clusterIds = [];
 
     public function mount(): void
     {
         $this->authorize('sales_quick_pricing_index');
     }
 
-    public function updatedClusterId(): void
+    public function updatedClusterIds(): void
     {
-        unset($this->cluster, $this->rows);
+        unset($this->rows);
     }
 
     public function saveAll(): void
@@ -39,24 +39,24 @@ return new #[Layout('layouts.panels.sale')] class extends Component
     }
 
     #[Computed]
-    public function cluster(): ?Cluster
-    {
-        if (! $this->clusterId) {
-            return null;
-        }
-
-        return Cluster::query()->find($this->clusterId);
-    }
-
-    #[Computed]
     public function rows()
     {
-        $cluster = $this->cluster;
-        if (! $cluster) {
+        $ids = collect($this->clusterIds)
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
             return collect();
         }
 
-        $refs = collect($cluster->item_refs ?? [])
+        $clusters = Cluster::query()
+            ->whereIn('id', $ids->all())
+            ->get(['id', 'item_refs']);
+
+        $refs = $clusters
+            ->flatMap(fn (Cluster $cluster) => $cluster->item_refs ?? [])
             ->map(fn ($id) => (int) $id)
             ->filter()
             ->unique()
@@ -103,24 +103,25 @@ return new #[Layout('layouts.panels.sale')] class extends Component
             </div>
 
             <div class="w-full max-w-md">
-                <flux:select
-                    wire:model.live="clusterId"
+                <flux:pillbox
+                    wire:model.live="clusterIds"
+                    multiple
                     searchable
-                    label="{{ __('app.item_cluster') }}"
+                    label="{{ __('app.item_clusters') }}"
                     placeholder="{{ __('app.select_item_cluster') }}"
                 >
                     @foreach ($this->clusters as $clusterOption)
-                        <flux:select.option value="{{ $clusterOption->id }}">
+                        <flux:pillbox.option value="{{ $clusterOption->id }}">
                             {{ $clusterOption->title }}
-                        </flux:select.option>
+                        </flux:pillbox.option>
                     @endforeach
-                </flux:select>
+                </flux:pillbox>
             </div>
         </div>
         <flux:separator variant="subtle" class="mt-6" />
     </div>
 
-    @if ($this->cluster)
+    @if (count($clusterIds))
         <div class="mb-4 flex items-center justify-between gap-3">
             <flux:text>
                 {{ __('app.quick_pricing_items_count', ['count' => $this->rows->count()]) }}
@@ -146,7 +147,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
                         :title="$row['title']"
                         :code="$row['code']"
                         :initial-fee="$row['fee']"
-                        :key="'quick-price-'.$clusterId.'-'.$row['id']"
+                        :key="'quick-price-'.$row['id']"
                     />
                 @empty
                     <flux:table.row>
