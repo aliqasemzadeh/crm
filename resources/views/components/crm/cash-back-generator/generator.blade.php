@@ -13,10 +13,44 @@ new class extends Component
 
     public string $test_mobile = '';
 
+    public ?int $estimated_customers = null;
+
     public function mount(): void
     {
         $this->form->sms_text = __('app.cash_back_sms');
         $this->form->site_url = 'https://setaregan.co';
+    }
+
+    public function estimateCustomers(): void
+    {
+        $this->authorize('crm_cash_back_generator_create');
+
+        $this->form->normalizeAmounts();
+
+        $validated = $this->validate([
+            'form.from_date' => ['required', 'string'],
+            'form.min_order_count' => ['required', 'integer', 'min:1'],
+            'form.min_total_amount' => ['required', 'integer', 'min:0'],
+        ], [], [
+            'form.from_date' => __('app.cash_back_generator_from_date'),
+            'form.min_order_count' => __('app.cash_back_generator_min_order_count'),
+            'form.min_total_amount' => __('app.cash_back_generator_min_total_amount'),
+        ]);
+
+        $fromDate = Jalalian::fromFormat('Y/m/d', $validated['form']['from_date'])
+            ->toCarbon()
+            ->startOfDay()
+            ->toDateTimeString();
+
+        $this->estimated_customers = CashBackGeneratorJob::estimateEligibleCustomerCount(
+            $fromDate,
+            (int) $validated['form']['min_order_count'],
+            (int) $validated['form']['min_total_amount'],
+        );
+
+        Flux::toast(__('app.cash_back_generator_estimate_result', [
+            'count' => number_format($this->estimated_customers),
+        ]));
     }
 
     public function save(): void
@@ -39,6 +73,7 @@ new class extends Component
             (int) $validated['usage_duration_days'],
             $validated['sms_text'],
             trim((string) ($validated['site_url'] ?? '')),
+            (bool) ($validated['for_special_offer'] ?? false),
         );
 
         $this->resetFormDefaults();
@@ -92,7 +127,9 @@ new class extends Component
         $this->form->reset();
         $this->form->sms_text = __('app.cash_back_sms');
         $this->form->site_url = 'https://setaregan.co';
+        $this->form->for_special_offer = false;
         $this->test_mobile = '';
+        $this->estimated_customers = null;
     }
 };
 ?>
@@ -141,6 +178,13 @@ new class extends Component
                 min="1"
             />
 
+            <flux:field variant="inline">
+                <flux:label>{{ __('app.cash_back_generator_for_special_offer') }}</flux:label>
+                <flux:description>{{ __('app.cash_back_generator_for_special_offer_help') }}</flux:description>
+                <flux:switch wire:model="form.for_special_offer" />
+                <flux:error name="form.for_special_offer" />
+            </flux:field>
+
             <flux:textarea
                 wire:model="form.sms_text"
                 label="{{ __('app.cash_back_generator_sms_text') }}"
@@ -156,7 +200,28 @@ new class extends Component
                 placeholder="https://setaregan.co"
             />
 
-            <flux:button type="submit" variant="primary" color="orange" class="w-full">{{ __('app.save') }}</flux:button>
+            @if ($estimated_customers !== null)
+                <flux:badge color="cyan" size="sm" class="w-full justify-center">
+                    {{ __('app.cash_back_generator_estimate_result', ['count' => number_format($estimated_customers)]) }}
+                </flux:badge>
+            @endif
+
+            <div class="space-y-3">
+                <flux:button
+                    type="button"
+                    variant="primary"
+                    color="cyan"
+                    class="w-full"
+                    icon="users"
+                    wire:click="estimateCustomers"
+                >
+                    {{ __('app.cash_back_generator_estimate') }}
+                </flux:button>
+
+                <flux:button type="submit" variant="primary" color="orange" class="w-full" icon="gift">
+                    {{ __('app.cash_back_generator_run') }}
+                </flux:button>
+            </div>
         </form>
 
         <flux:separator variant="subtle" />
