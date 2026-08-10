@@ -229,6 +229,9 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     <flux:table.column>{{ __('app.invoice_count') }}</flux:table.column>
                     <flux:table.column>{{ __('app.customer_search_total_amount') }}</flux:table.column>
                     <flux:table.column>{{ __('app.customer_search_last_purchase') }}</flux:table.column>
+                    @can('crm_return_generate')
+                        <flux:table.column>{{ __('app.actions') }}</flux:table.column>
+                    @endcan
                 </flux:table.columns>
 
                 @forelse ($this->customers as $customer)
@@ -244,10 +247,24 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                 ? Jalalian::fromDateTime($customer->last_purchase_date)->format('Y/m/d')
                                 : '—' }}
                         </flux:table.cell>
+                        @can('crm_return_generate')
+                            <flux:table.cell>
+                                <flux:tooltip content="{{ __('app.return_send_discount') }}">
+                                    <flux:button
+                                        size="xs"
+                                        variant="primary"
+                                        color="teal"
+                                        icon="gift"
+                                        icon:variant="outline"
+                                        wire:click="$dispatch('panels.crm.return.generate.assign-data', { partyId: {{ $customer->PartyId }} })"
+                                    />
+                                </flux:tooltip>
+                            </flux:table.cell>
+                        @endcan
                     </flux:table.row>
                 @empty
                     <flux:table.row>
-                        <flux:table.cell colspan="7" class="text-center text-zinc-500">
+                        <flux:table.cell colspan="{{ auth()->user()?->can('crm_return_generate') ? 8 : 7 }}" class="text-center text-zinc-500">
                             {{ __('app.customer_search_empty') }}
                         </flux:table.cell>
                     </flux:table.row>
@@ -255,4 +272,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             </flux:table>
         @endif
     </div>
+
+    <livewire:crm.return.generate :key="'crm-return-generate'" />
 </div>
