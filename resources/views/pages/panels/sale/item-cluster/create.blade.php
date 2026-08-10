@@ -36,7 +36,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
             ->all();
 
         $this->form->item_refs = $refs;
-        $this->hydrateSelectedItems();
+        $this->loadSelectedItems();
     }
 
     public function updatedSelectedItemId(mixed $value): void
@@ -118,7 +118,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
             ->get();
     }
 
-    private function hydrateSelectedItems(): void
+    public function loadSelectedItems(): void
     {
         $this->selectedItems = [];
 
