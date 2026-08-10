@@ -75,26 +75,20 @@ new class extends Component
         $nationalCode = trim($this->national_code);
         $mobile = trim($this->recipient_phone);
 
-        if ($nationalCode === '') {
-            Flux::toast(__('app.return_discount_missing_national_code'));
-
-            return;
-        }
-
         if ($mobile === '') {
             Flux::toast(__('app.return_discount_missing_phone'));
 
             return;
         }
 
-        if (CashBackGeneratorJob::hasUnusedCashBackCode($nationalCode)) {
+        if ($nationalCode !== '' && CashBackGeneratorJob::hasUnusedCashBackCode($nationalCode)) {
             Flux::toast(__('app.return_discount_unused_code_exists'));
 
             return;
         }
 
         $createdCode = CashBackGeneratorJob::createCashBackCode(
-            $nationalCode,
+            $nationalCode !== '' ? $nationalCode : null,
             (int) $validated['discount_amount'],
             (int) $validated['usage_duration_days'],
             (bool) ($validated['for_special_offer'] ?? false),
@@ -189,7 +183,12 @@ new class extends Component
                 <div class="space-y-1 text-sm">
                     <div>{{ $recipient_name !== '' ? $recipient_name : '—' }}</div>
                     <div class="tabular-nums" dir="ltr">{{ $recipient_phone !== '' ? $recipient_phone : '—' }}</div>
-                    <div class="tabular-nums" dir="ltr">{{ $national_code !== '' ? $national_code : '—' }}</div>
+                    <div class="tabular-nums" dir="ltr">
+                        {{ $national_code !== '' ? $national_code : '—' }}
+                        @if ($national_code === '')
+                            <span class="text-zinc-500">({{ __('app.return_discount_no_national_code_hint') }})</span>
+                        @endif
+                    </div>
                 </div>
             </flux:callout>
 

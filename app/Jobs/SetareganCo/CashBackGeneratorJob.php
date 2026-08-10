@@ -154,7 +154,7 @@ class CashBackGeneratorJob implements ShouldQueue
      * @return array{code: string, from: Carbon, to: Carbon}
      */
     public static function createCashBackCode(
-        string $nationalCode,
+        ?string $nationalCode,
         int $discountAmount,
         int $usageDurationDays,
         bool $forSpecialOffer = false,
@@ -174,7 +174,7 @@ class CashBackGeneratorJob implements ShouldQueue
             'DiscountAmount' => $discountAmount,
             'IsPercent' => false,
             'RemainCount' => 1,
-            'NationalCode' => $nationalCode,
+            'NationalCode' => $nationalCode !== null && $nationalCode !== '' ? $nationalCode : null,
             'ForSpecialOffer' => $forSpecialOffer,
             'Status' => true,
             'ForPackage' => false,
