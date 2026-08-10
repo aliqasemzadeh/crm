@@ -233,7 +233,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
                         @foreach($this->checkItems as $item)
                             @php
-                                $isAdmin = Auth::user()->hasPermissionTo('warehouse_item_day_check_admin');
+                                $isAdmin = Auth::user()->hasPermissionTo('administrator_item_day_check');
                                 $expected = (float)($this->selectedCheck->item_stocks[$item->ItemID] ?? 0);
                                 $actual = isset($this->item_checks[$item->ItemID]) && $this->item_checks[$item->ItemID] !== '' ? (float)$this->item_checks[$item->ItemID] : null;
                                 $hasDiff = ($isAdmin && $actual !== null && $actual != $expected) || in_array($item->ItemID, $this->mismatchedItems);
@@ -315,11 +315,11 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                             :disabled="$this->selectedCheck->status !== 'check' && $this->selectedCheck->status !== 'reject'"
                         />
 
-                        @if(Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || $this->selectedCheck->admin_comment)
+                        @if(Auth::user()->hasPermissionTo('administrator_item_day_check') || $this->selectedCheck->admin_comment)
                             <flux:textarea
                                 label="{{ __('app.day_check.admin_comment') }}"
                                 wire:model="admin_comment"
-                                :disabled="!Auth::user()->hasPermissionTo('warehouse_item_day_check_admin') || in_array($this->selectedCheck->status, ['approve', 'reject'])"
+                                :disabled="!Auth::user()->hasPermissionTo('administrator_item_day_check') || in_array($this->selectedCheck->status, ['approve', 'reject'])"
                             />
                         @endif
                     </div>

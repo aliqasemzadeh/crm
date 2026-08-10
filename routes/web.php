@@ -33,6 +33,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/administrator/setting-management/option/index', \App\Livewire\Panels\Administrator\SettingManagement\Option\Index::class)->name('panels.administrator.setting-management.option.index');
     Route::livewire('/panels/administrator/announcement/index', \App\Livewire\Panels\Administrator\Announcement\Index::class)->name('panels.administrator.announcement.index');
     Route::livewire('/panels/administrator/calender/index', 'pages::panels.administrator.calender.index')->name('panels.administrator.calender.index');
+    Route::livewire('/panels/administrator/item-day-check/index', 'pages::panels.administrator.item-day-check.index')->name('panels.administrator.item-day-check.index');
 
     Route::livewire('/panels/service-center/dashboard/index', 'pages::panels.service-center.dashboard.index')->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', \App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');
@@ -43,7 +44,6 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/warehouse/history/index', 'pages::panels.warehouse.history.index')->name('panels.warehouse.history.index');
     Route::livewire('/panels/warehouse/invoice/index', 'pages::panels.warehouse.invoice.index')->name('panels.warehouse.invoice.index');
     Route::livewire('/panels/warehouse/check/index', 'pages::panels.warehouse.check.index')->name('panels.warehouse.check.index');
-    Route::livewire('/panels/warehouse/admin-check/index', 'pages::panels.warehouse.admin-check.index')->name('panels.warehouse.admin-check.index');
 
     Route::livewire('/panels/workspace/dashboard/index', \App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
     Route::livewire('/panels/workspace/task/index', \App\Livewire\Panels\Workspace\Task\Index::class)->name('panels.workspace.task.index');
