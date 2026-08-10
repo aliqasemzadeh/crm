@@ -239,6 +239,7 @@ return [
     'return_send_discount' => 'ارسال کد تخفیف',
     'return_send_discount_description' => 'برای این مشتری کد تخفیف یک‌بارمصرف بسازید و پیامک ارسال کنید.',
     'return_discount_missing_national_code' => 'کد ملی مشتری برای ساخت کد تخفیف موجود نیست.',
+    'return_discount_no_national_code_hint' => 'بدون محدودیت کد ملی',
     'return_discount_missing_phone' => 'شماره موبایل اصلی مشتری در Party ثبت نشده است.',
     'return_discount_unused_code_exists' => 'این مشتری از قبل کد تخفیف استفاده‌نشده دارد.',
     'return_discount_sent_successfully' => 'کد تخفیف ساخته و پیامک ارسال شد.',
