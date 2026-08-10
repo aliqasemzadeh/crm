@@ -4,6 +4,7 @@ namespace App\Jobs\Sepidar\Notification\Invoice;
 
 use App\Jobs\Notification\SendSmsMessageJob;
 use App\Models\Sepidar\SLS\Invoice;
+use App\Support\SevenUpLinkClient;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\URL;
@@ -30,7 +31,8 @@ class SendSmsOnInvoiceJob implements ShouldQueue
             return;
         }
 
-        $link = URL::signedRoute('panels.customer.invoice.view', ['invoiceId' => $this->invoice->InvoiceId]);
+        $longLink = URL::signedRoute('panels.customer.invoice.view', ['invoiceId' => $this->invoice->InvoiceId]);
+        $link = SevenUpLinkClient::shorten($longLink) ?? $longLink;
 
         $message = __('app.invoice_sms_message', [
             'website_title' => __('app.website_title'),
