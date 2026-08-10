@@ -275,6 +275,13 @@ return [
 
         'sales_item_price_index' => 'اعلام قیمت فروش',
 
+        'sales_item_cluster_index' => 'فهرست خوشه کالا',
+        'sales_item_cluster_create' => 'ایجاد خوشه کالا',
+        'sales_item_cluster_edit' => 'ویرایش خوشه کالا',
+        'sales_item_cluster_delete' => 'حذف خوشه کالا',
+
+        'sales_quick_pricing_index' => 'قیمت‌گذاری سریع',
+
         'sales_party_index' => 'فهرست مشتریان فروش',
         'sales_party_view' => 'مشاهده مشتری فروش',
         'sales_party_create' => 'ایجاد مشتری فروش',
