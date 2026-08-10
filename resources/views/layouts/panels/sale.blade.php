@@ -54,6 +54,28 @@
             </flux:sidebar.item>
         @endcan
 
+        @can('sales_item_cluster_index')
+            <flux:sidebar.item
+                icon="layers"
+                href="{{ route('panels.sale.item-cluster.index') }}"
+                :current="request()->routeIs('panels.sale.item-cluster.*')"
+                wire:navigate
+            >
+                {{ __('app.item_clusters') }}
+            </flux:sidebar.item>
+        @endcan
+
+        @can('sales_quick_pricing_index')
+            <flux:sidebar.item
+                icon="zap"
+                href="{{ route('panels.sale.quick-pricing.index') }}"
+                :current="request()->routeIs('panels.sale.quick-pricing.*')"
+                wire:navigate
+            >
+                {{ __('app.quick_pricing') }}
+            </flux:sidebar.item>
+        @endcan
+
         @can('sales_party_index')
             <flux:sidebar.item
                 icon="users"
