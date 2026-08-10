@@ -112,7 +112,12 @@ return new #[Layout('layouts.panels.sale')] class extends Component
                             <div class="text-xs text-zinc-500 line-clamp-1">{{ $cluster->description }}</div>
                         @endif
                     </flux:table.cell>
-                    <flux:table.cell>{{ number_format($cluster->itemCount()) }}</flux:table.cell>
+                    <flux:table.cell>
+                        {{ __('app.item_cluster_items_count', [
+                            'available' => number_format($cluster->availableItemCount()),
+                            'total' => number_format($cluster->itemCount()),
+                        ]) }}
+                    </flux:table.cell>
                     <flux:table.cell>
                         @if ($cluster->is_active)
                             <flux:badge color="green" size="sm">{{ __('app.active') }}</flux:badge>

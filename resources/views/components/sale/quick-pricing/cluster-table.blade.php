@@ -13,21 +13,30 @@ new class extends Component
     public string $clusterTitle = '';
 
     #[Computed]
-    public function rows()
+    public function clusterMeta(): array
     {
         $cluster = Cluster::query()
             ->whereKey($this->clusterId)
-            ->first(['id', 'item_refs']);
+            ->first(['id', 'available_item_refs', 'item_refs']);
 
         if (! $cluster) {
-            return collect();
+            return ['total' => 0, 'refs' => collect()];
         }
 
-        $refs = collect($cluster->item_refs ?? [])
-            ->map(fn ($id) => (int) $id)
-            ->filter()
-            ->unique()
-            ->values();
+        return [
+            'total' => count($cluster->item_refs ?? []),
+            'refs' => collect($cluster->available_item_refs ?? [])
+                ->map(fn ($id) => (int) $id)
+                ->filter()
+                ->unique()
+                ->values(),
+        ];
+    }
+
+    #[Computed]
+    public function rows()
+    {
+        $refs = $this->clusterMeta['refs'];
 
         if ($refs->isEmpty()) {
             return collect();
@@ -80,7 +89,14 @@ new class extends Component
         <div>
             <flux:heading size="lg">{{ $clusterTitle }}</flux:heading>
             <flux:text>
-                {{ __('app.quick_pricing_cluster_items_count', ['count' => $this->rows->count()]) }}
+                @if ($this->clusterMeta['total'] > $this->rows->count())
+                    {{ __('app.item_cluster_items_count', [
+                        'available' => number_format($this->rows->count()),
+                        'total' => number_format($this->clusterMeta['total']),
+                    ]) }}
+                @else
+                    {{ __('app.quick_pricing_cluster_items_count', ['count' => $this->rows->count()]) }}
+                @endif
             </flux:text>
         </div>
     </div>
