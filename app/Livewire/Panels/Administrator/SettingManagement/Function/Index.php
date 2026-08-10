@@ -2,17 +2,22 @@
 
 namespace App\Livewire\Panels\Administrator\SettingManagement\Function;
 
-use App\Jobs\UpdateProjectJob;
+use App\Jobs\System\UpdateProjectJob;
+use App\Models\SystemActionLog;
 use Flux\Flux;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Process;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithPagination;
+use Symfony\Component\Console\Command\Command;
 use Throwable;
 
 class Index extends Component
 {
-    public string $artisanCommand = '';
+    use WithPagination;
 
     public string $commandOutput = '';
 
@@ -57,11 +62,16 @@ class Index extends Component
         $this->runFixedCommand(['cache:clear'], __('app.cache_cleared'));
     }
 
-    public function updateProject(): void
+    public function updateProject(bool $full = true): void
     {
-        UpdateProjectJob::dispatch();
-        $this->commandOutput = __('app.project_updated');
-        Flux::toast(__('app.project_updated'));
+        UpdateProjectJob::dispatch($full);
+
+        $message = $full
+            ? __('app.update_project_full_queued')
+            : __('app.update_project_quick_queued');
+
+        $this->commandOutput = $message;
+        Flux::toast($message);
     }
 
     public function runDayCheck(): void
@@ -94,43 +104,17 @@ class Index extends Component
         $this->runFixedCommand(['app:voip:import-phones-from-sepidar'], __('app.import_phones_executed'));
     }
 
-    public function runArtisanCommand(): void
+    public function runArtisanCommand(string $command): void
     {
-        $raw = trim($this->artisanCommand);
+        $command = trim($command);
 
-        if ($raw === '') {
+        if ($command === '') {
             Flux::toast(__('app.artisan_command_required'));
 
             return;
         }
 
-        $raw = preg_replace('/^(php\s+)?artisan\s+/i', '', $raw) ?? $raw;
-        $raw = trim($raw);
-
-        if ($raw === '') {
-            Flux::toast(__('app.artisan_command_required'));
-
-            return;
-        }
-
-        if (preg_match('/[;&|`$<>\n\r]/', $raw)) {
-            $this->commandOutput = __('app.artisan_command_blocked');
-            Flux::toast(__('app.artisan_command_blocked'));
-
-            return;
-        }
-
-        $tokens = preg_split('/\s+/', $raw, -1, PREG_SPLIT_NO_EMPTY) ?: [];
-
-        if ($tokens === []) {
-            Flux::toast(__('app.artisan_command_required'));
-
-            return;
-        }
-
-        $commandName = strtolower($tokens[0]);
-
-        if ($this->isDangerousCommand($commandName)) {
+        if ($this->isDangerousCommand(strtolower($command))) {
             $this->commandOutput = __('app.artisan_command_blocked');
             Flux::toast(__('app.artisan_command_blocked'));
 
@@ -138,22 +122,55 @@ class Index extends Component
         }
 
         try {
-            $result = Process::path(base_path())
-                ->timeout(300)
-                ->run(array_merge([PHP_BINARY, base_path('artisan')], $tokens));
-
-            $output = trim($result->output()."\n".$result->errorOutput());
+            Artisan::call($command);
+            $output = trim(Artisan::output());
             $this->commandOutput = $output !== '' ? $output : __('app.artisan_no_output');
 
-            if ($result->successful()) {
-                Flux::toast(__('app.artisan_command_executed'));
-            } else {
-                Flux::toast(__('app.artisan_command_failed'));
-            }
+            SystemActionLog::create([
+                'command' => $command,
+                'output' => $this->commandOutput,
+                'status' => 'success',
+            ]);
+
+            Flux::modal('panels.administrator.setting-management.function.artisan-command')->close();
+            Flux::toast(__('app.artisan_command_executed'));
+            unset($this->actionLogs);
         } catch (Throwable $e) {
             $this->commandOutput = $e->getMessage();
+
+            SystemActionLog::create([
+                'command' => $command,
+                'output' => $this->commandOutput,
+                'status' => 'failed',
+            ]);
+
             Flux::toast(__('app.artisan_command_failed'));
+            unset($this->actionLogs);
         }
+    }
+
+    /**
+     * @return Collection<int, array{name: string, description: string}>
+     */
+    #[Computed]
+    public function artisanCommands(): Collection
+    {
+        return collect(Artisan::all())
+            ->filter(fn (Command $command, string $name): bool => ! $this->isDangerousCommand(strtolower($name)))
+            ->map(fn (Command $command, string $name): array => [
+                'name' => $name,
+                'description' => (string) $command->getDescription(),
+            ])
+            ->sortBy('name')
+            ->values();
+    }
+
+    #[Computed]
+    public function actionLogs(): LengthAwarePaginator
+    {
+        return SystemActionLog::query()
+            ->latest()
+            ->paginate(10);
     }
 
     /**
@@ -168,13 +185,21 @@ class Index extends Component
                 Artisan::call($command);
                 $output = trim(Artisan::output());
                 $outputs[] = trim($command."\n".($output !== '' ? $output : __('app.artisan_no_output')));
+
+                SystemActionLog::create([
+                    'command' => $command,
+                    'output' => $output !== '' ? $output : __('app.artisan_no_output'),
+                    'status' => 'success',
+                ]);
             }
 
             $this->commandOutput = implode("\n\n", $outputs);
             Flux::toast($successMessage);
+            unset($this->actionLogs);
         } catch (Throwable $e) {
             $this->commandOutput = $e->getMessage();
             Flux::toast(__('app.artisan_command_failed'));
+            unset($this->actionLogs);
         }
     }
 
