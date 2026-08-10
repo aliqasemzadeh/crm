@@ -8,6 +8,18 @@ return [
     // Settings / Functions
     'function' => 'توابع سیستم',
     'function_description' => 'از این بخش می‌توانید عملیات مدیریتی سیستم را انجام دهید.',
+    'function_group_system' => 'سیستم و نگهداری',
+    'function_group_jobs' => 'دستورات زمان‌بندی‌شده',
+    'artisan_runner' => 'اجرای دستور Artisan',
+    'artisan_runner_description' => 'دستورات عادی را اجرا کنید. دستورات خطرناک (مثل migrate:fresh) مسدود می‌شوند.',
+    'artisan_command' => 'دستور',
+    'artisan_command_placeholder' => 'مثال: cache:clear یا migrate --force',
+    'artisan_output' => 'خروجی دستور',
+    'artisan_no_output' => 'دستوری بدون خروجی اجرا شد.',
+    'artisan_command_required' => 'لطفاً یک دستور وارد کنید.',
+    'artisan_command_blocked' => 'این دستور خطرناک است و اجازه اجرا ندارد.',
+    'artisan_command_executed' => 'دستور با موفقیت اجرا شد.',
+    'artisan_command_failed' => 'اجرای دستور با خطا مواجه شد.',
     'update_permissions' => 'به‌روزرسانی مجوزها',
     'permissions_updated' => 'مجوزها با موفقیت به‌روزرسانی شد.',
 
