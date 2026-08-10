@@ -90,6 +90,8 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/sale/item/index', 'pages::panels.sale.item.index')->name('panels.sale.item.index');
     Route::livewire('/panels/sale/item/{item}', 'pages::panels.sale.item.view')->name('panels.sale.item.view');
     Route::livewire('/panels/sale/item-price/index/{groupingId?}', 'pages::panels.sale.item-price.index')->name('panels.sale.item-price.index');
+    Route::livewire('/panels/sale/item-cluster/index', 'pages::panels.sale.item-cluster.index')->name('panels.sale.item-cluster.index');
+    Route::livewire('/panels/sale/quick-pricing/index', 'pages::panels.sale.quick-pricing.index')->name('panels.sale.quick-pricing.index');
     Route::livewire('/panels/sale/party/index', 'pages::panels.sale.party.index')->name('panels.sale.party.index');
     Route::livewire('/panels/sale/party/{party}', 'pages::panels.sale.party.view')->name('panels.sale.party.view');
 
