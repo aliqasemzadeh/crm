@@ -694,6 +694,7 @@ return [
     'select_item_cluster' => 'انتخاب خوشه کالا',
     'select_item_cluster_to_price' => 'برای شروع قیمت‌گذاری یک یا چند خوشه کالا انتخاب کنید.',
     'quick_pricing_items_count' => ':count کالا در خوشه‌های انتخاب‌شده',
+    'quick_pricing_cluster_items_count' => ':count کالا',
     'quick_pricing_saved_count' => ':count قیمت ذخیره شد.',
     'save_all' => 'ذخیره همه',
     'sales_customers_description' => 'مشاهده مشتریان به همراه شماره تماس و آدرس.',

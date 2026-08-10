@@ -1,8 +1,6 @@
 <?php
 
-use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\Local\INV\Cluster;
-use App\Models\Sepidar\SLS\PriceNoteItem;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -19,7 +17,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
 
     public function updatedClusterIds(): void
     {
-        unset($this->rows);
+        unset($this->selectedClusters);
     }
 
     public function saveAll(): void
@@ -39,7 +37,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
     }
 
     #[Computed]
-    public function rows()
+    public function selectedClusters()
     {
         $ids = collect($this->clusterIds)
             ->map(fn ($id) => (int) $id)
@@ -51,41 +49,12 @@ return new #[Layout('layouts.panels.sale')] class extends Component
             return collect();
         }
 
-        $clusters = Cluster::query()
-            ->whereIn('id', $ids->all())
-            ->get(['id', 'item_refs']);
+        $byId = $this->clusters->keyBy('id');
 
-        $refs = $clusters
-            ->flatMap(fn (Cluster $cluster) => $cluster->item_refs ?? [])
-            ->map(fn ($id) => (int) $id)
+        return $ids
+            ->map(fn (int $id) => $byId->get($id))
             ->filter()
-            ->unique()
             ->values();
-
-        if ($refs->isEmpty()) {
-            return collect();
-        }
-
-        $items = Item::query()
-            ->whereIn('ItemID', $refs->all())
-            ->orderBy('Title')
-            ->get(['ItemID', 'Title', 'Code']);
-
-        $priceNotes = PriceNoteItem::query()
-            ->whereIn('ItemRef', $refs->all())
-            ->get(['PriceNoteItemID', 'ItemRef', 'Fee'])
-            ->keyBy('ItemRef');
-
-        return $items->map(function (Item $item) use ($priceNotes) {
-            $note = $priceNotes->get($item->ItemID);
-
-            return [
-                'id' => (int) $item->ItemID,
-                'title' => (string) $item->Title,
-                'code' => (string) $item->Code,
-                'fee' => (int) ($note?->Fee ?? 0),
-            ];
-        });
     }
 };
 ?>
@@ -121,11 +90,8 @@ return new #[Layout('layouts.panels.sale')] class extends Component
         <flux:separator variant="subtle" class="mt-6" />
     </div>
 
-    @if (count($clusterIds))
-        <div class="mb-4 flex items-center justify-between gap-3">
-            <flux:text>
-                {{ __('app.quick_pricing_items_count', ['count' => $this->rows->count()]) }}
-            </flux:text>
+    @if ($this->selectedClusters->isNotEmpty())
+        <div class="mb-4 flex items-center justify-end gap-3">
             @can('sales_item_fee')
                 <flux:button variant="primary" color="orange" icon="save" wire:click="saveAll">
                     {{ __('app.save_all') }}
@@ -133,33 +99,18 @@ return new #[Layout('layouts.panels.sale')] class extends Component
             @endcan
         </div>
 
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>{{ __('app.code') }}</flux:table.column>
-                <flux:table.column>{{ __('app.title') }}</flux:table.column>
-                <flux:table.column>{{ __('app.fee') }}</flux:table.column>
-                <flux:table.column>{{ __('app.options') }}</flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @forelse ($this->rows as $row)
-                    <livewire:sale.quick-pricing.item-price
-                        :item-id="$row['id']"
-                        :title="$row['title']"
-                        :code="$row['code']"
-                        :initial-fee="$row['fee']"
-                        :key="'quick-price-'.$row['id']"
-                    />
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="4" class="text-center text-zinc-500">
-                            {{ __('app.no_results') }}
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </flux:table>
+        <div class="space-y-4">
+            @foreach ($this->selectedClusters as $cluster)
+                <livewire:sale.quick-pricing.cluster-table
+                    :cluster-id="$cluster->id"
+                    :cluster-title="$cluster->title"
+                    :key="'quick-pricing-cluster-'.$cluster->id"
+                    lazy
+                />
+            @endforeach
+        </div>
     @else
-        <flux:card class="text-center text-zinc-500 py-10">
+        <flux:card class="py-10 text-center text-zinc-500">
             {{ __('app.select_item_cluster_to_price') }}
         </flux:card>
     @endif
