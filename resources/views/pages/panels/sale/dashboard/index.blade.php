@@ -56,6 +56,26 @@ new #[Layout('layouts.panels.sale')] class extends Component
             </flux:card>
         @endcan
 
+        @can('sales_item_cluster_index')
+            <flux:card class="space-y-3">
+                <flux:heading size="lg">{{ __('app.item_clusters') }}</flux:heading>
+                <flux:text>{{ __('app.sales_item_cluster_description') }}</flux:text>
+                <flux:button variant="primary" color="lime" href="{{ route('panels.sale.item-cluster.index') }}" wire:navigate class="w-full">
+                    {{ __('app.item_clusters') }}
+                </flux:button>
+            </flux:card>
+        @endcan
+
+        @can('sales_quick_pricing_index')
+            <flux:card class="space-y-3">
+                <flux:heading size="lg">{{ __('app.quick_pricing') }}</flux:heading>
+                <flux:text>{{ __('app.sales_quick_pricing_description') }}</flux:text>
+                <flux:button variant="primary" color="amber" href="{{ route('panels.sale.quick-pricing.index') }}" wire:navigate class="w-full">
+                    {{ __('app.quick_pricing') }}
+                </flux:button>
+            </flux:card>
+        @endcan
+
         @can('sales_party_index')
             <flux:card class="space-y-3">
                 <flux:heading size="lg">{{ __('app.customers') }}</flux:heading>
