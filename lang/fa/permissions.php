@@ -105,7 +105,7 @@ return [
         'warehouse_inventory_delivery_edit' => 'ویرایش خروج انبار',
         'warehouse_inventory_delivery_delete' => 'حذف خروج انبار',
 
-        'warehouse_item_day_check_admin' => ' ادمین بررسی روزانه کالاها',
+        'administrator_item_day_check' => 'ادمین بررسی روزانه کالاها',
     ],
 
     'crm' => [

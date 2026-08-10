@@ -20,6 +20,9 @@
         @can('administrator_calender_index')
             <flux:sidebar.item icon="calendar" href="{{ route('panels.administrator.calender.index') }}" wire:navigate>{{ __('app.calender_days') }}</flux:sidebar.item>
         @endcan
+        @can('administrator_item_day_check')
+            <flux:sidebar.item icon="shield-check" href="{{ route('panels.administrator.item-day-check.index') }}" :current="request()->routeIs('panels.administrator.item-day-check.*')" wire:navigate>{{ __('app.day_check.admin_title') }}</flux:sidebar.item>
+        @endcan
         <flux:sidebar.group expandable heading="{{ __('app.setting_management') }}" class="grid" :expanded="request()->routeIs('panels.administrator.setting-management.*')">
             <flux:sidebar.item href="{{ route('panels.administrator.setting-management.function.index') }}" wire:navigate>{{ __('app.functions') }}</flux:sidebar.item>
             <flux:sidebar.item href="{{ route('panels.administrator.setting-management.option.index') }}" wire:navigate>{{ __('app.options') }}</flux:sidebar.item>
