@@ -30,8 +30,9 @@
                             @can('sales_item_cluster_create')
                                 <flux:table.cell>
                                     <flux:checkbox
+                                        size="sm"
                                         :checked="in_array((int) $item->ItemID, $selectedItemIds, true)"
-                                        wire:click="toggleItem({{ (int) $item->ItemID }}, {{ in_array((int) $item->ItemID, $selectedItemIds, true) ? 'false' : 'true' }})"
+                                        wire:change="toggleItem({{ (int) $item->ItemID }})"
                                     />
                                 </flux:table.cell>
                             @endcan

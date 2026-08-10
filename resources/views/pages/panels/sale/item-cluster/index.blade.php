@@ -69,16 +69,19 @@ return new #[Layout('layouts.panels.sale')] class extends Component
                 <flux:subheading size="lg" class="mb-6">{{ __('app.item_clusters_description') }}</flux:subheading>
             </div>
             @can('sales_item_cluster_create')
-                <flux:modal.trigger name="panels.sale.item-cluster.create.modal">
-                    <flux:button variant="primary" color="teal" icon="layers">{{ __('app.create_item_cluster') }}</flux:button>
-                </flux:modal.trigger>
+                <flux:button
+                    variant="primary"
+                    color="teal"
+                    icon="layers"
+                    href="{{ route('panels.sale.item-cluster.create') }}"
+                    wire:navigate
+                >
+                    {{ __('app.create_item_cluster') }}
+                </flux:button>
             @endcan
         </div>
         <flux:separator variant="subtle" />
     </div>
-
-    <livewire:sale.item-cluster.create :key="'sale-item-cluster-create'" />
-    <livewire:sale.item-cluster.edit :key="'sale-item-cluster-edit'" />
 
     <flux:table :paginate="$this->clusters">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
@@ -126,7 +129,8 @@ return new #[Layout('layouts.panels.sale')] class extends Component
                                     color="orange"
                                     icon="pencil"
                                     icon:variant="outline"
-                                    wire:click="$dispatch('panels.sale.item-cluster.edit.assign-data', { id: {{ $cluster->id }} })"
+                                    href="{{ route('panels.sale.item-cluster.edit', $cluster) }}"
+                                    wire:navigate
                                 />
                             </flux:tooltip>
                         @endcan
