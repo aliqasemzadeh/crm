@@ -251,7 +251,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                 <flux:table.column class="w-10">
                     <flux:checkbox
                         size="sm"
-                        wire:click="togglePageSelection"
+                        wire:change="togglePageSelection"
                         :checked="$this->items->count() > 0 && collect($this->items->items())->every(fn ($item) => in_array((int) $item->ItemID, array_map('intval', $selectedItemIds), true))"
                     />
                 </flux:table.column>
