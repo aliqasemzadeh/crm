@@ -3,12 +3,13 @@
 namespace App\Livewire\Panels\Sale\ItemPrice;
 
 use App\Models\Sepidar\INV\Item;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Lazy;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Reactive;
 use Livewire\Component;
-use Illuminate\Support\Facades\Cache;
 
 #[Lazy]
 class Items extends Component
@@ -24,7 +25,7 @@ class Items extends Component
     #[On('panels.sale.item-price.items.refresh')]
     public function refresh(): void
     {
-        Cache::forget("sale_items_by_grouping_v2_{$this->groupingId}");
+        Cache::forget($this->cacheKey());
         unset($this->items);
     }
 
@@ -35,28 +36,43 @@ class Items extends Component
 
     public function toggleItem(int $itemId): void
     {
-        $checked = ! in_array($itemId, $this->selectedItemIds, true);
+        $checked = ! in_array($itemId, array_map('intval', $this->selectedItemIds), true);
         $this->dispatch('panels.sale.item-price.selection.toggle', itemId: $itemId, checked: $checked);
     }
 
     #[Computed]
-    public function items()
+    public function items(): Collection
     {
-        $groupingId = $this->groupingId;
+        $groupingId = (int) $this->groupingId;
 
-        if (!blank($this->search)) {
+        if (! blank($this->search)) {
             return Item::query()
                 ->where('CodingGroupRef', $groupingId)
-                ->where('Title', 'like', '%' . $this->search . '%')
+                ->where('Title', 'like', '%'.$this->search.'%')
                 ->get();
         }
 
-        $cacheKey = "sale_items_by_grouping_v2_{$groupingId}";
-        return Cache::remember($cacheKey, now()->addMinutes(8000), function () use ($groupingId) {
+        // Database cache may not serialize Eloquent collections; cache IDs only.
+        $itemIds = Cache::remember($this->cacheKey(), now()->addMinutes(8000), function () use ($groupingId) {
             return Item::query()
                 ->where('CodingGroupRef', $groupingId)
-                ->get();
+                ->orderBy('Title')
+                ->pluck('ItemID')
+                ->map(fn ($id) => (int) $id)
+                ->values()
+                ->all();
         });
+
+        if (! is_array($itemIds) || $itemIds === []) {
+            return collect();
+        }
+
+        $itemIds = array_values(array_filter(array_map('intval', $itemIds)));
+
+        return Item::query()
+            ->whereIn('ItemID', $itemIds)
+            ->orderBy('Title')
+            ->get();
     }
 
     public function placeholder()
@@ -71,5 +87,10 @@ class Items extends Component
     public function render()
     {
         return view('livewire.panels.sale.item-price.items');
+    }
+
+    private function cacheKey(): string
+    {
+        return 'sale_items_by_grouping_v3_'.(int) $this->groupingId;
     }
 }

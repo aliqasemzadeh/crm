@@ -24,6 +24,7 @@
         </flux:table.columns>
         <flux:table.rows>
             @foreach($this->items as $item)
+                @continue(! $item instanceof \App\Models\Sepidar\INV\Item)
                 @if($lastStockSummary = \App\Models\Sepidar\INV\ItemStockSummary::where('ItemRef', $item->ItemID)->where('FiscalYearRef', config('sepidar.FiscalYearRef'))->first())
 
                         <flux:table.row class="odd:bg-zinc-50 even:bg-white dark:odd:bg-zinc-800/50 dark:even:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800">
