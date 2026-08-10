@@ -89,6 +89,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
         $payload['created_by'] = auth()->id();
 
         $cluster = Cluster::query()->create($payload);
+        $cluster->syncAvailableItemRefs();
 
         Flux::toast(__('app.saved_successfully', ['name' => __('app.item_cluster')]));
 

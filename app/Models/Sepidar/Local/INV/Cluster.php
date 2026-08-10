@@ -14,6 +14,7 @@ class Cluster extends Model
         'title',
         'description',
         'item_refs',
+        'available_item_refs',
         'is_active',
         'created_by',
     ];
@@ -22,6 +23,7 @@ class Cluster extends Model
     {
         return [
             'item_refs' => 'array',
+            'available_item_refs' => 'array',
             'is_active' => 'boolean',
         ];
     }
@@ -31,6 +33,9 @@ class Cluster extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @return Collection<int, Item>
+     */
     public function items(): Collection
     {
         $refs = collect($this->item_refs ?? [])
@@ -49,8 +54,71 @@ class Cluster extends Model
             ->get();
     }
 
+    /**
+     * @return Collection<int, Item>
+     */
+    public function availableItems(): Collection
+    {
+        $refs = collect($this->available_item_refs ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($refs->isEmpty()) {
+            return collect();
+        }
+
+        return Item::query()
+            ->whereIn('ItemID', $refs->all())
+            ->orderBy('Title')
+            ->get();
+    }
+
     public function itemCount(): int
     {
         return count($this->item_refs ?? []);
+    }
+
+    public function availableItemCount(): int
+    {
+        return count($this->available_item_refs ?? []);
+    }
+
+    public function syncAvailableItemRefs(?string $fiscalYearRef = null): bool
+    {
+        $fiscalYearRef ??= (string) config('sepidar.FiscalYearRef');
+
+        $refs = collect($this->item_refs ?? [])
+            ->map(fn ($id) => (int) $id)
+            ->filter()
+            ->unique()
+            ->values();
+
+        if ($refs->isEmpty()) {
+            if (($this->available_item_refs ?? []) === []) {
+                return false;
+            }
+
+            return $this->update(['available_item_refs' => []]);
+        }
+
+        $inStockIds = Item::query()
+            ->whereIn('ItemID', $refs->all())
+            ->whereInStock($fiscalYearRef)
+            ->pluck('ItemID')
+            ->map(fn ($id) => (int) $id)
+            ->flip();
+
+        $available = $refs
+            ->filter(fn (int $id) => isset($inStockIds[$id]))
+            ->values()
+            ->all();
+
+        if ($available === ($this->available_item_refs ?? [])) {
+            return false;
+        }
+
+        return $this->update(['available_item_refs' => $available]);
     }
 }

@@ -85,6 +85,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
 
         $refs->push($itemId);
         $this->cluster->update(['item_refs' => $refs->all()]);
+        $this->cluster->syncAvailableItemRefs();
         $this->cluster->refresh();
 
         $this->selectedItemId = null;
@@ -105,6 +106,7 @@ return new #[Layout('layouts.panels.sale')] class extends Component
             ->all();
 
         $this->cluster->update(['item_refs' => $refs]);
+        $this->cluster->syncAvailableItemRefs();
         $this->cluster->refresh();
         unset($this->items);
 

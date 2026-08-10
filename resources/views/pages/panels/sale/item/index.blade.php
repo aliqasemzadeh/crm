@@ -20,6 +20,8 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
     public string $groupingFilter = '';
 
+    public string $stockFilter = 'in_stock';
+
     public string $sortBy = 'CreationDate';
 
     public string $sortDirection = 'desc';
@@ -63,6 +65,11 @@ new #[Layout('layouts.panels.sale')] class extends Component
     }
 
     public function updatedGroupingFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStockFilter(): void
     {
         $this->resetPage();
     }
@@ -178,8 +185,11 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
                 $query->whereIn('CodingGroupRef', $grouping->getAllChildrenIds());
             })
+            ->when($this->stockFilter === 'in_stock', function ($query) {
+                $query->whereInStock(config('sepidar.FiscalYearRef'));
+            })
             ->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
-            ->paginate(100);
+            ->paginate(150);
     }
 };
 ?>
@@ -224,7 +234,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
     <livewire:panels.sale.item.upload-image />
 
     <flux:card class="mb-6">
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-3">
             <flux:input
                 wire:model.live.debounce.400ms="search"
                 icon="magnifying-glass"
@@ -241,6 +251,14 @@ new #[Layout('layouts.panels.sale')] class extends Component
                         {{ $grouping['Title'] }}
                     </flux:select.option>
                 @endforeach
+            </flux:select>
+            <flux:select
+                wire:model.live="stockFilter"
+                searchable
+                placeholder="{{ __('app.warehouse_stock_filter') }}"
+            >
+                <flux:select.option value="in_stock">{{ __('app.warehouse_stock_in_stock') }}</flux:select.option>
+                <flux:select.option value="">{{ __('app.warehouse_stock_all') }}</flux:select.option>
             </flux:select>
         </div>
     </flux:card>
