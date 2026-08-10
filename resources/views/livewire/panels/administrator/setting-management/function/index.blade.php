@@ -139,7 +139,7 @@
         @if ($commandOutput !== '')
             <flux:card class="space-y-3">
                 <flux:heading size="lg">{{ __('app.artisan_output') }}</flux:heading>
-                <pre class="max-h-96 overflow-auto rounded-lg bg-zinc-950 p-4 text-sm text-zinc-100 whitespace-pre-wrap break-words dir-ltr text-left font-mono">{{ $commandOutput }}</pre>
+                <pre dir="ltr" class="max-h-96 overflow-auto rounded-lg bg-zinc-950 p-4 text-left font-mono text-sm whitespace-pre-wrap break-words text-zinc-100">{{ $commandOutput }}</pre>
             </flux:card>
         @endif
     </div>
