@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use App\Models\UserDevice;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
@@ -12,9 +13,11 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     use WithPagination;
 
     public string $search = '';
+    public ?int $filterUserId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
+        'filterUserId' => ['except' => null],
     ];
 
     #[Computed]
@@ -22,6 +25,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     {
         return UserDevice::query()
             ->with('user')
+            ->when($this->filterUserId, fn($q) => $q->where('user_id', $this->filterUserId))
             ->when($this->search, function ($query) {
                 $search = '%' . $this->search . '%';
                 $query->where('token', 'like', $search)
@@ -62,7 +66,23 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         Flux::toast(__('app.device_deleted'));
     }
 
+    public string $userSearch = '';
+
+    #[Computed]
+    public function users()
+    {
+        return User::query()
+            ->when($this->userSearch, fn($q) => $q->where('first_name', 'like', "%{$this->userSearch}%")->orWhere('last_name', 'like', "%{$this->userSearch}%")->orWhere('mobile', 'like', "%{$this->userSearch}%"))
+            ->limit(20)
+            ->get();
+    }
+
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterUserId(): void
     {
         $this->resetPage();
     }
@@ -92,7 +112,13 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     <flux:table :paginate="$this->devices">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
             <flux:table.column colspan="5" class="bg-white dark:bg-zinc-900">
-                <div class="flex flex-col gap-1 pe-2 items-end">
+                <div class="flex flex-col md:flex-row gap-2 pe-2 items-end">
+                    <flux:select searchable wire:model.live="filterUserId" placeholder="{{ __('app.filter_by_user') }}" size="sm" class="min-w-[200px]">
+                        <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                        @foreach($this->users as $user)
+                            <flux:select.option value="{{ $user->id }}">{{ $user->name }} ({{ $user->mobile }})</flux:select.option>
+                        @endforeach
+                    </flux:select>
                     <flux:input size="sm" placeholder="{{ __('app.search_placeholder') }}" wire:model.live="search" />
                 </div>
             </flux:table.column>
