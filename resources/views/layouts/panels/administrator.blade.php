@@ -15,6 +15,7 @@
             <flux:sidebar.item href="{{ route('panels.administrator.user-management.user.index') }}" wire:navigate>{{ __('app.users') }}</flux:sidebar.item>
             <flux:sidebar.item href="{{ route('panels.administrator.user-management.role.index') }}" wire:navigate>{{ __('app.roles') }}</flux:sidebar.item>
             <flux:sidebar.item href="{{ route('panels.administrator.user-management.permission.index') }}" wire:navigate>{{ __('app.permissions') }}</flux:sidebar.item>
+            <flux:sidebar.item href="{{ route('panels.administrator.user-management.device.index') }}" wire:navigate>{{ __('app.devices') }}</flux:sidebar.item>
         </flux:sidebar.group>
         <flux:sidebar.item icon="megaphone" href="{{ route('panels.administrator.announcement.index') }}" wire:navigate>{{ __('app.announcements') }}</flux:sidebar.item>
         @can('administrator_calender_index')
