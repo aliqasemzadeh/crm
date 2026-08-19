@@ -4,3 +4,5 @@
     <flux:toast />
 </flux:toast.group>
 @endpersist
+
+@RegisterServiceWorkerScript
