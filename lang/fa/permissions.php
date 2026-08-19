@@ -287,6 +287,8 @@ return [
         'sales_party_create' => 'ایجاد مشتری فروش',
         'sales_party_phone' => 'تلفن مشتری فروش',
         'sales_party_address' => 'آدرس مشتری فروش',
+        'hr_access' => 'دسترسی منابع انسانی',
+        'administrator_user_management_device' => 'مدیریت دستگاه‌ها',
     ],
 
 ];
