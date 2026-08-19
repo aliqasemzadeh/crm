@@ -15,6 +15,10 @@ new #[Layout('layouts.panels.hr')] class extends Component
     #[Computed]
     public function isAccessAllowed(): bool
     {
+        if (auth()->user()->hasRole('admin')) {
+            return true;
+        }
+
         $config = config('hr');
         $ip = request()->ip();
         $host = request()->getHost();
