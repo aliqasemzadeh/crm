@@ -289,6 +289,7 @@ return [
         'sales_party_address' => 'آدرس مشتری فروش',
         'hr_access' => 'دسترسی منابع انسانی',
         'administrator_user_management_device' => 'مدیریت دستگاه‌ها',
+        'administrator_user_management_hr' => 'گزارش حضور و غیاب',
     ],
 
 ];
