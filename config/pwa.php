@@ -19,11 +19,11 @@ return [
     */
 
     'manifest' => [
-        'name' => 'Laravel PWA',
-        'short_name' => 'LPT',
+        'name' => 'Setaregan',
+        'short_name' => 'SRS',
         'background_color' => '#6777ef',
         'display' => 'fullscreen',
-        'description' => 'A Progressive Web Application setup for Laravel projects.',
+        'description' => 'نرم افزاز جامعه ستارگان',
         'theme_color' => '#6777ef',
         'icons' => [
             [
