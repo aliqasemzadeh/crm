@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Calender\Day;
 use App\Models\Hr\Record;
 use App\Models\UserDevice;
 use Flux\Flux;
@@ -60,6 +61,18 @@ new #[Layout('layouts.panels.hr')] class extends Component
             ->get();
     }
 
+    #[Computed]
+    public function isOddRecords(): bool
+    {
+        return $this->todayRecords->count() % 2 !== 0;
+    }
+
+    #[Computed]
+    public function isTodayHoliday(): bool
+    {
+        return Day::isNonWorkingDay(now());
+    }
+
     public function clockIn(string $deviceToken): void
     {
         $this->record($deviceToken, 'clock_in');
@@ -107,11 +120,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
 
         Flux::toast($this->message);
         unset($this->todayRecords);
-    }
-
-    public function mount(): void
-    {
-        $this->authorize('hr_access');
+        unset($this->isOddRecords);
     }
 };
 
@@ -122,6 +131,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
 </x-slot>
 <div x-data="{
     deviceToken: '',
+    currentTime: '',
     init() {
         let token = localStorage.getItem('attendance_device_token');
         if (!token) {
@@ -129,12 +139,27 @@ new #[Layout('layouts.panels.hr')] class extends Component
             localStorage.setItem('attendance_device_token', token);
         }
         this.deviceToken = token;
+        this.updateTime();
+        setInterval(() => this.updateTime(), 1000);
+    },
+    updateTime() {
+        this.currentTime = new Date().toLocaleTimeString('fa-IR');
     }
 }">
     <div class="relative mb-6 w-full">
         <flux:heading size="xl" level="1">{{ __('app.attendance') }}</flux:heading>
         <flux:subheading size="lg" class="mb-6">{{ __('app.attendance_description') }}</flux:subheading>
         <flux:separator variant="subtle" />
+    </div>
+
+    {{-- Live Clock --}}
+    <div class="max-w-md mx-auto mt-4 text-center">
+        <span class="text-3xl font-mono font-bold text-zinc-700 dark:text-zinc-200" x-text="currentTime"></span>
+        @if($this->isTodayHoliday)
+            <div class="mt-2">
+                <flux:badge color="red">{{ __('app.today_is_holiday') }}</flux:badge>
+            </div>
+        @endif
     </div>
 
     @if($this->isAccessAllowed)
@@ -156,6 +181,13 @@ new #[Layout('layouts.panels.hr')] class extends Component
                 {{ __('app.access_denied_ip') }}
             </div>
         </flux:card>
+    @endif
+
+    {{-- Odd records warning --}}
+    @if($this->todayRecords->count() > 0 && $this->isOddRecords)
+        <div class="max-w-md mx-auto mt-4">
+            <flux:badge color="orange" class="w-full justify-center py-2">{{ __('app.odd_records_warning') }}</flux:badge>
+        </div>
     @endif
 
     {{-- Today's Records --}}

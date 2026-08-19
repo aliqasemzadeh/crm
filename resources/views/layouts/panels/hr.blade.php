@@ -11,6 +11,7 @@
 
     <flux:sidebar.nav>
         <flux:sidebar.item icon="clock" href="{{ route('panels.hr.attendance.index') }}" :current="request()->routeIs('panels.hr.attendance.*')" wire:navigate>{{ __('app.attendance') }}</flux:sidebar.item>
+        <flux:sidebar.item icon="history" href="{{ route('panels.hr.history.index') }}" :current="request()->routeIs('panels.hr.history.*')" wire:navigate>{{ __('app.attendance_history') }}</flux:sidebar.item>
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
