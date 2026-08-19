@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Issabel\Device as IssabelDevice;
 use App\Models\Sepidar\FMK\User as SepidarUser;
+use App\Models\Hr\Record;
 use App\Models\Workspace\Task;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -146,5 +147,15 @@ class User extends Authenticatable
         }
 
         return null;
+    }
+
+    public function devices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UserDevice::class);
+    }
+
+    public function hrRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Record::class);
     }
 }
