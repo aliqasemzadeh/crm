@@ -112,6 +112,9 @@ Route::middleware(['auth'])->group( function () {
         });
     })->name('item.image');
 
+    Route::livewire('/panels/hr/attendance/index', 'pages::panels.hr.attendance.index')->name('panels.hr.attendance.index');
+    Route::livewire('/panels/administrator/user-management/device/index', 'pages::panels.administrator.user-management.device.index')->name('panels.administrator.user-management.device.index');
+
     Route::livewire('/logout', 'pages::auth.logout')->name('logout');
 
 });
