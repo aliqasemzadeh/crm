@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('user_devices', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id')->index();
             $table->string('token')->unique();
             $table->string('name')->nullable();
             $table->string('ip')->nullable();

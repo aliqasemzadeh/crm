@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('hr_records', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('user_device_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('user_id')->index();
+            $table->unsignedBigInteger('user_device_id')->index();
             $table->enum('type', ['clock_in', 'clock_out']);
             $table->timestamp('recorded_at');
             $table->boolean('is_device_approved')->default(false);
