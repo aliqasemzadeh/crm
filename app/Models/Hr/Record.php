@@ -11,6 +11,10 @@ class Record extends Model
 {
     protected $table = 'hr_records';
 
+    protected $attributes = [
+        'is_device_approved' => false,
+    ];
+
     protected $fillable = [
         'user_id',
         'user_device_id',

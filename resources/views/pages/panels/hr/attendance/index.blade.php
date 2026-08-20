@@ -68,6 +68,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
                 'user_id' => auth()->id(),
                 'name' => request()->userAgent(),
                 'ip' => request()->ip(),
+                'is_approved' => false,
             ]);
         } elseif ($device->user_id !== auth()->id()) {
             $deviceToken = 'dev_'.bin2hex(random_bytes(12));
@@ -76,6 +77,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
                 'user_id' => auth()->id(),
                 'name' => request()->userAgent(),
                 'ip' => request()->ip(),
+                'is_approved' => false,
             ]);
             $this->dispatch('device-token-updated', token: $deviceToken);
         }
@@ -89,7 +91,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
             'user_device_id' => $device->id,
             'type' => $type,
             'recorded_at' => now(),
-            'is_device_approved' => $device->is_approved,
+            'is_device_approved' => (bool) ($device->is_approved ?? false),
         ]);
 
         $this->message = $type === 'clock_in' ? __('app.clock_in_success') : __('app.clock_out_success');
