@@ -3,6 +3,7 @@
 use App\Models\Calender\Day;
 use App\Models\Hr\Record;
 use App\Models\UserDevice;
+use App\Support\HrAccess;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -16,39 +17,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
     #[Computed]
     public function isAccessAllowed(): bool
     {
-        if (auth()->user()->hasRole('admin')) {
-            return true;
-        }
-
-        $config = config('hr');
-        $ip = request()->ip();
-        $host = request()->getHost();
-        $mode = $config['check_mode'] ?? 'both';
-
-        $ipAllowed = $this->checkIp($ip, $config['allowed_ips'] ?? []);
-        $domainAllowed = in_array($host, $config['allowed_domains'] ?? []);
-
-        return match ($mode) {
-            'ip' => $ipAllowed,
-            'domain' => $domainAllowed,
-            'both' => $ipAllowed || $domainAllowed,
-            default => false,
-        };
-    }
-
-    private function checkIp(string $ip, array $patterns): bool
-    {
-        foreach ($patterns as $pattern) {
-            if (str_contains($pattern, '*')) {
-                $regex = '/^' . str_replace(['*', '.'], ['[0-9]+', '\\.'], $pattern) . '$/';
-                if (preg_match($regex, $ip)) {
-                    return true;
-                }
-            } elseif ($ip === $pattern) {
-                return true;
-            }
-        }
-        return false;
+        return HrAccess::isAllowed();
     }
 
     #[Computed]
@@ -91,13 +60,25 @@ new #[Layout('layouts.panels.hr')] class extends Component
             return;
         }
 
-        $device = UserDevice::firstOrCreate(
-            ['token' => $deviceToken, 'user_id' => auth()->id()],
-            [
+        $device = UserDevice::where('token', $deviceToken)->first();
+
+        if ($device === null) {
+            $device = UserDevice::create([
+                'token' => $deviceToken,
+                'user_id' => auth()->id(),
                 'name' => request()->userAgent(),
                 'ip' => request()->ip(),
-            ]
-        );
+            ]);
+        } elseif ($device->user_id !== auth()->id()) {
+            $deviceToken = 'dev_'.bin2hex(random_bytes(12));
+            $device = UserDevice::create([
+                'token' => $deviceToken,
+                'user_id' => auth()->id(),
+                'name' => request()->userAgent(),
+                'ip' => request()->ip(),
+            ]);
+            $this->dispatch('device-token-updated', token: $deviceToken);
+        }
 
         if ($device->ip !== request()->ip()) {
             $device->update(['ip' => request()->ip()]);
@@ -132,11 +113,12 @@ new #[Layout('layouts.panels.hr')] class extends Component
 <div x-data="{
     deviceToken: '',
     currentTime: '',
+    tokenKey: 'attendance_device_token_{{ auth()->id() }}',
     init() {
-        let token = localStorage.getItem('attendance_device_token');
+        let token = localStorage.getItem(this.tokenKey);
         if (!token) {
             token = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
-            localStorage.setItem('attendance_device_token', token);
+            localStorage.setItem(this.tokenKey, token);
         }
         this.deviceToken = token;
         this.updateTime();
@@ -145,7 +127,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
     updateTime() {
         this.currentTime = new Date().toLocaleTimeString('fa-IR');
     }
-}">
+}" @device-token-updated.window="deviceToken = $event.detail.token; localStorage.setItem(tokenKey, $event.detail.token)">
     <div class="relative mb-6 w-full">
         <flux:heading size="xl" level="1">{{ __('app.attendance') }}</flux:heading>
         <flux:subheading size="lg" class="mb-6">{{ __('app.attendance_description') }}</flux:subheading>
@@ -184,13 +166,14 @@ new #[Layout('layouts.panels.hr')] class extends Component
     @endif
 
     {{-- Odd records warning --}}
-    @if($this->todayRecords->count() > 0 && $this->isOddRecords)
+    @if($this->isAccessAllowed && $this->todayRecords->count() > 0 && $this->isOddRecords)
         <div class="max-w-md mx-auto mt-4">
             <flux:badge color="orange" class="w-full justify-center py-2">{{ __('app.odd_records_warning') }}</flux:badge>
         </div>
     @endif
 
     {{-- Today's Records --}}
+    @if($this->isAccessAllowed)
     <div class="max-w-md mx-auto mt-6">
         <flux:heading size="lg" class="mb-4">{{ __('app.today_records') }}</flux:heading>
         @if($this->todayRecords->count() > 0)
@@ -226,4 +209,5 @@ new #[Layout('layouts.panels.hr')] class extends Component
             <p class="text-sm text-zinc-500">{{ __('app.no_records_today') }}</p>
         @endif
     </div>
+    @endif
 </div>

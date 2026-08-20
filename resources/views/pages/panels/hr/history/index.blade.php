@@ -2,7 +2,7 @@
 
 use App\Models\Calender\Day;
 use App\Models\Hr\Record;
-use Flux\Flux;
+use App\Support\HrAccess;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -12,6 +12,12 @@ new #[Layout('layouts.panels.hr')] class extends Component
 {
     public ?string $dateStart = null;
     public ?string $dateEnd = null;
+
+    #[Computed]
+    public function isAccessAllowed(): bool
+    {
+        return HrAccess::isAllowed();
+    }
 
     #[Computed]
     public function records()
@@ -89,6 +95,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
         <flux:separator variant="subtle" />
     </div>
 
+    @if($this->isAccessAllowed)
     <flux:card class="mb-6">
         <x-jalali-date-range wire:model.start="dateStart" wire:model.end="dateEnd" />
     </flux:card>
@@ -147,5 +154,12 @@ new #[Layout('layouts.panels.hr')] class extends Component
         @endforeach
     @else
         <p class="text-sm text-zinc-500">{{ __('app.no_records_today') }}</p>
+    @endif
+    @else
+        <flux:card class="max-w-md mx-auto">
+            <div class="text-center text-red-600">
+                {{ __('app.access_denied_ip') }}
+            </div>
+        </flux:card>
     @endif
 </div>
