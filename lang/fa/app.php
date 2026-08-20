@@ -1849,4 +1849,5 @@ return [
     'no_user_selected' => 'لطفا یک کاربر انتخاب کنید',
     'filter_by_user' => 'فیلتر بر اساس کاربر',
     'time' => 'زمان',
+    'last_modification_date' => 'آخرین تاریخ ویرایش',
 ];
