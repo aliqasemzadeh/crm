@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserDevice extends Model
 {
+    protected $attributes = [
+        'is_approved' => false,
+    ];
+
     protected $fillable = [
         'user_id',
         'token',
