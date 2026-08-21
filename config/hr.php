@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'allowed_ips' => ['192.168.3.*'],
-    'allowed_domains' => ['crm.test'],
-    'check_mode' => 'ip', // 'ip', 'domain', 'both' — regular users: internal network only
+    'allowed_hosts' => ['192.168.3.150'],
+    'check_mode' => 'host', // 'host', 'ip', 'domain', 'both' — attendance only when opened via allowed host
 ];
