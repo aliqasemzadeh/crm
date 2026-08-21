@@ -19,12 +19,14 @@ class HrAccess
         $config = config('hr');
         $ip = $request->ip();
         $host = $request->getHost();
-        $mode = $config['check_mode'] ?? 'ip';
+        $mode = $config['check_mode'] ?? 'host';
 
+        $hostAllowed = in_array($host, $config['allowed_hosts'] ?? [], true);
         $ipAllowed = self::checkIp($ip, $config['allowed_ips'] ?? []);
         $domainAllowed = in_array($host, $config['allowed_domains'] ?? [], true);
 
         return match ($mode) {
+            'host' => $hostAllowed,
             'ip' => $ipAllowed,
             'domain' => $domainAllowed,
             'both' => $ipAllowed || $domainAllowed,
