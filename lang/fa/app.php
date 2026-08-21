@@ -1828,7 +1828,7 @@ return [
     'clock_out' => 'ثبت خروج',
     'clock_in_success' => 'ورود شما ثبت شد',
     'clock_out_success' => 'خروج شما ثبت شد',
-    'access_denied_ip' => 'دسترسی از این آدرس IP مجاز نیست',
+    'access_denied_ip' => 'برای ثبت ورود/خروج باید سایت را با آدرس 192.168.3.150 باز کنید',
     'device_not_approved_warning' => '(دستگاه شما هنوز تایید نشده است)',
     'today_records' => 'سوابق امروز',
     'no_records_today' => 'رکوردی برای امروز ثبت نشده است',
