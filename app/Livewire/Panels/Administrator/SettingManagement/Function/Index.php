@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Administrator\SettingManagement\Function;
 
+use App\Jobs\Notification\BaleSendMessageJob;
 use App\Jobs\System\UpdateProjectJob;
 use App\Models\SystemActionLog;
 use Flux\Flux;
@@ -102,6 +103,59 @@ class Index extends Component
     public function runImportPhones(): void
     {
         $this->runFixedCommand(['app:voip:import-phones-from-sepidar'], __('app.import_phones_executed'));
+    }
+
+    public function sendCrmBaleTestMessage(): void
+    {
+        $token = config('bale.crm_bot_token');
+        $chatId = config('bale.crm_bot_group_chat_id');
+
+        if (! $token || ! $chatId) {
+            $this->commandOutput = __('app.crm_bale_test_missing_config');
+            Flux::toast(__('app.crm_bale_test_missing_config'));
+
+            return;
+        }
+
+        $message = __('app.crm_bale_test_message', [
+            'bot' => (string) config('bale.crm_bot_name', 'SetareganCRMBot'),
+            'chat_id' => (string) $chatId,
+            'time' => now()->timezone('Asia/Tehran')->format('Y-m-d H:i:s'),
+        ]);
+
+        try {
+            BaleSendMessageJob::dispatchSync($message, 'crm');
+
+            $this->commandOutput = $message;
+
+            SystemActionLog::create([
+                'command' => 'crm:bale-test-message',
+                'output' => $message,
+                'status' => 'success',
+            ]);
+
+            Flux::toast(__('app.crm_bale_test_sent'));
+            unset($this->actionLogs);
+        } catch (Throwable $e) {
+            $this->commandOutput = $e->getMessage();
+
+            SystemActionLog::create([
+                'command' => 'crm:bale-test-message',
+                'output' => $this->commandOutput,
+                'status' => 'failed',
+            ]);
+
+            Flux::toast(__('app.crm_bale_test_failed'));
+            unset($this->actionLogs);
+        }
+    }
+
+    public function runPaidOrderBaleNotification(): void
+    {
+        $this->runFixedCommand(
+            ['app:setaregan-co:send-paid-order-bale-notification'],
+            __('app.paid_order_bale_notification_executed')
+        );
     }
 
     public function runArtisanCommand(string $command): void
