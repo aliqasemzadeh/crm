@@ -164,6 +164,26 @@
                 >
                     {{ __('app.run_import_phones') }}
                 </flux:button>
+                <flux:button
+                    variant="primary"
+                    color="fuchsia"
+                    icon="send"
+                    wire:click="sendCrmBaleTestMessage"
+                    wire:confirm="{{ __('app.confirm_action') }}"
+                    class="w-full"
+                >
+                    {{ __('app.send_crm_bale_test') }}
+                </flux:button>
+                <flux:button
+                    variant="primary"
+                    color="pink"
+                    icon="shopping-bag"
+                    wire:click="runPaidOrderBaleNotification"
+                    wire:confirm="{{ __('app.confirm_action') }}"
+                    class="w-full"
+                >
+                    {{ __('app.run_paid_order_bale_notification') }}
+                </flux:button>
             </div>
         </flux:card>
 
