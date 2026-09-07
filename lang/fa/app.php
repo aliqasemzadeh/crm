@@ -1523,6 +1523,16 @@ return [
     'invoices_description' => 'مشاده فاکتورها.',
 
     'announcement_bale_message' => 'لطفا نسبت به مطالعه اقدام فرمایید',
+    'setaregan_paid_order_bale_title' => 'ثبت سفارش پرداخت‌شده ستارگان',
+    'setaregan_paid_order_id' => 'شناسه سفارش',
+    'setaregan_paid_order_tracking_code' => 'کد رهگیری',
+    'setaregan_paid_order_customer' => 'مشتری',
+    'setaregan_paid_order_mobile' => 'موبایل',
+    'setaregan_paid_order_total_amount' => 'مبلغ کل',
+    'setaregan_paid_order_products' => 'محصولات',
+    'setaregan_paid_order_payment_date' => 'تاریخ پرداخت',
+    'setaregan_paid_order_product_line' => '• :product × :count',
+
     'instructions' => 'دستورالعمل‌ها',
     'create_instruction' => 'ایجاد دستورالعمل جدید',
     'edit_instruction' => 'ویرایش دستورالعمل',
