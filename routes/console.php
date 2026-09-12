@@ -13,3 +13,4 @@ Schedule::command('app:follow-up-command')->dailyAt('08:00')->runInBackground()-
 Schedule::command('app:cash-back-discount-code-command')->hourly()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:cash-back-discount-code-command executed successfully.'));
 Schedule::command('app:setaregan-co:send-paid-order-bale-notification')->everyTwoMinutes()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:setaregan-co:send-paid-order-bale-notification executed successfully.'));
 Schedule::command('app:quick-pricing-in-stock-cluster-command')->hourly()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:quick-pricing-in-stock-cluster-command executed successfully.'));
+Schedule::command('app:dashboard:cache-bank-month-balances')->dailyAt('01:30')->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:dashboard:cache-bank-month-balances executed successfully.'));
