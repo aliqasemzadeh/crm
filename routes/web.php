@@ -23,6 +23,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/user/setting/change-password', 'pages::panels.user.setting.change-password')->name('panels.user.setting.change-password');
     Route::livewire('/panels/user/setting/change-email', 'pages::panels.user.setting.change-email')->name('panels.user.setting.change-email');
     Route::livewire('/panels/user/setting/change-mobile', 'pages::panels.user.setting.change-mobile')->name('panels.user.setting.change-mobile');
+    Route::livewire('/panels/user/setting/bale', 'pages::panels.user.setting.bale')->name('panels.user.setting.bale');
 
 
     Route::livewire('/panels/administrator/dashboard/index', 'pages::panels.administrator.dashboard.index')->name('panels.administrator.dashboard.index');

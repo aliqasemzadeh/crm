@@ -9,4 +9,5 @@ return [
     'crm_bot_name' => env('CRM_BALE_BOT_NAME', 'SetareganCRMBot'),
     'crm_bot_token' => env('CRM_BALE_BOT_TOKEN'),
     'crm_bot_group_chat_id' => env('CRM_BALE_BOT_GROUP_CHAT_ID', '4716603133'),
+    'crm_bot_webhook_secret' => env('CRM_BALE_BOT_WEBHOOK_SECRET'),
 ];

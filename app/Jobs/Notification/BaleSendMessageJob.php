@@ -26,12 +26,18 @@ class BaleSendMessageJob implements ShouldQueue
     protected $destination;
 
     /**
+     * Optional override chat id (private chat or specific group).
+     */
+    protected ?string $chatId;
+
+    /**
      * Create a new job instance.
      */
-    public function __construct(string $message, string $destination = 'price')
+    public function __construct(string $message, string $destination = 'price', ?string $chatId = null)
     {
         $this->message = $message;
         $this->destination = $destination;
+        $this->chatId = $chatId;
     }
 
     /**
@@ -41,10 +47,10 @@ class BaleSendMessageJob implements ShouldQueue
     {
         if ($this->destination === 'crm') {
             $token = config('bale.crm_bot_token');
-            $chatId = config('bale.crm_bot_group_chat_id');
+            $chatId = $this->chatId ?: config('bale.crm_bot_group_chat_id');
         } else {
             $token = config('bale.bot_token');
-            $chatId = config('bale.bot_group_chat_id');
+            $chatId = $this->chatId ?: config('bale.bot_group_chat_id');
         }
 
         if (! $token || ! $chatId) {
