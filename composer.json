@@ -14,6 +14,7 @@
         "khody2012/laravel-ami-toolkit": "@dev",
         "laravel-lang/common": "^6.7",
         "laravel/framework": "^13.0",
+        "laravel/octane": "^2.19",
         "laravel/socialite": "^5.24",
         "laravel/tinker": "^3.0",
         "livewire/flux-pro": "^2.11",
