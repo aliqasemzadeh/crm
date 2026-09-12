@@ -15,9 +15,11 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
     public $sortBy = 'created_at';
     public $sortDirection = 'desc';
     public string $search = '';
+    public string $baleFilter = '';
 
     protected $queryString = [
         'search' => ['except' => ''],
+        'baleFilter' => ['except' => ''],
         'page' => ['except' => 1],
     ];
 
@@ -45,11 +47,20 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
                         ->orWhere('email', 'like', $search);
                 });
             })
+            ->when($this->baleFilter === 'connected', fn ($query) => $query->whereNotNull('bale_code')->where('bale_code', '!=', ''))
+            ->when($this->baleFilter === 'not_connected', fn ($query) => $query->where(function ($q) {
+                $q->whereNull('bale_code')->orWhere('bale_code', '');
+            }))
             ->tap(fn ($query) => $this->sortBy ? $query->orderBy($this->sortBy, $this->sortDirection) : $query)
             ->paginate(20);
     }
 
     public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingBaleFilter(): void
     {
         $this->resetPage();
     }
@@ -108,8 +119,13 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
 
     <flux:table :paginate="$this->users">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column colspan="4" class="bg-white dark:bg-zinc-900">
-                <div class="flex flex-col gap-1 pe-2 items-end">
+            <flux:table.column colspan="5" class="bg-white dark:bg-zinc-900">
+                <div class="flex flex-col md:flex-row gap-2 pe-2 items-end">
+                    <flux:select wire:model.live="baleFilter" placeholder="{{ __('app.bale_connection') }}" size="sm" class="min-w-[180px]" searchable>
+                        <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                        <flux:select.option value="connected">{{ __('app.bale_connected') }}</flux:select.option>
+                        <flux:select.option value="not_connected">{{ __('app.bale_not_connected') }}</flux:select.option>
+                    </flux:select>
                     <flux:input
                         size="sm"
                         placeholder="{{ __('app.search_placeholder') }}"
@@ -122,12 +138,14 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
             <flux:table.column>{{ __('app.id') }}</flux:table.column>
             <flux:table.column>{{ __('app.mobile') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
+            <flux:table.column>{{ __('app.bale_connection') }}</flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('app.date') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
             @foreach ($this->users as $user)
                 @php
                     $avatarUrl = $user->getAvatarUrl();
+                    $isBaleConnected = filled($user->bale_code);
                 @endphp
                 <flux:table.row :key="$user->id">
                     <flux:table.cell>
@@ -143,6 +161,13 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
                     </flux:table.cell>
                     <flux:table.cell>
                         {{ $user->name }}
+                    </flux:table.cell>
+                    <flux:table.cell>
+                        @if ($isBaleConnected)
+                            <flux:badge color="green" size="sm">{{ __('app.bale_connected') }}</flux:badge>
+                        @else
+                            <flux:badge color="zinc" size="sm">{{ __('app.bale_not_connected') }}</flux:badge>
+                        @endif
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">
                         <div class="flex gap-2">
