@@ -186,9 +186,12 @@ return [
         'accounting_item_delete' => 'حذف کالا',
 
         'accounting_invoice_index' => 'فهرست فاکتورها',
+        'accounting_invoice_view' => 'مشاهده فاکتور',
         'accounting_invoice_create' => 'ایجاد فاکتور',
         'accounting_invoice_edit' => 'ویرایش فاکتور',
         'accounting_invoice_delete' => 'حذف فاکتور',
+        'accounting_invoice_review_approve' => 'تایید بررسی فاکتور',
+        'accounting_invoice_review_reject' => 'رد بررسی فاکتور',
 
         'accounting_party_index' => 'فهرست طرف حساب‌ها',
         'accounting_party_create' => 'ایجاد طرف حساب',
@@ -196,7 +199,6 @@ return [
         'accounting_party_phone' => 'تلفن طرف حساب',
         'accounting_party_address' => 'آدرس طرف حساب',
         'accounting_party_delete' => 'حذف طرف حساب',
-
 
         'accounting_profit_index' => 'مشاهده سود',
 
