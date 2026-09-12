@@ -2,6 +2,8 @@
 
 namespace App\Livewire\Panels\Accounting\Invoice;
 
+use App\Enums\InvoiceReviewStatusEnum;
+use App\Models\Crm\InvoiceReview;
 use App\Models\Sepidar\SLS\Invoice;
 use Flux\Flux;
 use Illuminate\Support\Facades\Cache;
@@ -25,6 +27,9 @@ class Index extends Component
     #[Url]
     public string $saleType = 'all';
 
+    #[Url]
+    public string $reviewStatus = 'all';
+
     public int $selectedMonth = 0;
 
     public function sort(string $column): void
@@ -46,6 +51,11 @@ class Index extends Component
     public function updatedSaleType(): void
     {
         unset($this->invoiceStats);
+        $this->resetPage();
+    }
+
+    public function updatedReviewStatus(): void
+    {
         $this->resetPage();
     }
 
@@ -102,7 +112,7 @@ class Index extends Component
     #[Computed]
     public function invoices()
     {
-        return Invoice::query()
+        $paginator = Invoice::query()
             ->with(['creator'])
             ->when($this->saleType !== 'all', function ($query) {
                 if ($this->saleType === 'official') {
@@ -110,6 +120,19 @@ class Index extends Component
                 } else {
                     $query->where('SaleTypeRef', '!=', 1);
                 }
+            })
+            ->when($this->reviewStatus !== 'all', function ($query) {
+                $status = InvoiceReviewStatusEnum::tryFrom($this->reviewStatus);
+
+                if (! $status) {
+                    return;
+                }
+
+                $invoiceIds = InvoiceReview::query()
+                    ->where('status', $status->value)
+                    ->pluck('sepidar_invoice_id');
+
+                $query->whereIn('InvoiceId', $invoiceIds);
             })
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
@@ -123,6 +146,18 @@ class Index extends Component
                 }
             })
             ->paginate(20);
+
+        $reviews = InvoiceReview::query()
+            ->with('accountingReviewer')
+            ->whereIn('sepidar_invoice_id', $paginator->getCollection()->pluck('InvoiceId'))
+            ->get()
+            ->keyBy('sepidar_invoice_id');
+
+        $paginator->getCollection()->each(function (Invoice $invoice) use ($reviews): void {
+            $invoice->setRelation('review', $reviews->get($invoice->InvoiceId));
+        });
+
+        return $paginator;
     }
 
     #[Layout('layouts.panels.accounting')]

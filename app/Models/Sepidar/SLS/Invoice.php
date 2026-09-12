@@ -3,6 +3,7 @@
 namespace App\Models\Sepidar\SLS;
 
 use App\Livewire\Panels\Accounting\Invoice\Index;
+use App\Models\Crm\InvoiceReview;
 use App\Models\Sepidar\ACC\Voucher;
 use App\Models\Sepidar\FMK\User;
 use App\Models\Sepidar\GNR\DeliveryLocation;
@@ -11,6 +12,7 @@ use App\Models\Sepidar\GNR\PartyAddress;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
 
 class Invoice extends Model
@@ -169,5 +171,10 @@ class Invoice extends Model
     public function saleType(): BelongsTo
     {
         return $this->belongsTo(SaleType::class, 'SaleTypeRef', 'SaleTypeId');
+    }
+
+    public function review(): HasOne
+    {
+        return $this->hasOne(InvoiceReview::class, 'sepidar_invoice_id', 'InvoiceId');
     }
 }

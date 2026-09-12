@@ -41,7 +41,7 @@
     </div>
 
     <div class="relative">
-        <div wire:loading.delay.longer wire:target="saleType, search" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+        <div wire:loading.delay.longer wire:target="saleType, search, reviewStatus" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
             <flux:icon.loader-circle class="animate-spin text-zinc-500 w-10 h-10" />
         </div>
 
@@ -115,10 +115,16 @@
     <livewire:panels.accounting.inventory-receipt.view />
 
 
-    <div class="flex items-center justify-between gap-4 mb-4">
-        <div class="flex-1">
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div class="flex-1 min-w-56">
             <flux:input wire:model.live.debounce.500ms="search" icon="search" placeholder="{{ __('app.search_placeholder') }}" />
         </div>
+        <flux:tabs variant="segmented" class="-my-px h-auto! max-md:w-full max-md:overflow-x-auto" wire:model.live="reviewStatus">
+            <flux:tab name="all">{{ __('app.invoice_review_filter_all') }}</flux:tab>
+            <flux:tab name="pending">{{ __('app.invoice_review_filter_pending') }}</flux:tab>
+            <flux:tab name="approved">{{ __('app.invoice_review_filter_approved') }}</flux:tab>
+            <flux:tab name="rejected">{{ __('app.invoice_review_filter_rejected') }}</flux:tab>
+        </flux:tabs>
     </div>
 
     <flux:table :paginate="$this->invoices">
@@ -128,6 +134,8 @@
             <flux:table.column sortable :sorted="$sortBy === 'CustomerRealName'" :direction="$sortDirection" wire:click="sort('CustomerRealName')">{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.creator') }}</flux:table.column>
             <flux:table.column>{{ __('app.category') }}</flux:table.column>
+            <flux:table.column>{{ __('app.invoice_review_status') }}</flux:table.column>
+            <flux:table.column>{{ __('app.invoice_review_reviewer') }}</flux:table.column>
             <flux:table.column>{{ __('app.price') }}</flux:table.column>
             @can('accounting_profit_index')
                 <flux:table.column>{{ __('app.price') }} (تتر)</flux:table.column>
@@ -151,11 +159,11 @@
                                 wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $invoice->InvoiceId }}' })"
                             />
                         </flux:tooltip>
-                        <flux:tooltip content="{{ __('app.invoice_details') }}">
+                        <flux:tooltip content="{{ $invoice->review?->isPending() ? __('app.invoice_review') : __('app.invoice_details') }}">
                             <flux:button
                                 size="xs"
                                 variant="primary"
-                                color="teal"
+                                color="{{ $invoice->review?->isPending() ? 'amber' : 'teal' }}"
                                 icon="file-text"
                                 icon:variant="outline"
                                 href="{{ route('panels.accounting.invoice.view', $invoice->InvoiceId) }}"
@@ -201,9 +209,28 @@
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
                     @if($invoice->SaleTypeRef == 1)
-                        رسمی
+                        {{ __('app.official') }}
                     @else
-                        غیر رسمی
+                        {{ __('app.unofficial') }}
+                    @endif
+                </flux:table.cell>
+                <flux:table.cell class="whitespace-nowrap">
+                    @if ($invoice->review)
+                        <flux:badge color="{{ $invoice->review->status->color() }}" size="sm">
+                            {{ $invoice->review->status->label() }}
+                        </flux:badge>
+                    @else
+                        <flux:badge color="zinc" size="sm">
+                            {{ __('app.invoice_review_status_not_registered') }}
+                        </flux:badge>
+                    @endif
+                </flux:table.cell>
+                <flux:table.cell class="whitespace-nowrap">
+                    {{ $invoice->review?->accountingReviewer?->name ?? '-' }}
+                    @if ($invoice->review?->accounting_reviewed_at)
+                        <div class="text-xs text-zinc-500">
+                            {{ \Morilog\Jalali\Jalalian::fromDateTime($invoice->review->accounting_reviewed_at)->format('Y/m/d H:i') }}
+                        </div>
                     @endif
                 </flux:table.cell>
                 <flux:table.cell class="whitespace-nowrap">
