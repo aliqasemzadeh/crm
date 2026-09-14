@@ -3,7 +3,9 @@
 namespace App\Services\Report;
 
 use App\Models\SetareganCo\Order;
+use App\Models\SetareganCo\OrderDetail;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
 
 class SiteYearlySalesService
@@ -15,9 +17,20 @@ class SiteYearlySalesService
         return 'report_site_yearly_sales_from_'.self::START_JALALI_YEAR;
     }
 
+    public static function topProductsCacheKey(int $jalaliYear): string
+    {
+        return 'report_site_top_products_'.$jalaliYear;
+    }
+
     public static function clearCache(): void
     {
         Cache::forget(self::cacheKey());
+
+        $currentYear = (int) Jalalian::now()->getYear();
+
+        for ($year = self::START_JALALI_YEAR; $year <= $currentYear; $year++) {
+            Cache::forget(self::topProductsCacheKey($year));
+        }
     }
 
     /**
@@ -103,6 +116,69 @@ class SiteYearlySalesService
                 'total' => $total,
                 'yearCharts' => $yearCharts,
             ];
+        });
+    }
+
+    /**
+     * @return list<array{
+     *     rank: int,
+     *     product_id: int,
+     *     name: string,
+     *     unit_price: float,
+     *     quantity: float,
+     *     sales: float
+     * }>
+     */
+    public function topProducts(int $jalaliYear, int $limit = 10): array
+    {
+        return Cache::rememberForever(self::topProductsCacheKey($jalaliYear), function () use ($jalaliYear, $limit) {
+            $from = Jalalian::fromFormat('Y/m/d', $jalaliYear.'/01/01')
+                ->toCarbon()
+                ->startOfDay();
+
+            $to = Jalalian::fromFormat('Y/m/d', ($jalaliYear + 1).'/01/01')
+                ->toCarbon()
+                ->startOfDay()
+                ->subSecond();
+
+            if ($jalaliYear === (int) Jalalian::now()->getYear()) {
+                $to = now()->endOfDay();
+            }
+
+            $rows = OrderDetail::query()
+                ->join('Order', 'OrderDetail.OrderId', '=', 'Order.Id')
+                ->join('ProductPrice', 'OrderDetail.ProductPriceId', '=', 'ProductPrice.Id')
+                ->join('Product', 'ProductPrice.ProductId', '=', 'Product.Id')
+                ->where('Order.IsPayed', 1)
+                ->whereBetween('Order.Date', [$from, $to])
+                ->groupBy('Product.Id', 'Product.Name')
+                ->select([
+                    'Product.Id as product_id',
+                    'Product.Name as name',
+                    DB::raw('SUM(OrderDetail.Count) as quantity'),
+                    DB::raw('SUM(OrderDetail.Price * OrderDetail.Count) as sales'),
+                ])
+                ->orderByDesc('sales')
+                ->limit($limit)
+                ->get();
+
+            $products = [];
+
+            foreach ($rows as $index => $row) {
+                $quantity = (float) $row->quantity;
+                $sales = (float) $row->sales;
+
+                $products[] = [
+                    'rank' => $index + 1,
+                    'product_id' => (int) $row->product_id,
+                    'name' => (string) $row->name,
+                    'unit_price' => $quantity > 0 ? $sales / $quantity : 0.0,
+                    'quantity' => $quantity,
+                    'sales' => $sales,
+                ];
+            }
+
+            return $products;
         });
     }
 }
