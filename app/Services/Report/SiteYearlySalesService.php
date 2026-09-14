@@ -19,7 +19,7 @@ class SiteYearlySalesService
 
     public static function topProductsCacheKey(int $jalaliYear): string
     {
-        return 'report_site_top_products_'.$jalaliYear;
+        return 'report_site_top_products_by_qty_'.$jalaliYear;
     }
 
     public static function clearCache(): void
@@ -158,7 +158,7 @@ class SiteYearlySalesService
                     DB::raw('SUM(OrderDetail.Count) as quantity'),
                     DB::raw('SUM(OrderDetail.Price * OrderDetail.Count) as sales'),
                 ])
-                ->orderByDesc('sales')
+                ->orderByDesc('quantity')
                 ->limit($limit)
                 ->get();
 
