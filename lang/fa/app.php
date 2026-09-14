@@ -74,6 +74,8 @@ return [
     'report_dashboard_subtitle' => 'خلاصه و دسترسی سریع به گزارش‌های سیستم.',
     'report_site_title' => 'گزارش سایت',
     'report_site_subtitle' => 'گزارش‌های مرتبط با سایت.',
+    'site_yearly_sales' => 'نمودار فروش سالیانه سایت',
+    'site_yearly_sales_total' => 'مجموع فروش از سال ۱۴۰۰',
     'report_item_title' => 'گزارش کالا',
     'report_item_subtitle' => 'گزارش‌های مرتبط با کالاها.',
     'report_coming_soon' => 'این گزارش به‌زودی در دسترس خواهد بود.',
