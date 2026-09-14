@@ -294,4 +294,11 @@ return [
         'administrator_user_management_hr' => 'گزارش حضور و غیاب',
     ],
 
+    'report' => [
+        'report_access' => 'دسترسی گزارشات',
+        'report_dashboard_index' => 'داشبورد گزارشات',
+        'report_site_index' => 'گزارش سایت',
+        'report_item_index' => 'گزارش کالا',
+    ],
+
 ];

@@ -10,4 +10,5 @@ return [
     'sales' => 'فروش',
     'accounting' => 'حسابداری',
     'warehouse' => 'انبار دار',
+    'report' => 'گزارشات',
 ];
