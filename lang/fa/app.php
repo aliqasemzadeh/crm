@@ -76,6 +76,7 @@ return [
     'report_site_subtitle' => 'گزارش‌های مرتبط با سایت.',
     'site_yearly_sales' => 'نمودار فروش سالیانه سایت',
     'site_yearly_sales_total' => 'مجموع فروش از سال ۱۴۰۰',
+    'site_sales_year' => 'سال',
     'site_sales_chart_year' => 'فروش سال :year',
     'report_item_title' => 'گزارش کالا',
     'report_item_subtitle' => 'گزارش‌های مرتبط با کالاها.',

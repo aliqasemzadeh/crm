@@ -5,18 +5,23 @@ use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Morilog\Jalali\Jalalian;
 
 new #[Layout('layouts.panels.report')] class extends Component
 {
+    public int $selectedYear;
+
     public function mount(): void
     {
         $this->authorize('report_site_index');
+        $this->selectedYear = (int) Jalalian::now()->getYear();
     }
 
     public function reload(): void
     {
         SiteYearlySalesService::clearCache();
         unset($this->yearlySales);
+        unset($this->selectedYearChart);
 
         Flux::toast(__('app.dashboard_data_reloaded'));
     }
@@ -33,6 +38,28 @@ new #[Layout('layouts.panels.report')] class extends Component
     {
         return app(SiteYearlySalesService::class)->yearlySales();
     }
+
+    /**
+     * @return array{year: string, total: float, months: list<array{month: string, sales: float}>}|null
+     */
+    #[Computed]
+    public function selectedYearChart(): ?array
+    {
+        return $this->yearlySales['yearCharts'][$this->selectedYear] ?? null;
+    }
+
+    /**
+     * @return list<int>
+     */
+    #[Computed]
+    public function availableYears(): array
+    {
+        $years = array_keys($this->yearlySales['yearCharts'] ?? []);
+
+        rsort($years);
+
+        return array_map('intval', $years);
+    }
 };
 ?>
 
@@ -47,14 +74,21 @@ new #[Layout('layouts.panels.report')] class extends Component
                 <flux:heading size="xl" level="1">{{ __('app.report_site_title') }}</flux:heading>
                 <flux:subheading size="lg" class="mb-2">{{ __('app.report_site_subtitle') }}</flux:subheading>
             </div>
-            <flux:button wire:click="reload" icon="arrow-path" size="sm" variant="subtle" wire:loading.attr="disabled">
-                {{ __('app.reload') }}
-            </flux:button>
+            <div class="flex items-center gap-2">
+                <flux:button wire:click="reload" icon="arrow-path" size="sm" variant="subtle" wire:loading.attr="disabled">
+                    {{ __('app.reload') }}
+                </flux:button>
+                <flux:select wire:model.live="selectedYear" class="w-48">
+                    @foreach($this->availableYears as $year)
+                        <flux:select.option value="{{ $year }}">{{ $year }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
         </div>
         <flux:separator variant="subtle" class="mt-4" />
     </div>
 
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" wire:loading.class="opacity-60" wire:target="reload">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3" wire:loading.class="opacity-60" wire:target="selectedYear,reload">
         <flux:card class="border-t-4 border-teal-500">
             <flux:text>{{ __('app.site_yearly_sales_total') }}</flux:text>
             <flux:heading size="xl" class="mt-2 tabular-nums">
@@ -62,9 +96,17 @@ new #[Layout('layouts.panels.report')] class extends Component
                 <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
             </flux:heading>
         </flux:card>
+
+        <flux:card class="border-t-4 border-emerald-500">
+            <flux:text>{{ __('app.site_sales_chart_year', ['year' => $selectedYear]) }}</flux:text>
+            <flux:heading size="xl" class="mt-2 tabular-nums">
+                {{ number_format($this->selectedYearChart['total'] ?? 0) }}
+                <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+            </flux:heading>
+        </flux:card>
     </div>
 
-    <flux:card wire:loading.class="opacity-60" wire:target="reload">
+    <flux:card wire:loading.class="opacity-60" wire:target="selectedYear,reload">
         <flux:heading size="lg" class="mb-4">{{ __('app.site_yearly_sales') }}</flux:heading>
 
         <flux:chart :value="$this->yearlySales['chart'] ?? []" class="h-80">
@@ -92,41 +134,31 @@ new #[Layout('layouts.panels.report')] class extends Component
         </flux:chart>
     </flux:card>
 
-    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2" wire:loading.class="opacity-60" wire:target="reload">
-        @foreach($this->yearlySales['yearCharts'] ?? [] as $yearChart)
-            <flux:card>
-                <div class="mb-4">
-                    <flux:heading size="lg">{{ __('app.site_sales_chart_year', ['year' => $yearChart['year']]) }}</flux:heading>
-                    <flux:text class="mt-1 tabular-nums">
-                        {{ number_format($yearChart['total'] ?? 0) }}
-                        <span class="text-zinc-500">{{ __('app.rial') }}</span>
-                    </flux:text>
-                </div>
+    <flux:card wire:loading.class="opacity-60" wire:target="selectedYear,reload">
+        <flux:heading size="lg" class="mb-4">{{ __('app.site_sales_chart_year', ['year' => $selectedYear]) }}</flux:heading>
 
-                <flux:chart :value="$yearChart['months'] ?? []" class="h-72">
-                    <flux:chart.viewport class="min-h-[18rem]">
-                        <flux:chart.svg>
-                            <flux:chart.bar field="sales" class="text-teal-500" radius="4" width="70%" />
+        <flux:chart :value="$this->selectedYearChart['months'] ?? []" class="h-80">
+            <flux:chart.viewport class="min-h-[20rem]">
+                <flux:chart.svg>
+                    <flux:chart.bar field="sales" class="text-emerald-500" radius="4" width="70%" />
 
-                            <flux:chart.axis axis="x" field="month">
-                                <flux:chart.axis.tick />
-                            </flux:chart.axis>
+                    <flux:chart.axis axis="x" field="month">
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
 
-                            <flux:chart.axis axis="y" :format="['useGrouping' => true]">
-                                <flux:chart.axis.grid />
-                                <flux:chart.axis.tick />
-                            </flux:chart.axis>
+                    <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                        <flux:chart.axis.grid />
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
 
-                            <flux:chart.cursor type="area" />
-                        </flux:chart.svg>
-                    </flux:chart.viewport>
+                    <flux:chart.cursor type="area" />
+                </flux:chart.svg>
+            </flux:chart.viewport>
 
-                    <flux:chart.tooltip>
-                        <flux:chart.tooltip.heading field="month" />
-                        <flux:chart.tooltip.value field="sales" :label="__('app.sales')" :format="['useGrouping' => true]" />
-                    </flux:chart.tooltip>
-                </flux:chart>
-            </flux:card>
-        @endforeach
-    </div>
+            <flux:chart.tooltip>
+                <flux:chart.tooltip.heading field="month" />
+                <flux:chart.tooltip.value field="sales" :label="__('app.sales')" :format="['useGrouping' => true]" />
+            </flux:chart.tooltip>
+        </flux:chart>
+    </flux:card>
 </div>
