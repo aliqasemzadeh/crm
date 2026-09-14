@@ -63,7 +63,7 @@ new #[Layout('layouts.panels.report')] class extends Component
     }
 
     /**
-     * @return list<array{rank: int, product_id: int, name: string, unit_price: float, quantity: float, sales: float}>
+     * @return list<array{rank: int, product_id: int, name: string, average_price: float, quantity: float, sales: float}>
      */
     #[Computed]
     public function topProducts(): array
@@ -250,7 +250,7 @@ new #[Layout('layouts.panels.report')] class extends Component
                         <flux:table.cell class="tabular-nums">{{ $product['rank'] }}</flux:table.cell>
                         <flux:table.cell>{{ $product['name'] }}</flux:table.cell>
                         <flux:table.cell class="tabular-nums">
-                            {{ number_format($product['unit_price']) }}
+                            {{ number_format($product['average_price']) }}
                             <span class="text-sm text-zinc-500">{{ __('app.rial') }}</span>
                         </flux:table.cell>
                         <flux:table.cell class="tabular-nums">{{ number_format($product['quantity']) }}</flux:table.cell>

@@ -124,7 +124,7 @@ class SiteYearlySalesService
      *     rank: int,
      *     product_id: int,
      *     name: string,
-     *     unit_price: float,
+     *     average_price: float,
      *     quantity: float,
      *     sales: float
      * }>
@@ -172,7 +172,7 @@ class SiteYearlySalesService
                     'rank' => $index + 1,
                     'product_id' => (int) $row->product_id,
                     'name' => (string) $row->name,
-                    'unit_price' => $quantity > 0 ? $sales / $quantity : 0.0,
+                    'average_price' => $quantity > 0 ? $sales / $quantity : 0.0,
                     'quantity' => $quantity,
                     'sales' => $sales,
                 ];
