@@ -74,15 +74,18 @@ new #[Layout('layouts.panels.report')] class extends Component
                 <flux:heading size="xl" level="1">{{ __('app.report_site_title') }}</flux:heading>
                 <flux:subheading size="lg" class="mb-2">{{ __('app.report_site_subtitle') }}</flux:subheading>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-end gap-2">
                 <flux:button wire:click="reload" icon="arrow-path" size="sm" variant="subtle" wire:loading.attr="disabled">
                     {{ __('app.reload') }}
                 </flux:button>
-                <flux:select wire:model.live="selectedYear" class="w-48">
-                    @foreach($this->availableYears as $year)
-                        <flux:select.option value="{{ $year }}">{{ $year }}</flux:select.option>
-                    @endforeach
-                </flux:select>
+                <flux:field class="w-48">
+                    <flux:label>{{ __('app.site_sales_year') }}</flux:label>
+                    <flux:select wire:model.live="selectedYear" searchable>
+                        @foreach($this->availableYears as $year)
+                            <flux:select.option value="{{ $year }}">{{ $year }}</flux:select.option>
+                        @endforeach
+                    </flux:select>
+                </flux:field>
             </div>
         </div>
         <flux:separator variant="subtle" class="mt-4" />
@@ -132,6 +135,35 @@ new #[Layout('layouts.panels.report')] class extends Component
                 <flux:chart.tooltip.value field="sales" :label="__('app.sales')" :format="['useGrouping' => true]" />
             </flux:chart.tooltip>
         </flux:chart>
+
+        <flux:separator variant="subtle" class="my-6" />
+
+        <flux:heading size="md" class="mb-4">{{ __('app.site_yearly_sales_by_year') }}</flux:heading>
+
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column>{{ __('app.site_sales_year') }}</flux:table.column>
+                <flux:table.column>{{ __('app.sales') }}</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach(array_reverse($this->yearlySales['chart'] ?? []) as $row)
+                    <flux:table.row wire:key="site-yearly-sales-{{ $row['year'] }}">
+                        <flux:table.cell>{{ $row['year'] }}</flux:table.cell>
+                        <flux:table.cell class="tabular-nums">
+                            {{ number_format($row['sales']) }}
+                            <span class="text-sm text-zinc-500">{{ __('app.rial') }}</span>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+                <flux:table.row class="font-semibold">
+                    <flux:table.cell>{{ __('app.site_yearly_sales_total') }}</flux:table.cell>
+                    <flux:table.cell class="tabular-nums">
+                        {{ number_format($this->yearlySales['total'] ?? 0) }}
+                        <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:table.cell>
+                </flux:table.row>
+            </flux:table.rows>
+        </flux:table>
     </flux:card>
 
     <flux:card wire:loading.class="opacity-60" wire:target="selectedYear,reload">
@@ -160,5 +192,34 @@ new #[Layout('layouts.panels.report')] class extends Component
                 <flux:chart.tooltip.value field="sales" :label="__('app.sales')" :format="['useGrouping' => true]" />
             </flux:chart.tooltip>
         </flux:chart>
+
+        <flux:separator variant="subtle" class="my-6" />
+
+        <flux:heading size="md" class="mb-4">{{ __('app.site_monthly_sales_breakdown', ['year' => $selectedYear]) }}</flux:heading>
+
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column>{{ __('app.site_sales_month') }}</flux:table.column>
+                <flux:table.column>{{ __('app.sales') }}</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @foreach($this->selectedYearChart['months'] ?? [] as $index => $row)
+                    <flux:table.row wire:key="site-monthly-sales-{{ $selectedYear }}-{{ $index }}">
+                        <flux:table.cell>{{ $row['month'] }}</flux:table.cell>
+                        <flux:table.cell class="tabular-nums">
+                            {{ number_format($row['sales']) }}
+                            <span class="text-sm text-zinc-500">{{ __('app.rial') }}</span>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforeach
+                <flux:table.row class="font-semibold">
+                    <flux:table.cell>{{ __('app.site_sales_chart_year', ['year' => $selectedYear]) }}</flux:table.cell>
+                    <flux:table.cell class="tabular-nums">
+                        {{ number_format($this->selectedYearChart['total'] ?? 0) }}
+                        <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:table.cell>
+                </flux:table.row>
+            </flux:table.rows>
+        </flux:table>
     </flux:card>
 </div>
