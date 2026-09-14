@@ -240,7 +240,7 @@ new #[Layout('layouts.panels.report')] class extends Component
             <flux:table.columns>
                 <flux:table.column class="w-12">#</flux:table.column>
                 <flux:table.column>{{ __('app.product') }}</flux:table.column>
-                <flux:table.column>{{ __('app.unit_price') }}</flux:table.column>
+                <flux:table.column>{{ __('app.site_average_price') }}</flux:table.column>
                 <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
                 <flux:table.column>{{ __('app.sales') }}</flux:table.column>
             </flux:table.columns>
