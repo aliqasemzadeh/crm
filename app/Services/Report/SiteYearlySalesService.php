@@ -23,7 +23,12 @@ class SiteYearlySalesService
     /**
      * @return array{
      *     chart: list<array{year: string, sales: float}>,
-     *     total: float
+     *     total: float,
+     *     yearCharts: array<int, array{
+     *         year: string,
+     *         total: float,
+     *         months: list<array{month: string, sales: float}>
+     *     }>
      * }
      */
     public function yearlySales(): array
@@ -35,9 +40,11 @@ class SiteYearlySalesService
 
             $currentYear = (int) Jalalian::now()->getYear();
             $byYear = [];
+            $byYearMonth = [];
 
             for ($year = self::START_JALALI_YEAR; $year <= $currentYear; $year++) {
                 $byYear[$year] = 0.0;
+                $byYearMonth[$year] = array_fill(1, 12, 0.0);
             }
 
             $orders = Order::query()
@@ -51,16 +58,21 @@ class SiteYearlySalesService
                     continue;
                 }
 
-                $year = (int) Jalalian::fromDateTime($order->Date)->getYear();
+                $jalali = Jalalian::fromDateTime($order->Date);
+                $year = (int) $jalali->getYear();
+                $month = (int) $jalali->getMonth();
 
                 if ($year < self::START_JALALI_YEAR || $year > $currentYear) {
                     continue;
                 }
 
-                $byYear[$year] += (float) $order->TotalAmount;
+                $amount = (float) $order->TotalAmount;
+                $byYear[$year] += $amount;
+                $byYearMonth[$year][$month] += $amount;
             }
 
             $chart = [];
+            $yearCharts = [];
             $total = 0.0;
 
             foreach ($byYear as $year => $sales) {
@@ -69,11 +81,27 @@ class SiteYearlySalesService
                     'sales' => $sales,
                 ];
                 $total += $sales;
+
+                $months = [];
+
+                for ($month = 1; $month <= 12; $month++) {
+                    $months[] = [
+                        'month' => __('app.jalali_months.'.$month),
+                        'sales' => $byYearMonth[$year][$month],
+                    ];
+                }
+
+                $yearCharts[$year] = [
+                    'year' => (string) $year,
+                    'total' => $sales,
+                    'months' => $months,
+                ];
             }
 
             return [
                 'chart' => $chart,
                 'total' => $total,
+                'yearCharts' => $yearCharts,
             ];
         });
     }
