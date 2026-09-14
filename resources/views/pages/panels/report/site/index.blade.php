@@ -1,13 +1,29 @@
 <?php
 
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new class extends Component
+new #[Layout('layouts.panels.report')] class extends Component
 {
-    //
+    public function mount(): void
+    {
+        $this->authorize('report_site_index');
+    }
 };
 ?>
 
+<x-slot name="title">
+    {{ __('app.report_site_title') }}
+</x-slot>
+
 <div>
-    {{-- People find pleasure in different ways. I find it in keeping my mind clear. - Marcus Aurelius --}}
+    <div class="relative mb-6 w-full">
+        <flux:heading size="xl" level="1">{{ __('app.report_site_title') }}</flux:heading>
+        <flux:subheading size="lg" class="mb-6">{{ __('app.report_site_subtitle') }}</flux:subheading>
+        <flux:separator variant="subtle" />
+    </div>
+
+    <flux:callout icon="globe-alt">
+        <flux:callout.text>{{ __('app.report_coming_soon') }}</flux:callout.text>
+    </flux:callout>
 </div>

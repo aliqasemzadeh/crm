@@ -27,6 +27,10 @@
     <flux:sidebar.item icon="handshake" href="{{ route('panels.crm.dashboard.index') }}" :current="request()->routeIs('panels.crm.*')" wire:navigate>{{ __('app.crm') }}</flux:sidebar.item>
     @endcan
 
+    @can('report_access')
+        <flux:sidebar.item icon="chart-column" href="{{ route('panels.report.dashboard.index') }}" :current="request()->routeIs('panels.report.*')" wire:navigate>{{ __('app.reports') }}</flux:sidebar.item>
+    @endcan
+
     <flux:sidebar.item icon="clock" href="{{ route('panels.hr.attendance.index') }}" :current="request()->routeIs('panels.hr.*')" wire:navigate>{{ __('app.hr') }}</flux:sidebar.item>
 
 
