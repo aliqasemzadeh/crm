@@ -22,7 +22,11 @@ new #[Layout('layouts.panels.report')] class extends Component
     }
 
     /**
-     * @return array{chart: list<array{year: string, sales: float}>, total: float}
+     * @return array{
+     *     chart: list<array{year: string, sales: float}>,
+     *     total: float,
+     *     yearCharts: array<int, array{year: string, total: float, months: list<array{month: string, sales: float}>}>
+     * }
      */
     #[Computed]
     public function yearlySales(): array
@@ -87,4 +91,42 @@ new #[Layout('layouts.panels.report')] class extends Component
             </flux:chart.tooltip>
         </flux:chart>
     </flux:card>
+
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2" wire:loading.class="opacity-60" wire:target="reload">
+        @foreach($this->yearlySales['yearCharts'] ?? [] as $yearChart)
+            <flux:card>
+                <div class="mb-4">
+                    <flux:heading size="lg">{{ __('app.site_sales_chart_year', ['year' => $yearChart['year']]) }}</flux:heading>
+                    <flux:text class="mt-1 tabular-nums">
+                        {{ number_format($yearChart['total'] ?? 0) }}
+                        <span class="text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:text>
+                </div>
+
+                <flux:chart :value="$yearChart['months'] ?? []" class="h-72">
+                    <flux:chart.viewport class="min-h-[18rem]">
+                        <flux:chart.svg>
+                            <flux:chart.bar field="sales" class="text-teal-500" radius="4" width="70%" />
+
+                            <flux:chart.axis axis="x" field="month">
+                                <flux:chart.axis.tick />
+                            </flux:chart.axis>
+
+                            <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                                <flux:chart.axis.grid />
+                                <flux:chart.axis.tick />
+                            </flux:chart.axis>
+
+                            <flux:chart.cursor type="area" />
+                        </flux:chart.svg>
+                    </flux:chart.viewport>
+
+                    <flux:chart.tooltip>
+                        <flux:chart.tooltip.heading field="month" />
+                        <flux:chart.tooltip.value field="sales" :label="__('app.sales')" :format="['useGrouping' => true]" />
+                    </flux:chart.tooltip>
+                </flux:chart>
+            </flux:card>
+        @endforeach
+    </div>
 </div>
