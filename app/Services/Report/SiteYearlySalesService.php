@@ -22,6 +22,11 @@ class SiteYearlySalesService
         return 'report_site_top_products_by_qty_'.$jalaliYear;
     }
 
+    public static function topProductsBySalesCacheKey(int $jalaliYear): string
+    {
+        return 'report_site_top_products_by_sales_'.$jalaliYear;
+    }
+
     public static function clearCache(): void
     {
         Cache::forget(self::cacheKey());
@@ -30,6 +35,7 @@ class SiteYearlySalesService
 
         for ($year = self::START_JALALI_YEAR; $year <= $currentYear; $year++) {
             Cache::forget(self::topProductsCacheKey($year));
+            Cache::forget(self::topProductsBySalesCacheKey($year));
         }
     }
 
@@ -131,54 +137,89 @@ class SiteYearlySalesService
      */
     public function topProducts(int $jalaliYear, int $limit = 10): array
     {
-        return Cache::rememberForever(self::topProductsCacheKey($jalaliYear), function () use ($jalaliYear, $limit) {
-            $from = Jalalian::fromFormat('Y/m/d', $jalaliYear.'/01/01')
-                ->toCarbon()
-                ->startOfDay();
+        return Cache::rememberForever(
+            self::topProductsCacheKey($jalaliYear),
+            fn () => $this->fetchTopProducts($jalaliYear, 'quantity', $limit)
+        );
+    }
 
-            $to = Jalalian::fromFormat('Y/m/d', ($jalaliYear + 1).'/01/01')
-                ->toCarbon()
-                ->startOfDay()
-                ->subSecond();
+    /**
+     * @return list<array{
+     *     rank: int,
+     *     product_id: int,
+     *     name: string,
+     *     average_price: float,
+     *     quantity: float,
+     *     sales: float
+     * }>
+     */
+    public function topProductsBySales(int $jalaliYear, int $limit = 10): array
+    {
+        return Cache::rememberForever(
+            self::topProductsBySalesCacheKey($jalaliYear),
+            fn () => $this->fetchTopProducts($jalaliYear, 'sales', $limit)
+        );
+    }
 
-            if ($jalaliYear === (int) Jalalian::now()->getYear()) {
-                $to = now()->endOfDay();
-            }
+    /**
+     * @param  'quantity'|'sales'  $orderBy
+     * @return list<array{
+     *     rank: int,
+     *     product_id: int,
+     *     name: string,
+     *     average_price: float,
+     *     quantity: float,
+     *     sales: float
+     * }>
+     */
+    private function fetchTopProducts(int $jalaliYear, string $orderBy, int $limit): array
+    {
+        $from = Jalalian::fromFormat('Y/m/d', $jalaliYear.'/01/01')
+            ->toCarbon()
+            ->startOfDay();
 
-            $rows = OrderDetail::query()
-                ->join('Order', 'OrderDetail.OrderId', '=', 'Order.Id')
-                ->join('ProductPrice', 'OrderDetail.ProductPriceId', '=', 'ProductPrice.Id')
-                ->join('Product', 'ProductPrice.ProductId', '=', 'Product.Id')
-                ->where('Order.IsPayed', 1)
-                ->whereBetween('Order.Date', [$from, $to])
-                ->groupBy('Product.Id', 'Product.Name')
-                ->select([
-                    'Product.Id as product_id',
-                    'Product.Name as name',
-                    DB::raw('SUM(OrderDetail.Count) as quantity'),
-                    DB::raw('SUM(OrderDetail.Price * OrderDetail.Count) as sales'),
-                ])
-                ->orderByDesc('quantity')
-                ->limit($limit)
-                ->get();
+        $to = Jalalian::fromFormat('Y/m/d', ($jalaliYear + 1).'/01/01')
+            ->toCarbon()
+            ->startOfDay()
+            ->subSecond();
 
-            $products = [];
+        if ($jalaliYear === (int) Jalalian::now()->getYear()) {
+            $to = now()->endOfDay();
+        }
 
-            foreach ($rows as $index => $row) {
-                $quantity = (float) $row->quantity;
-                $sales = (float) $row->sales;
+        $rows = OrderDetail::query()
+            ->join('Order', 'OrderDetail.OrderId', '=', 'Order.Id')
+            ->join('ProductPrice', 'OrderDetail.ProductPriceId', '=', 'ProductPrice.Id')
+            ->join('Product', 'ProductPrice.ProductId', '=', 'Product.Id')
+            ->where('Order.IsPayed', 1)
+            ->whereBetween('Order.Date', [$from, $to])
+            ->groupBy('Product.Id', 'Product.Name')
+            ->select([
+                'Product.Id as product_id',
+                'Product.Name as name',
+                DB::raw('SUM(OrderDetail.Count) as quantity'),
+                DB::raw('SUM(OrderDetail.Price * OrderDetail.Count) as sales'),
+            ])
+            ->orderByDesc($orderBy)
+            ->limit($limit)
+            ->get();
 
-                $products[] = [
-                    'rank' => $index + 1,
-                    'product_id' => (int) $row->product_id,
-                    'name' => (string) $row->name,
-                    'average_price' => $quantity > 0 ? $sales / $quantity : 0.0,
-                    'quantity' => $quantity,
-                    'sales' => $sales,
-                ];
-            }
+        $products = [];
 
-            return $products;
-        });
+        foreach ($rows as $index => $row) {
+            $quantity = (float) $row->quantity;
+            $sales = (float) $row->sales;
+
+            $products[] = [
+                'rank' => $index + 1,
+                'product_id' => (int) $row->product_id,
+                'name' => (string) $row->name,
+                'average_price' => $quantity > 0 ? $sales / $quantity : 0.0,
+                'quantity' => $quantity,
+                'sales' => $sales,
+            ];
+        }
+
+        return $products;
     }
 }
