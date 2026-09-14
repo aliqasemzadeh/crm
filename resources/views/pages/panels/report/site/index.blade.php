@@ -22,6 +22,7 @@ new #[Layout('layouts.panels.report')] class extends Component
         SiteYearlySalesService::clearCache();
         unset($this->yearlySales);
         unset($this->selectedYearChart);
+        unset($this->topProducts);
 
         Flux::toast(__('app.dashboard_data_reloaded'));
     }
@@ -59,6 +60,15 @@ new #[Layout('layouts.panels.report')] class extends Component
         rsort($years);
 
         return array_map('intval', $years);
+    }
+
+    /**
+     * @return list<array{rank: int, product_id: int, name: string, unit_price: float, quantity: float, sales: float}>
+     */
+    #[Computed]
+    public function topProducts(): array
+    {
+        return app(SiteYearlySalesService::class)->topProducts($this->selectedYear);
     }
 };
 ?>
@@ -219,6 +229,41 @@ new #[Layout('layouts.panels.report')] class extends Component
                         <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
                     </flux:table.cell>
                 </flux:table.row>
+            </flux:table.rows>
+        </flux:table>
+    </flux:card>
+
+    <flux:card wire:loading.class="opacity-60" wire:target="selectedYear,reload">
+        <flux:heading size="lg" class="mb-4">{{ __('app.site_top_products', ['year' => $selectedYear]) }}</flux:heading>
+
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column class="w-12">#</flux:table.column>
+                <flux:table.column>{{ __('app.product') }}</flux:table.column>
+                <flux:table.column>{{ __('app.unit_price') }}</flux:table.column>
+                <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
+                <flux:table.column>{{ __('app.sales') }}</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @forelse($this->topProducts as $product)
+                    <flux:table.row wire:key="site-top-product-{{ $selectedYear }}-{{ $product['product_id'] }}">
+                        <flux:table.cell class="tabular-nums">{{ $product['rank'] }}</flux:table.cell>
+                        <flux:table.cell>{{ $product['name'] }}</flux:table.cell>
+                        <flux:table.cell class="tabular-nums">
+                            {{ number_format($product['unit_price']) }}
+                            <span class="text-sm text-zinc-500">{{ __('app.rial') }}</span>
+                        </flux:table.cell>
+                        <flux:table.cell class="tabular-nums">{{ number_format($product['quantity']) }}</flux:table.cell>
+                        <flux:table.cell class="tabular-nums">
+                            {{ number_format($product['sales']) }}
+                            <span class="text-sm text-zinc-500">{{ __('app.rial') }}</span>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @empty
+                    <flux:table.row>
+                        <flux:table.cell colspan="5">{{ __('app.no_results') }}</flux:table.cell>
+                    </flux:table.row>
+                @endforelse
             </flux:table.rows>
         </flux:table>
     </flux:card>

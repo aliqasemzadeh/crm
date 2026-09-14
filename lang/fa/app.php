@@ -81,6 +81,7 @@ return [
     'site_sales_chart_year' => 'فروش سال :year',
     'site_yearly_sales_by_year' => 'فروش به تفکیک سال',
     'site_monthly_sales_breakdown' => 'جزئیات فروش ماهانه سال :year',
+    'site_top_products' => '۱۰ کالای پرفروش سال :year',
     'report_item_title' => 'گزارش کالا',
     'report_item_subtitle' => 'گزارش‌های مرتبط با کالاها.',
     'report_coming_soon' => 'این گزارش به‌زودی در دسترس خواهد بود.',
