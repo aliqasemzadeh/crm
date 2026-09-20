@@ -1,18 +1,31 @@
 <?php
 
+use App\Livewire\Forms\Hr\ManualAttendanceForm;
 use App\Models\Calender\Day;
 use App\Models\Hr\Record;
 use App\Models\UserDevice;
 use App\Support\HrAccess;
+use Carbon\Carbon;
 use Flux\Flux;
+use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Morilog\Jalali\Jalalian;
 
 new #[Layout('layouts.panels.hr')] class extends Component
 {
+    public ManualAttendanceForm $form;
+
     public string $message = '';
+
     public string $statusType = '';
+
+    public function mount(): void
+    {
+        $this->form->resetForm();
+    }
 
     #[Computed]
     public function isAccessAllowed(): bool
@@ -42,22 +55,57 @@ new #[Layout('layouts.panels.hr')] class extends Component
         return Day::isNonWorkingDay(now());
     }
 
-    public function clockIn(string $deviceToken): void
+    public function clockIn(string $deviceToken, string $category = Record::CATEGORY_WORK): void
     {
-        $this->record($deviceToken, 'clock_in');
+        $this->record($deviceToken, 'clock_in', $category);
     }
 
-    public function clockOut(string $deviceToken): void
+    public function clockOut(string $deviceToken, string $category = Record::CATEGORY_WORK): void
     {
-        $this->record($deviceToken, 'clock_out');
+        $this->record($deviceToken, 'clock_out', $category);
     }
 
-    private function record(string $deviceToken, string $type): void
+    public function saveManual(): void
     {
-        if (!$this->isAccessAllowed) {
+        $this->form->validate();
+
+        $recordedAt = $this->form->toRecordedAt();
+
+        $this->assertValidDaySequence(
+            auth()->id(),
+            $recordedAt,
+            $this->form->type,
+        );
+
+        Record::create([
+            'user_id' => auth()->id(),
+            'user_device_id' => null,
+            'type' => $this->form->type,
+            'category' => $this->form->category,
+            'is_manual' => true,
+            'recorded_at' => $recordedAt,
+            'is_device_approved' => true,
+        ]);
+
+        $this->form->resetForm();
+        Flux::modal('panels.hr.attendance.manual.modal')->close();
+        Flux::toast(__('app.manual_attendance_success'));
+        unset($this->todayRecords);
+        unset($this->isOddRecords);
+    }
+
+    private function record(string $deviceToken, string $type, string $category): void
+    {
+        if (! $this->isAccessAllowed) {
             $this->message = __('app.access_denied_ip');
             $this->statusType = 'error';
+            Flux::toast($this->message);
+
             return;
+        }
+
+        if (! in_array($category, Record::CATEGORIES, true)) {
+            $category = Record::CATEGORY_WORK;
         }
 
         $device = UserDevice::where('token', $deviceToken)->first();
@@ -86,24 +134,64 @@ new #[Layout('layouts.panels.hr')] class extends Component
             $device->update(['ip' => request()->ip()]);
         }
 
+        $recordedAt = now();
+
+        $this->assertValidDaySequence(auth()->id(), $recordedAt, $type);
+
         Record::create([
             'user_id' => auth()->id(),
             'user_device_id' => $device->id,
             'type' => $type,
-            'recorded_at' => now(),
+            'category' => $category,
+            'is_manual' => false,
+            'recorded_at' => $recordedAt,
             'is_device_approved' => (bool) ($device->is_approved ?? false),
         ]);
 
         $this->message = $type === 'clock_in' ? __('app.clock_in_success') : __('app.clock_out_success');
         $this->statusType = 'success';
 
-        if (!$device->is_approved) {
-            $this->message .= ' ' . __('app.device_not_approved_warning');
+        if (! $device->is_approved) {
+            $this->message .= ' '.__('app.device_not_approved_warning');
         }
 
         Flux::toast($this->message);
         unset($this->todayRecords);
         unset($this->isOddRecords);
+    }
+
+    private function assertValidDaySequence(int $userId, Carbon $recordedAt, string $type): void
+    {
+        $existing = Record::query()
+            ->where('user_id', $userId)
+            ->whereDate('recorded_at', $recordedAt->toDateString())
+            ->orderBy('recorded_at')
+            ->orderBy('id')
+            ->get(['id', 'type', 'recorded_at']);
+
+        $proposed = (object) [
+            'id' => PHP_INT_MAX,
+            'type' => $type,
+            'recorded_at' => $recordedAt,
+        ];
+
+        $sorted = $existing
+            ->push($proposed)
+            ->sortBy([
+                fn ($r) => Carbon::parse($r->recorded_at)->timestamp,
+                fn ($r) => $r->id,
+            ])
+            ->values();
+
+        foreach ($sorted as $index => $record) {
+            $expected = $index % 2 === 0 ? 'clock_in' : 'clock_out';
+
+            if ($record->type !== $expected) {
+                throw ValidationException::withMessages([
+                    'form.type' => [__('app.attendance_pair_sequence_invalid')],
+                ]);
+            }
+        }
     }
 };
 
@@ -116,6 +204,9 @@ new #[Layout('layouts.panels.hr')] class extends Component
     deviceToken: '',
     currentTime: '',
     tokenKey: 'attendance_device_token_{{ auth()->id() }}',
+    pendingType: null,
+    countdown: 0,
+    timer: null,
     init() {
         let token = localStorage.getItem(this.tokenKey);
         if (!token) {
@@ -128,6 +219,40 @@ new #[Layout('layouts.panels.hr')] class extends Component
     },
     updateTime() {
         this.currentTime = new Date().toLocaleTimeString('fa-IR');
+    },
+    startCategoryPick(type) {
+        this.clearTimer();
+        this.pendingType = type;
+        this.countdown = 5;
+        this.timer = setInterval(() => {
+            this.countdown -= 1;
+            if (this.countdown <= 0) {
+                this.confirmCategory('work');
+            }
+        }, 1000);
+    },
+    confirmCategory(category) {
+        if (!this.pendingType) return;
+        const type = this.pendingType;
+        this.clearTimer();
+        this.pendingType = null;
+        this.countdown = 0;
+        if (type === 'clock_in') {
+            $wire.clockIn(this.deviceToken, category);
+        } else {
+            $wire.clockOut(this.deviceToken, category);
+        }
+    },
+    cancelCategoryPick() {
+        this.clearTimer();
+        this.pendingType = null;
+        this.countdown = 0;
+    },
+    clearTimer() {
+        if (this.timer) {
+            clearInterval(this.timer);
+            this.timer = null;
+        }
     }
 }" @device-token-updated.window="deviceToken = $event.detail.token; localStorage.setItem(tokenKey, $event.detail.token)">
     <div class="relative mb-6 w-full">
@@ -149,12 +274,32 @@ new #[Layout('layouts.panels.hr')] class extends Component
     @if($this->isAccessAllowed)
         <div class="max-w-md mx-auto mt-6">
             <flux:card>
-                <div class="flex flex-col gap-4">
-                    <flux:button variant="primary" color="green" class="w-full" icon="log-in" @click="$wire.clockIn(deviceToken)">
+                <div class="flex flex-col gap-4" x-show="!pendingType">
+                    <flux:button variant="primary" color="green" class="w-full" icon="log-in" @click="startCategoryPick('clock_in')">
                         {{ __('app.clock_in') }}
                     </flux:button>
-                    <flux:button variant="primary" color="red" class="w-full" icon="log-out" @click="$wire.clockOut(deviceToken)">
+                    <flux:button variant="primary" color="red" class="w-full" icon="log-out" @click="startCategoryPick('clock_out')">
                         {{ __('app.clock_out') }}
+                    </flux:button>
+                </div>
+
+                <div class="flex flex-col gap-3" x-show="pendingType" x-cloak>
+                    <div class="text-center text-sm text-zinc-600 dark:text-zinc-300">
+                        <span x-text="pendingType === 'clock_in' ? '{{ __('app.clock_in') }}' : '{{ __('app.clock_out') }}'"></span>
+                        — {{ __('app.select_attendance_category') }}
+                        (<span class="font-mono font-bold" x-text="countdown"></span>
+                    </div>
+                    <flux:button variant="primary" color="green" class="w-full" @click="confirmCategory('work')">
+                        {{ __('app.attendance_category_work') }}
+                    </flux:button>
+                    <flux:button variant="primary" color="amber" class="w-full" @click="confirmCategory('leave')">
+                        {{ __('app.attendance_category_leave') }}
+                    </flux:button>
+                    <flux:button variant="primary" color="sky" class="w-full" @click="confirmCategory('mission')">
+                        {{ __('app.attendance_category_mission') }}
+                    </flux:button>
+                    <flux:button variant="ghost" class="w-full" @click="cancelCategoryPick()">
+                        {{ __('app.cancel') }}
                     </flux:button>
                 </div>
             </flux:card>
@@ -167,21 +312,30 @@ new #[Layout('layouts.panels.hr')] class extends Component
         </flux:card>
     @endif
 
+    {{-- Manual / Forgot attendance --}}
+    <div class="max-w-md mx-auto mt-4">
+        <flux:modal.trigger name="panels.hr.attendance.manual.modal">
+            <flux:button variant="primary" color="orange" class="w-full" icon="clipboard-pen">
+                {{ __('app.forgot_attendance') }}
+            </flux:button>
+        </flux:modal.trigger>
+    </div>
+
     {{-- Odd records warning --}}
-    @if($this->isAccessAllowed && $this->todayRecords->count() > 0 && $this->isOddRecords)
+    @if($this->todayRecords->count() > 0 && $this->isOddRecords)
         <div class="max-w-md mx-auto mt-4">
             <flux:badge color="orange" class="w-full justify-center py-2">{{ __('app.odd_records_warning') }}</flux:badge>
         </div>
     @endif
 
     {{-- Today's Records --}}
-    @if($this->isAccessAllowed)
     <div class="max-w-md mx-auto mt-6">
         <flux:heading size="lg" class="mb-4">{{ __('app.today_records') }}</flux:heading>
         @if($this->todayRecords->count() > 0)
             <flux:table>
                 <flux:table.columns>
                     <flux:table.column>{{ __('app.type') }}</flux:table.column>
+                    <flux:table.column>{{ __('app.attendance_category') }}</flux:table.column>
                     <flux:table.column>{{ __('app.time') }}</flux:table.column>
                     <flux:table.column>{{ __('app.status') }}</flux:table.column>
                 </flux:table.columns>
@@ -189,13 +343,27 @@ new #[Layout('layouts.panels.hr')] class extends Component
                     @foreach($this->todayRecords as $record)
                         <flux:table.row :key="$record->id">
                             <flux:table.cell>
-                                @if($record->type === 'clock_in')
-                                    <flux:badge color="green">{{ __('app.clock_in') }}</flux:badge>
+                                <div class="flex flex-wrap items-center gap-1">
+                                    @if($record->type === 'clock_in')
+                                        <flux:badge color="green">{{ __('app.clock_in') }}</flux:badge>
+                                    @else
+                                        <flux:badge color="red">{{ __('app.clock_out') }}</flux:badge>
+                                    @endif
+                                    @if($record->is_manual)
+                                        <flux:badge color="zinc" size="sm">{{ __('app.manual_record') }}</flux:badge>
+                                    @endif
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell>
+                                @if($record->category === 'leave')
+                                    <flux:badge color="amber" size="sm">{{ __('app.attendance_category_leave') }}</flux:badge>
+                                @elseif($record->category === 'mission')
+                                    <flux:badge color="sky" size="sm">{{ __('app.attendance_category_mission') }}</flux:badge>
                                 @else
-                                    <flux:badge color="red">{{ __('app.clock_out') }}</flux:badge>
+                                    <flux:badge color="zinc" size="sm">{{ __('app.attendance_category_work') }}</flux:badge>
                                 @endif
                             </flux:table.cell>
-                            <flux:table.cell>{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>
+                            <flux:table.cell>{{ Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>
                             <flux:table.cell>
                                 @if($record->is_device_approved)
                                     <flux:badge color="green" size="sm">{{ __('app.approved') }}</flux:badge>
@@ -211,5 +379,34 @@ new #[Layout('layouts.panels.hr')] class extends Component
             <p class="text-sm text-zinc-500">{{ __('app.no_records_today') }}</p>
         @endif
     </div>
-    @endif
+
+    <flux:modal name="panels.hr.attendance.manual.modal" flyout position="right" class="md:w-96">
+        <form wire:submit="saveManual" class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('app.forgot_attendance') }}</flux:heading>
+                <flux:subheading>{{ __('app.forgot_attendance_description') }}</flux:subheading>
+            </div>
+
+            <x-date-select wire:model="form.date" :label="__('app.date')" :required="true" />
+            <flux:error name="form.date" />
+
+            <flux:input wire:model="form.time" label="{{ __('app.time') }}" mask="99:99" placeholder="08:30" />
+            <flux:error name="form.time" />
+
+            <flux:select wire:model="form.type" label="{{ __('app.type') }}" searchable>
+                <flux:select.option value="clock_in">{{ __('app.clock_in') }}</flux:select.option>
+                <flux:select.option value="clock_out">{{ __('app.clock_out') }}</flux:select.option>
+            </flux:select>
+            <flux:error name="form.type" />
+
+            <flux:select wire:model="form.category" label="{{ __('app.attendance_category') }}" searchable>
+                <flux:select.option value="work">{{ __('app.attendance_category_work') }}</flux:select.option>
+                <flux:select.option value="leave">{{ __('app.attendance_category_leave') }}</flux:select.option>
+                <flux:select.option value="mission">{{ __('app.attendance_category_mission') }}</flux:select.option>
+            </flux:select>
+            <flux:error name="form.category" />
+
+            <flux:button type="submit" variant="primary" color="orange" class="w-full">{{ __('app.save') }}</flux:button>
+        </form>
+    </flux:modal>
 </div>

@@ -9,16 +9,32 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Record extends Model
 {
+    public const CATEGORY_WORK = 'work';
+
+    public const CATEGORY_LEAVE = 'leave';
+
+    public const CATEGORY_MISSION = 'mission';
+
+    public const CATEGORIES = [
+        self::CATEGORY_WORK,
+        self::CATEGORY_LEAVE,
+        self::CATEGORY_MISSION,
+    ];
+
     protected $table = 'hr_records';
 
     protected $attributes = [
         'is_device_approved' => false,
+        'is_manual' => false,
+        'category' => self::CATEGORY_WORK,
     ];
 
     protected $fillable = [
         'user_id',
         'user_device_id',
         'type',
+        'category',
+        'is_manual',
         'recorded_at',
         'is_device_approved',
     ];
@@ -26,6 +42,7 @@ class Record extends Model
     protected $casts = [
         'recorded_at' => 'datetime',
         'is_device_approved' => 'boolean',
+        'is_manual' => 'boolean',
     ];
 
     public function user(): BelongsTo
