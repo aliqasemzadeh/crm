@@ -1936,7 +1936,7 @@ return [
     'attendance_category_mission' => 'ماموریت',
     'select_attendance_category' => 'نوع را انتخاب کنید',
     'attendance_pair_sequence_invalid' => 'دو ورود پشت‌سرهم مجاز نیست؛ ابتدا باید خروج ثبت شود.',
-    'attendance_same_minute_in_out_invalid' => 'ورود و خروج در یک دقیقه مجاز نیست؛ حداقل یک دقیقه صبر کنید.',
+    'attendance_one_record_per_minute' => 'در هر دقیقه فقط یک رکورد مجاز است؛ لطفاً یک دقیقه صبر کنید.',
     'category_auto_work_in_seconds' => 'در صورت عدم انتخاب، پس از ۵ ثانیه به‌صورت عادی ثبت می‌شود',
     'attendance_records' => 'رکوردهای حضور و غیاب',
     'attendance_records_description' => 'مشاهده و تایید همه رکوردهای ورود و خروج',

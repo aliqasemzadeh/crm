@@ -166,6 +166,19 @@ new #[Layout('layouts.panels.hr')] class extends Component
      */
     private function attendancePunchError(int $userId, Carbon $recordedAt, string $type): ?string
     {
+        $minuteStart = $recordedAt->copy()->startOfMinute();
+        $minuteEnd = $minuteStart->copy()->addMinute();
+
+        $hasRecordInSameMinute = Record::query()
+            ->where('user_id', $userId)
+            ->where('recorded_at', '>=', $minuteStart)
+            ->where('recorded_at', '<', $minuteEnd)
+            ->exists();
+
+        if ($hasRecordInSameMinute) {
+            return 'app.attendance_one_record_per_minute';
+        }
+
         $existing = Record::query()
             ->where('user_id', $userId)
             ->whereDate('recorded_at', $recordedAt->toDateString())
@@ -199,14 +212,6 @@ new #[Layout('layouts.panels.hr')] class extends Component
             if ($type === 'clock_in' && $previous->type === 'clock_in') {
                 return 'app.attendance_pair_sequence_invalid';
             }
-
-            if (
-                $type === 'clock_out'
-                && $previous->type === 'clock_in'
-                && $this->isSameMinute($previous->recorded_at, $recordedAt)
-            ) {
-                return 'app.attendance_same_minute_in_out_invalid';
-            }
         }
 
         if ($index < $sorted->count() - 1) {
@@ -215,22 +220,9 @@ new #[Layout('layouts.panels.hr')] class extends Component
             if ($type === 'clock_in' && $next->type === 'clock_in') {
                 return 'app.attendance_pair_sequence_invalid';
             }
-
-            if (
-                $type === 'clock_in'
-                && $next->type === 'clock_out'
-                && $this->isSameMinute($recordedAt, $next->recorded_at)
-            ) {
-                return 'app.attendance_same_minute_in_out_invalid';
-            }
         }
 
         return null;
-    }
-
-    private function isSameMinute(mixed $a, mixed $b): bool
-    {
-        return Carbon::parse($a)->format('Y-m-d H:i') === Carbon::parse($b)->format('Y-m-d H:i');
     }
 };
 
