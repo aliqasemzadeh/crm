@@ -1934,7 +1934,8 @@ return [
     'attendance_category_leave' => 'مرخصی',
     'attendance_category_mission' => 'ماموریت',
     'select_attendance_category' => 'نوع را انتخاب کنید',
-    'attendance_pair_sequence_invalid' => 'ترتیب ورود و خروج در این روز صحیح نیست؛ باید به‌صورت زوج (ورود سپس خروج) باشد.',
+    'attendance_pair_sequence_invalid' => 'دو ورود پشت‌سرهم مجاز نیست؛ ابتدا باید خروج ثبت شود.',
+    'attendance_same_minute_in_out_invalid' => 'ورود و خروج در یک دقیقه مجاز نیست؛ حداقل یک دقیقه صبر کنید.',
     'category_auto_work_in_seconds' => 'در صورت عدم انتخاب، پس از ۵ ثانیه به‌صورت عادی ثبت می‌شود',
     'last_modification_date' => 'آخرین تاریخ ویرایش',
 

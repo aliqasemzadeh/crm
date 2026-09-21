@@ -68,8 +68,8 @@ new #[Layout('layouts.panels.hr')] class extends Component
 
         $recordedAt = $this->form->toRecordedAt();
 
-        if (! $this->isValidDaySequence((int) auth()->id(), $recordedAt, $this->form->type)) {
-            Flux::toast(__('app.attendance_pair_sequence_invalid'), variant: 'danger');
+        if ($error = $this->attendancePunchError((int) auth()->id(), $recordedAt, $this->form->type)) {
+            Flux::toast(__($error), variant: 'danger');
 
             return;
         }
@@ -133,8 +133,8 @@ new #[Layout('layouts.panels.hr')] class extends Component
 
         $recordedAt = now();
 
-        if (! $this->isValidDaySequence((int) auth()->id(), $recordedAt, $type)) {
-            Flux::toast(__('app.attendance_pair_sequence_invalid'), variant: 'danger');
+        if ($error = $this->attendancePunchError((int) auth()->id(), $recordedAt, $type)) {
+            Flux::toast(__($error), variant: 'danger');
 
             return;
         }
@@ -161,7 +161,10 @@ new #[Layout('layouts.panels.hr')] class extends Component
         unset($this->isOddRecords);
     }
 
-    private function isValidDaySequence(int $userId, Carbon $recordedAt, string $type): bool
+    /**
+     * @return string|null Translation key when invalid, otherwise null.
+     */
+    private function attendancePunchError(int $userId, Carbon $recordedAt, string $type): ?string
     {
         $existing = Record::query()
             ->where('user_id', $userId)
@@ -184,15 +187,50 @@ new #[Layout('layouts.panels.hr')] class extends Component
             ])
             ->values();
 
-        foreach ($sorted as $index => $record) {
-            $expected = $index % 2 === 0 ? 'clock_in' : 'clock_out';
+        $index = $sorted->search(fn ($r) => $r->id === PHP_INT_MAX);
 
-            if ($record->type !== $expected) {
-                return false;
+        if ($index === false) {
+            return null;
+        }
+
+        if ($index > 0) {
+            $previous = $sorted[$index - 1];
+
+            if ($type === 'clock_in' && $previous->type === 'clock_in') {
+                return 'app.attendance_pair_sequence_invalid';
+            }
+
+            if (
+                $type === 'clock_out'
+                && $previous->type === 'clock_in'
+                && $this->isSameMinute($previous->recorded_at, $recordedAt)
+            ) {
+                return 'app.attendance_same_minute_in_out_invalid';
             }
         }
 
-        return true;
+        if ($index < $sorted->count() - 1) {
+            $next = $sorted[$index + 1];
+
+            if ($type === 'clock_in' && $next->type === 'clock_in') {
+                return 'app.attendance_pair_sequence_invalid';
+            }
+
+            if (
+                $type === 'clock_in'
+                && $next->type === 'clock_out'
+                && $this->isSameMinute($recordedAt, $next->recorded_at)
+            ) {
+                return 'app.attendance_same_minute_in_out_invalid';
+            }
+        }
+
+        return null;
+    }
+
+    private function isSameMinute(mixed $a, mixed $b): bool
+    {
+        return Carbon::parse($a)->format('Y-m-d H:i') === Carbon::parse($b)->format('Y-m-d H:i');
     }
 };
 
