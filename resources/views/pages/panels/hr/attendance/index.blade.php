@@ -7,12 +7,10 @@ use App\Models\UserDevice;
 use App\Support\HrAccess;
 use Carbon\Carbon;
 use Flux\Flux;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
-use Morilog\Jalali\Jalalian;
 
 new #[Layout('layouts.panels.hr')] class extends Component
 {
@@ -136,7 +134,13 @@ new #[Layout('layouts.panels.hr')] class extends Component
 
         $recordedAt = now();
 
-        $this->assertValidDaySequence(auth()->id(), $recordedAt, $type);
+        try {
+            $this->assertValidDaySequence(auth()->id(), $recordedAt, $type);
+        } catch (ValidationException $e) {
+            Flux::toast(__('app.attendance_pair_sequence_invalid'));
+
+            return;
+        }
 
         Record::create([
             'user_id' => auth()->id(),
@@ -363,7 +367,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
                                     <flux:badge color="zinc" size="sm">{{ __('app.attendance_category_work') }}</flux:badge>
                                 @endif
                             </flux:table.cell>
-                            <flux:table.cell>{{ Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>
+                            <flux:table.cell>{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>
                             <flux:table.cell>
                                 @if($record->is_device_approved)
                                     <flux:badge color="green" size="sm">{{ __('app.approved') }}</flux:badge>
