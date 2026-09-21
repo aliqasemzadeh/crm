@@ -53,7 +53,12 @@ new #[Layout('layouts.panels.hr')] class extends Component
             $totalMinutes = 0;
             $sorted = $dayRecords->sortBy('recorded_at')->values();
             for ($i = 0; $i < $sorted->count() - 1; $i += 2) {
-                if ($sorted[$i]->type === 'clock_in' && $sorted[$i + 1]->type === 'clock_out') {
+                if (
+                    $sorted[$i]->type === 'clock_in'
+                    && $sorted[$i + 1]->type === 'clock_out'
+                    && ($sorted[$i]->category ?? 'work') === 'work'
+                    && ($sorted[$i + 1]->category ?? 'work') === 'work'
+                ) {
                     $totalMinutes += $sorted[$i]->recorded_at->diffInMinutes($sorted[$i + 1]->recorded_at);
                 }
             }
@@ -125,6 +130,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
                 <flux:table>
                     <flux:table.columns>
                         <flux:table.column>{{ __('app.type') }}</flux:table.column>
+                        <flux:table.column>{{ __('app.attendance_category') }}</flux:table.column>
                         <flux:table.column>{{ __('app.time') }}</flux:table.column>
                         <flux:table.column>{{ __('app.status') }}</flux:table.column>
                     </flux:table.columns>
@@ -132,10 +138,24 @@ new #[Layout('layouts.panels.hr')] class extends Component
                         @foreach($day->records as $record)
                             <flux:table.row :key="$record->id">
                                 <flux:table.cell>
-                                    @if($record->type === 'clock_in')
-                                        <flux:badge color="green">{{ __('app.clock_in') }}</flux:badge>
+                                    <div class="flex flex-wrap items-center gap-1">
+                                        @if($record->type === 'clock_in')
+                                            <flux:badge color="green">{{ __('app.clock_in') }}</flux:badge>
+                                        @else
+                                            <flux:badge color="red">{{ __('app.clock_out') }}</flux:badge>
+                                        @endif
+                                        @if($record->is_manual)
+                                            <flux:badge color="zinc" size="sm">{{ __('app.manual_record') }}</flux:badge>
+                                        @endif
+                                    </div>
+                                </flux:table.cell>
+                                <flux:table.cell>
+                                    @if(($record->category ?? 'work') === 'leave')
+                                        <flux:badge color="amber" size="sm">{{ __('app.attendance_category_leave') }}</flux:badge>
+                                    @elseif(($record->category ?? 'work') === 'mission')
+                                        <flux:badge color="sky" size="sm">{{ __('app.attendance_category_mission') }}</flux:badge>
                                     @else
-                                        <flux:badge color="red">{{ __('app.clock_out') }}</flux:badge>
+                                        <flux:badge color="zinc" size="sm">{{ __('app.attendance_category_work') }}</flux:badge>
                                     @endif
                                 </flux:table.cell>
                                 <flux:table.cell>{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>

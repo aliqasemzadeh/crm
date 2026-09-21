@@ -319,7 +319,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
     {{-- Manual / Forgot attendance --}}
     <div class="max-w-md mx-auto mt-4">
         <flux:modal.trigger name="panels.hr.attendance.manual.modal">
-            <flux:button variant="primary" color="orange" class="w-full" icon="clipboard-pen">
+            <flux:button variant="primary" color="orange" class="w-full" icon="clipboard-check">
                 {{ __('app.forgot_attendance') }}
             </flux:button>
         </flux:modal.trigger>
