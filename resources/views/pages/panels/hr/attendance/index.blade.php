@@ -7,7 +7,6 @@ use App\Models\UserDevice;
 use App\Support\HrAccess;
 use Carbon\Carbon;
 use Flux\Flux;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -69,11 +68,11 @@ new #[Layout('layouts.panels.hr')] class extends Component
 
         $recordedAt = $this->form->toRecordedAt();
 
-        $this->assertValidDaySequence(
-            auth()->id(),
-            $recordedAt,
-            $this->form->type,
-        );
+        if (! $this->isValidDaySequence((int) auth()->id(), $recordedAt, $this->form->type)) {
+            Flux::toast(__('app.attendance_pair_sequence_invalid'), variant: 'danger');
+
+            return;
+        }
 
         Record::create([
             'user_id' => auth()->id(),
@@ -134,10 +133,8 @@ new #[Layout('layouts.panels.hr')] class extends Component
 
         $recordedAt = now();
 
-        try {
-            $this->assertValidDaySequence(auth()->id(), $recordedAt, $type);
-        } catch (ValidationException $e) {
-            Flux::toast(__('app.attendance_pair_sequence_invalid'));
+        if (! $this->isValidDaySequence((int) auth()->id(), $recordedAt, $type)) {
+            Flux::toast(__('app.attendance_pair_sequence_invalid'), variant: 'danger');
 
             return;
         }
@@ -164,7 +161,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
         unset($this->isOddRecords);
     }
 
-    private function assertValidDaySequence(int $userId, Carbon $recordedAt, string $type): void
+    private function isValidDaySequence(int $userId, Carbon $recordedAt, string $type): bool
     {
         $existing = Record::query()
             ->where('user_id', $userId)
@@ -191,11 +188,11 @@ new #[Layout('layouts.panels.hr')] class extends Component
             $expected = $index % 2 === 0 ? 'clock_in' : 'clock_out';
 
             if ($record->type !== $expected) {
-                throw ValidationException::withMessages([
-                    'form.type' => [__('app.attendance_pair_sequence_invalid')],
-                ]);
+                return false;
             }
         }
+
+        return true;
     }
 };
 
@@ -211,6 +208,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
     pendingType: null,
     countdown: 0,
     timer: null,
+    submitting: false,
     init() {
         let token = localStorage.getItem(this.tokenKey);
         if (!token) {
@@ -225,29 +223,34 @@ new #[Layout('layouts.panels.hr')] class extends Component
         this.currentTime = new Date().toLocaleTimeString('fa-IR');
     },
     startCategoryPick(type) {
+        if (this.submitting) return;
         this.clearTimer();
         this.pendingType = type;
         this.countdown = 5;
         this.timer = setInterval(() => {
             this.countdown -= 1;
             if (this.countdown <= 0) {
+                this.clearTimer();
                 this.confirmCategory('work');
             }
         }, 1000);
     },
     confirmCategory(category) {
-        if (!this.pendingType) return;
+        if (!this.pendingType || this.submitting) return;
+        this.submitting = true;
         const type = this.pendingType;
         this.clearTimer();
         this.pendingType = null;
         this.countdown = 0;
-        if (type === 'clock_in') {
-            $wire.clockIn(this.deviceToken, category);
-        } else {
-            $wire.clockOut(this.deviceToken, category);
-        }
+        const request = type === 'clock_in'
+            ? $wire.clockIn(this.deviceToken, category)
+            : $wire.clockOut(this.deviceToken, category);
+        Promise.resolve(request).finally(() => {
+            this.submitting = false;
+        });
     },
     cancelCategoryPick() {
+        if (this.submitting) return;
         this.clearTimer();
         this.pendingType = null;
         this.countdown = 0;
