@@ -37,6 +37,9 @@ return [
         'administrator_user_management_permission_create' => 'ایجاد مجوز',
         'administrator_user_management_permission_edit' => 'ویرایش مجوز',
         'administrator_user_management_permission_delete' => 'حذف مجوز',
+        'administrator_user_management_device' => 'مدیریت دستگاه‌ها',
+        'administrator_user_management_record' => 'تایید رکوردهای حضور و غیاب',
+        'administrator_user_management_hr' => 'گزارش حضور و غیاب',
 
         'administrator_announcement_management' => 'مدیریت اطلاعیه‌ها',
         'administrator_announcement_index' => 'فهرست اطلاعیه‌ها',

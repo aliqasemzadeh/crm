@@ -117,6 +117,7 @@ Route::middleware(['auth'])->group( function () {
     Route::livewire('/panels/hr/history/index', 'pages::panels.hr.history.index')->name('panels.hr.history.index');
     Route::livewire('/panels/administrator/user-management/hr/index', 'pages::panels.administrator.user-management.hr.index')->name('panels.administrator.user-management.hr.index');
     Route::livewire('/panels/administrator/user-management/device/index', 'pages::panels.administrator.user-management.device.index')->name('panels.administrator.user-management.device.index');
+    Route::livewire('/panels/administrator/user-management/record/index', 'pages::panels.administrator.user-management.record.index')->name('panels.administrator.user-management.record.index');
 
     Route::livewire('/panels/report/dashboard/index', 'pages::panels.report.dashboard.index')->name('panels.report.dashboard.index');
     Route::livewire('/panels/report/site/index', 'pages::panels.report.site.index')->name('panels.report.site.index');
