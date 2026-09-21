@@ -1944,6 +1944,7 @@ return [
     'attendance_records_approve_all_confirm' => 'آیا از تایید همه رکوردهای در انتظار (با فیلتر فعلی) اطمینان دارید؟',
     'attendance_records_approve_all_success' => 'تمامی رکوردهای انتخاب‌شده با موفقیت تایید شدند.',
     'attendance_record_approved' => 'رکورد تایید شد',
+    'attendance_record_rejected' => 'رکورد رد شد',
     'filter_clock_type' => 'نوع ورود و خروج',
     'filter_record_source' => 'نوع ثبت',
     'last_modification_date' => 'آخرین تاریخ ویرایش',
