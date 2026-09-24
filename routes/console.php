@@ -14,3 +14,5 @@ Schedule::command('app:cash-back-discount-code-command')->hourly()->runInBackgro
 Schedule::command('app:setaregan-co:send-paid-order-bale-notification')->everyTwoMinutes()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:setaregan-co:send-paid-order-bale-notification executed successfully.'));
 Schedule::command('app:quick-pricing-in-stock-cluster-command')->hourly()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:quick-pricing-in-stock-cluster-command executed successfully.'));
 Schedule::command('app:dashboard:cache-bank-month-balances')->dailyAt('01:30')->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:dashboard:cache-bank-month-balances executed successfully.'));
+Schedule::command('app:hr:attendance-alert-command reminder')->dailyAt('08:45')->withoutOverlapping()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:hr:attendance-alert-command reminder executed successfully.'));
+Schedule::command('app:hr:attendance-alert-command absent')->dailyAt('09:15')->withoutOverlapping()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:hr:attendance-alert-command absent executed successfully.'));

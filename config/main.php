@@ -2,7 +2,7 @@
 
 return [
     'auth' => [
-        'socialite' => false
+        'socialite' => false,
     ],
     'active_day_check' => [
         'warehouse' => env('WAREHOUSE_ACTIVE', false),
@@ -10,11 +10,12 @@ return [
     ],
     'warehouse_users' => [
         6 => 15,
-        11 => 33
+        11 => 33,
     ],
     'crm_users' => [
         2 => 10,
         8 => 10,
     ],
     'price_notification' => env('PRICE_NOTIFICATION', false),
+    'hr_attendance_alert' => env('HR_ATTENDANCE_ALERT', true),
 ];

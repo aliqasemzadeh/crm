@@ -1,5 +1,6 @@
 <?php
 
+use App\Jobs\Hr\SendAttendanceWelcomeBaleJob;
 use App\Livewire\Forms\Hr\ManualAttendanceForm;
 use App\Models\Calender\Day;
 use App\Models\Hr\Record;
@@ -74,7 +75,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
             return;
         }
 
-        Record::create([
+        $record = Record::create([
             'user_id' => auth()->id(),
             'user_device_id' => null,
             'type' => $this->form->type,
@@ -83,6 +84,8 @@ new #[Layout('layouts.panels.hr')] class extends Component
             'recorded_at' => $recordedAt,
             'is_device_approved' => true,
         ]);
+
+        SendAttendanceWelcomeBaleJob::dispatch($record->id);
 
         $this->form->resetForm();
         Flux::modal('panels.hr.attendance.manual.modal')->close();
@@ -139,7 +142,7 @@ new #[Layout('layouts.panels.hr')] class extends Component
             return;
         }
 
-        Record::create([
+        $record = Record::create([
             'user_id' => auth()->id(),
             'user_device_id' => $device->id,
             'type' => $type,
@@ -148,6 +151,8 @@ new #[Layout('layouts.panels.hr')] class extends Component
             'recorded_at' => $recordedAt,
             'is_device_approved' => (bool) ($device->is_approved ?? false),
         ]);
+
+        SendAttendanceWelcomeBaleJob::dispatch($record->id);
 
         $this->message = $type === 'clock_in' ? __('app.clock_in_success') : __('app.clock_out_success');
         $this->statusType = 'success';
