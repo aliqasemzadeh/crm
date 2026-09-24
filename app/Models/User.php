@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Issabel\Device as IssabelDevice;
 use App\Models\Sepidar\FMK\User as SepidarUser;
+use App\Models\Hr\DayRecord;
 use App\Models\Hr\Record;
 use App\Models\Workspace\Task;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -157,5 +158,10 @@ class User extends Authenticatable
     public function hrRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Record::class);
+    }
+
+    public function hrDayRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DayRecord::class);
     }
 }

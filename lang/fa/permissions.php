@@ -39,6 +39,7 @@ return [
         'administrator_user_management_permission_delete' => 'حذف مجوز',
         'administrator_user_management_device' => 'مدیریت دستگاه‌ها',
         'administrator_user_management_record' => 'تایید رکوردهای حضور و غیاب',
+        'administrator_user_management_days' => 'تایید مرخصی و ماموریت روزانه',
         'administrator_user_management_hr' => 'گزارش حضور و غیاب',
 
         'administrator_announcement_management' => 'مدیریت اطلاعیه‌ها',

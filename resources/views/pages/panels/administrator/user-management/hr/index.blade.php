@@ -1,8 +1,10 @@
 <?php
 
 use App\Models\Calender\Day;
+use App\Models\Hr\DayRecord;
 use App\Models\Hr\Record;
 use App\Models\User;
+use App\Services\Hr\DayRecordBaleNotifier;
 use Flux\Flux;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -103,47 +105,82 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     }
 
     #[Computed]
-    public function dailyReport()
+    public function dayRecords()
     {
-        $records = $this->records;
-        if ($records->isEmpty()) {
+        if (! $this->userId) {
             return collect();
         }
 
-        return $records->groupBy(fn ($r) => $r->recorded_at->toDateString())
-            ->map(function ($dayRecords, $date) {
-                $carbon = \Carbon\Carbon::parse($date);
-                $jalali = Jalalian::fromCarbon($carbon)->format('Y/m/d');
-                $isHoliday = Day::isNonWorkingDay($carbon);
-                $isOdd = $dayRecords->count() % 2 !== 0;
+        $query = DayRecord::query()
+            ->where('user_id', $this->userId)
+            ->whereIn('status', [DayRecord::STATUS_PENDING, DayRecord::STATUS_APPROVED]);
 
-                $totalMinutes = 0;
-                $sorted = $dayRecords->sortBy('recorded_at')->values();
-                for ($i = 0; $i < $sorted->count() - 1; $i += 2) {
-                    if (
-                        $sorted[$i]->type === 'clock_in'
-                        && $sorted[$i + 1]->type === 'clock_out'
-                        && ($sorted[$i]->category ?? 'work') === 'work'
-                        && ($sorted[$i + 1]->category ?? 'work') === 'work'
-                    ) {
-                        $totalMinutes += $sorted[$i]->recorded_at->diffInMinutes($sorted[$i + 1]->recorded_at);
-                    }
+        if ($this->dateStart) {
+            $startGregorian = Jalalian::fromFormat('Y/m/d', $this->dateStart)->toCarbon()->startOfDay();
+            $query->whereDate('date', '>=', $startGregorian);
+        }
+        if ($this->dateEnd) {
+            $endGregorian = Jalalian::fromFormat('Y/m/d', $this->dateEnd)->toCarbon()->endOfDay();
+            $query->whereDate('date', '<=', $endGregorian);
+        }
+
+        return $query->get()->keyBy(fn (DayRecord $r) => $r->date->toDateString());
+    }
+
+    #[Computed]
+    public function dailyReport()
+    {
+        $records = $this->records;
+        $dayRecords = $this->dayRecords;
+
+        if ($records->isEmpty() && $dayRecords->isEmpty()) {
+            return collect();
+        }
+
+        $dates = $records
+            ->map(fn ($r) => $r->recorded_at->toDateString())
+            ->merge($dayRecords->keys())
+            ->unique()
+            ->sort()
+            ->values();
+
+        $grouped = $records->groupBy(fn ($r) => $r->recorded_at->toDateString());
+
+        return $dates->mapWithKeys(function ($date) use ($grouped, $dayRecords) {
+            $dayPunchRecords = $grouped->get($date, collect());
+            $dayRecord = $dayRecords->get($date);
+            $carbon = \Carbon\Carbon::parse($date);
+            $jalali = Jalalian::fromCarbon($carbon)->format('Y/m/d');
+            $isHoliday = Day::isNonWorkingDay($carbon);
+            $isOdd = $dayPunchRecords->isNotEmpty() && $dayPunchRecords->count() % 2 !== 0;
+
+            $totalMinutes = 0;
+            $sorted = $dayPunchRecords->sortBy('recorded_at')->values();
+            for ($i = 0; $i < $sorted->count() - 1; $i += 2) {
+                if (
+                    $sorted[$i]->type === 'clock_in'
+                    && $sorted[$i + 1]->type === 'clock_out'
+                    && ($sorted[$i]->category ?? 'work') === 'work'
+                    && ($sorted[$i + 1]->category ?? 'work') === 'work'
+                ) {
+                    $totalMinutes += $sorted[$i]->recorded_at->diffInMinutes($sorted[$i + 1]->recorded_at);
                 }
+            }
 
-                $hours = floor($totalMinutes / 60);
-                $minutes = $totalMinutes % 60;
+            $hours = floor($totalMinutes / 60);
+            $minutes = $totalMinutes % 60;
 
-                return (object) [
-                    'date' => $date,
-                    'jalali' => $jalali,
-                    'is_holiday' => $isHoliday,
-                    'is_odd' => $isOdd,
-                    'records' => $dayRecords->sortBy('recorded_at'),
-                    'total_hours' => sprintf('%d:%02d', $hours, $minutes),
-                    'total_minutes' => $totalMinutes,
-                ];
-            })
-            ->sortKeys();
+            return [$date => (object) [
+                'date' => $date,
+                'jalali' => $jalali,
+                'is_holiday' => $isHoliday,
+                'is_odd' => $isOdd,
+                'records' => $sorted,
+                'day_record' => $dayRecord,
+                'total_hours' => sprintf('%d:%02d', $hours, $minutes),
+                'total_minutes' => $totalMinutes,
+            ]];
+        });
     }
 
     #[Computed]
@@ -154,6 +191,46 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         $minutes = $totalMinutes % 60;
 
         return sprintf('%d:%02d', $hours, $minutes);
+    }
+
+    public function approveDayRecord(int $id, DayRecordBaleNotifier $notifier): void
+    {
+        $this->authorize('administrator_user_management_days');
+
+        $dayRecord = DayRecord::query()
+            ->where('status', DayRecord::STATUS_PENDING)
+            ->findOrFail($id);
+
+        $dayRecord->update([
+            'status' => DayRecord::STATUS_APPROVED,
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        $notifier->notifyApproved($dayRecord);
+
+        unset($this->dayRecords, $this->dailyReport, $this->totalHours);
+        Flux::toast(__('app.hr_day_record_approved'));
+    }
+
+    public function rejectDayRecord(int $id, DayRecordBaleNotifier $notifier): void
+    {
+        $this->authorize('administrator_user_management_days');
+
+        $dayRecord = DayRecord::query()
+            ->where('status', DayRecord::STATUS_PENDING)
+            ->findOrFail($id);
+
+        $dayRecord->update([
+            'status' => DayRecord::STATUS_REJECTED,
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        $notifier->notifyRejected($dayRecord);
+
+        unset($this->dayRecords, $this->dailyReport, $this->totalHours);
+        Flux::toast(__('app.hr_day_record_rejected'), variant: 'warning');
     }
 
     public function setRange(string $preset): void
@@ -168,7 +245,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
         $this->dateStart = $start->format('Y/m/d');
         $this->dateEnd = $end->format('Y/m/d');
-        unset($this->records, $this->dailyReport, $this->totalHours, $this->activePreset);
+        unset($this->records, $this->dayRecords, $this->dailyReport, $this->totalHours, $this->activePreset);
     }
 
     public function clearFilters(): void
@@ -180,13 +257,13 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         $this->dateStart = $today;
         $this->dateEnd = $today;
 
-        unset($this->users, $this->records, $this->dailyReport, $this->totalHours, $this->activePreset);
+        unset($this->users, $this->records, $this->dayRecords, $this->dailyReport, $this->totalHours, $this->activePreset);
         Flux::toast(__('app.filters_cleared'));
     }
 
     public function updatedUserId(): void
     {
-        unset($this->records, $this->dailyReport, $this->totalHours);
+        unset($this->records, $this->dayRecords, $this->dailyReport, $this->totalHours);
     }
 };
 
@@ -293,12 +370,58 @@ new #[Layout('layouts.panels.administrator')] class extends Component
                                         @if($day->is_odd)
                                             <flux:badge color="orange" size="sm">{{ __('app.odd_records_warning') }}</flux:badge>
                                         @endif
+                                        @if($day->day_record)
+                                            @if($day->day_record->type === 'leave')
+                                                <flux:badge color="amber" size="sm">{{ __('app.hr_day_record_type_leave') }}</flux:badge>
+                                            @else
+                                                <flux:badge color="sky" size="sm">{{ __('app.hr_day_record_type_mission') }}</flux:badge>
+                                            @endif
+                                            @if($day->day_record->status === 'pending')
+                                                <flux:badge color="orange" size="sm">{{ __('app.pending_approval') }}</flux:badge>
+                                                @can('administrator_user_management_days')
+                                                    <flux:tooltip content="{{ __('app.approve') }}">
+                                                        <flux:button size="xs" variant="primary" color="green" icon="check" icon:variant="outline" wire:click="approveDayRecord({{ $day->day_record->id }})" />
+                                                    </flux:tooltip>
+                                                    <flux:tooltip content="{{ __('app.reject') }}">
+                                                        <flux:button size="xs" variant="primary" color="red" icon="x" icon:variant="outline" wire:click="rejectDayRecord({{ $day->day_record->id }})" wire:confirm="{{ __('common.are_you_sure') }}" />
+                                                    </flux:tooltip>
+                                                @endcan
+                                            @elseif($day->day_record->status === 'approved')
+                                                <flux:badge color="green" size="sm">{{ __('app.approved') }}</flux:badge>
+                                            @endif
+                                        @endif
                                     </div>
                                 </flux:table.cell>
                                 <flux:table.cell class="text-end whitespace-nowrap">
                                     <flux:badge color="sky" size="sm">{{ $day->total_hours }}</flux:badge>
                                 </flux:table.cell>
                             </flux:table.row>
+
+                            @if($day->day_record && $day->records->isEmpty())
+                                <flux:table.row wire:key="day-rec-only-{{ $day->day_record->id }}">
+                                    <flux:table.cell class="w-40"></flux:table.cell>
+                                    <flux:table.cell>
+                                        <flux:badge color="zinc" size="sm">{{ __('app.hr_day_record_no_punch') }}</flux:badge>
+                                    </flux:table.cell>
+                                    <flux:table.cell>
+                                        @if($day->day_record->type === 'leave')
+                                            <flux:badge color="amber" size="sm">{{ __('app.hr_day_record_type_leave') }}</flux:badge>
+                                        @else
+                                            <flux:badge color="sky" size="sm">{{ __('app.hr_day_record_type_mission') }}</flux:badge>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">—</flux:table.cell>
+                                    <flux:table.cell>—</flux:table.cell>
+                                    <flux:table.cell>
+                                        @if($day->day_record->status === 'approved')
+                                            <flux:badge color="green" size="sm">{{ __('app.approved') }}</flux:badge>
+                                        @else
+                                            <flux:badge color="orange" size="sm">{{ __('app.pending_approval') }}</flux:badge>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell></flux:table.cell>
+                                </flux:table.row>
+                            @endif
 
                             @foreach($day->records as $record)
                                 <flux:table.row wire:key="rec-{{ $record->id }}">

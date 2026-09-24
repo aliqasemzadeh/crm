@@ -4,6 +4,7 @@ namespace App\Services\Hr;
 
 use App\Jobs\Notification\BaleSendMessageJob;
 use App\Models\Calender\Day;
+use App\Models\Hr\DayRecord;
 use App\Models\Hr\Record;
 use App\Models\User;
 use Illuminate\Support\Facades\Cache;
@@ -125,7 +126,7 @@ class AttendanceAlertService
      */
     public function userIdsWithTodayRecord(): array
     {
-        return Record::query()
+        $fromPunches = Record::query()
             ->whereDate('recorded_at', today())
             ->where(function ($query): void {
                 $query->where('type', 'clock_in')
@@ -138,6 +139,16 @@ class AttendanceAlertService
             ->pluck('user_id')
             ->map(fn ($id) => (int) $id)
             ->all();
+
+        $fromDayRecords = DayRecord::query()
+            ->whereDate('date', today())
+            ->whereIn('status', [DayRecord::STATUS_PENDING, DayRecord::STATUS_APPROVED])
+            ->distinct()
+            ->pluck('user_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        return array_values(array_unique([...$fromPunches, ...$fromDayRecords]));
     }
 
     private function markOnce(string $cacheKey): bool
