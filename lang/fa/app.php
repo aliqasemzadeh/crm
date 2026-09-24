@@ -1960,6 +1960,11 @@ return [
     'attendance_record_rejected' => 'رکورد رد شد',
     'filter_clock_type' => 'نوع ورود و خروج',
     'filter_record_source' => 'نوع ثبت',
+    'today' => 'امروز',
+    'this_week' => 'این هفته',
+    'this_month' => 'این ماه',
+    'search_user_placeholder' => 'نام یا شماره موبایل...',
+    'filters_cleared' => 'فیلترها پاک شد',
     'last_modification_date' => 'آخرین تاریخ ویرایش',
 
     'invoice_review' => 'بررسی فاکتور',

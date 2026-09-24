@@ -22,19 +22,30 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     public string $filterApproval = 'pending';
     public string $userSearch = '';
 
-    protected $queryString = [
-        'filterUserId' => ['except' => null],
-        'dateStart' => ['except' => null],
-        'dateEnd' => ['except' => null],
-        'filterType' => ['except' => ''],
-        'filterManual' => ['except' => ''],
-        'filterCategory' => ['except' => ''],
-        'filterApproval' => ['except' => 'pending'],
-    ];
+    protected function queryString(): array
+    {
+        $today = Jalalian::now()->format('Y/m/d');
+
+        return [
+            'filterUserId' => ['except' => null],
+            'dateStart' => ['except' => $today],
+            'dateEnd' => ['except' => $today],
+            'filterType' => ['except' => ''],
+            'filterManual' => ['except' => ''],
+            'filterCategory' => ['except' => ''],
+            'filterApproval' => ['except' => 'pending'],
+        ];
+    }
 
     public function mount(): void
     {
         $this->authorize('administrator_user_management_record');
+
+        if (! request()->hasAny(['dateStart', 'dateEnd'])) {
+            $today = Jalalian::now()->format('Y/m/d');
+            $this->dateStart = $today;
+            $this->dateEnd = $today;
+        }
     }
 
     #[Computed]
@@ -60,6 +71,22 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         }
 
         return $users;
+    }
+
+    #[Computed]
+    public function activePreset(): ?string
+    {
+        $now = Jalalian::now();
+        $today = $now->format('Y/m/d');
+
+        return match (true) {
+            $this->dateStart === $today && $this->dateEnd === $today => 'today',
+            $this->dateStart === $now->getFirstDayOfWeek()->format('Y/m/d')
+                && $this->dateEnd === $now->getEndDayOfWeek()->format('Y/m/d') => 'week',
+            $this->dateStart === $now->getFirstDayOfMonth()->format('Y/m/d')
+                && $this->dateEnd === $now->getEndDayOfMonth()->format('Y/m/d') => 'month',
+            default => null,
+        };
     }
 
     private function filteredQuery()
@@ -96,6 +123,22 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         return $this->filteredQuery()
             ->where('is_device_approved', false)
             ->count();
+    }
+
+    public function setRange(string $preset): void
+    {
+        $now = Jalalian::now();
+
+        [$start, $end] = match ($preset) {
+            'week' => [$now->getFirstDayOfWeek(), $now->getEndDayOfWeek()],
+            'month' => [$now->getFirstDayOfMonth(), $now->getEndDayOfMonth()],
+            default => [$now, $now],
+        };
+
+        $this->dateStart = $start->format('Y/m/d');
+        $this->dateEnd = $end->format('Y/m/d');
+        $this->resetPage();
+        unset($this->records, $this->pendingCount, $this->activePreset);
     }
 
     public function approve(int $id): void
@@ -141,17 +184,20 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
     public function clearFilters(): void
     {
+        $today = Jalalian::now()->format('Y/m/d');
+
         $this->filterUserId = null;
         $this->userSearch = '';
-        $this->dateStart = null;
-        $this->dateEnd = null;
+        $this->dateStart = $today;
+        $this->dateEnd = $today;
         $this->filterType = '';
         $this->filterManual = '';
         $this->filterCategory = '';
         $this->filterApproval = 'pending';
 
         $this->resetPage();
-        unset($this->records, $this->pendingCount, $this->users);
+        unset($this->records, $this->pendingCount, $this->users, $this->activePreset);
+        Flux::toast(__('app.filters_cleared'));
     }
 
     public function updatingFilterUserId(): void
@@ -219,17 +265,25 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     </div>
 
     <flux:card class="panel-filter-card mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 mb-3">
-            <flux:field>
-                <flux:label>{{ __('app.filter_by_user') }}</flux:label>
-                <flux:select searchable wire:model.live="filterUserId" placeholder="{{ __('app.all') }}">
-                    <flux:select.input wire:model.live.debounce.400ms="userSearch" placeholder="{{ __('app.search_placeholder') }}" />
-                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
-                    @foreach($this->users as $user)
-                        <flux:select.option value="{{ $user->id }}">{{ $user->name }} ({{ $user->mobile }})</flux:select.option>
-                    @endforeach
-                </flux:select>
-            </flux:field>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <flux:select
+                variant="combobox"
+                :filter="false"
+                wire:model.live="filterUserId"
+                :label="__('app.filter_by_user')"
+                :placeholder="__('app.all')"
+            >
+                <x-slot name="input">
+                    <flux:select.input wire:model.live.debounce.400ms="userSearch" placeholder="{{ __('app.search_user_placeholder') }}" />
+                </x-slot>
+
+                <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                @foreach($this->users as $user)
+                    <flux:select.option value="{{ $user->id }}" wire:key="record-user-{{ $user->id }}">
+                        {{ $user->name }} ({{ $user->mobile }})
+                    </flux:select.option>
+                @endforeach
+            </flux:select>
 
             <div wire:key="record-date-range-{{ $dateStart ?? 'all' }}-{{ $dateEnd ?? 'all' }}">
                 <x-jalali-date-range
@@ -243,40 +297,10 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
             <flux:field>
                 <flux:label>{{ __('app.filter_status') }}</flux:label>
-                <flux:select searchable wire:model.live="filterApproval">
+                <flux:select wire:model.live="filterApproval">
                     <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
                     <flux:select.option value="pending">{{ __('app.pending_approval') }}</flux:select.option>
                     <flux:select.option value="approved">{{ __('app.approved') }}</flux:select.option>
-                </flux:select>
-            </flux:field>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-            <flux:field>
-                <flux:label>{{ __('app.filter_clock_type') }}</flux:label>
-                <flux:select searchable wire:model.live="filterType">
-                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
-                    <flux:select.option value="clock_in">{{ __('app.clock_in') }}</flux:select.option>
-                    <flux:select.option value="clock_out">{{ __('app.clock_out') }}</flux:select.option>
-                </flux:select>
-            </flux:field>
-
-            <flux:field>
-                <flux:label>{{ __('app.filter_record_source') }}</flux:label>
-                <flux:select searchable wire:model.live="filterManual">
-                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
-                    <flux:select.option value="1">{{ __('app.manual_record') }}</flux:select.option>
-                    <flux:select.option value="0">{{ __('app.normal_record') }}</flux:select.option>
-                </flux:select>
-            </flux:field>
-
-            <flux:field>
-                <flux:label>{{ __('app.attendance_category') }}</flux:label>
-                <flux:select searchable wire:model.live="filterCategory">
-                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
-                    <flux:select.option value="work">{{ __('app.attendance_category_work') }}</flux:select.option>
-                    <flux:select.option value="leave">{{ __('app.attendance_category_leave') }}</flux:select.option>
-                    <flux:select.option value="mission">{{ __('app.attendance_category_mission') }}</flux:select.option>
                 </flux:select>
             </flux:field>
 
@@ -286,25 +310,76 @@ new #[Layout('layouts.panels.administrator')] class extends Component
                 </flux:button>
             </div>
         </div>
+
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+            <flux:button
+                size="xs"
+                variant="{{ $this->activePreset === 'today' ? 'primary' : 'subtle' }}"
+                color="teal"
+                wire:click="setRange('today')"
+            >{{ __('app.today') }}</flux:button>
+            <flux:button
+                size="xs"
+                variant="{{ $this->activePreset === 'week' ? 'primary' : 'subtle' }}"
+                color="teal"
+                wire:click="setRange('week')"
+            >{{ __('app.this_week') }}</flux:button>
+            <flux:button
+                size="xs"
+                variant="{{ $this->activePreset === 'month' ? 'primary' : 'subtle' }}"
+                color="teal"
+                wire:click="setRange('month')"
+            >{{ __('app.this_month') }}</flux:button>
+        </div>
+
+        <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+            <flux:field>
+                <flux:label>{{ __('app.filter_clock_type') }}</flux:label>
+                <flux:select wire:model.live="filterType">
+                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                    <flux:select.option value="clock_in">{{ __('app.clock_in') }}</flux:select.option>
+                    <flux:select.option value="clock_out">{{ __('app.clock_out') }}</flux:select.option>
+                </flux:select>
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('app.filter_record_source') }}</flux:label>
+                <flux:select wire:model.live="filterManual">
+                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                    <flux:select.option value="1">{{ __('app.manual_record') }}</flux:select.option>
+                    <flux:select.option value="0">{{ __('app.normal_record') }}</flux:select.option>
+                </flux:select>
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('app.attendance_category') }}</flux:label>
+                <flux:select wire:model.live="filterCategory">
+                    <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
+                    <flux:select.option value="work">{{ __('app.attendance_category_work') }}</flux:select.option>
+                    <flux:select.option value="leave">{{ __('app.attendance_category_leave') }}</flux:select.option>
+                    <flux:select.option value="mission">{{ __('app.attendance_category_mission') }}</flux:select.option>
+                </flux:select>
+            </flux:field>
+        </div>
     </flux:card>
 
     <flux:table :paginate="$this->records">
         <flux:table.columns>
             <flux:table.column>{{ __('app.user') }}</flux:table.column>
-            <flux:table.column>{{ __('app.date') }}</flux:table.column>
-            <flux:table.column>{{ __('app.time') }}</flux:table.column>
+            <flux:table.column class="whitespace-nowrap">{{ __('app.date') }}</flux:table.column>
+            <flux:table.column class="whitespace-nowrap">{{ __('app.time') }}</flux:table.column>
             <flux:table.column>{{ __('app.type') }}</flux:table.column>
             <flux:table.column>{{ __('app.attendance_category') }}</flux:table.column>
             <flux:table.column>{{ __('app.device_name') }}</flux:table.column>
             <flux:table.column>{{ __('app.status') }}</flux:table.column>
-            <flux:table.column>{{ __('app.actions') }}</flux:table.column>
+            <flux:table.column class="text-end">{{ __('app.actions') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
             @forelse ($this->records as $record)
                 <flux:table.row :key="$record->id">
                     <flux:table.cell>{{ $record->user?->name }}</flux:table.cell>
-                    <flux:table.cell>{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('Y/m/d') }}</flux:table.cell>
-                    <flux:table.cell>{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>
+                    <flux:table.cell class="whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('Y/m/d') }}</flux:table.cell>
+                    <flux:table.cell class="whitespace-nowrap">{{ \Morilog\Jalali\Jalalian::fromDateTime($record->recorded_at)->format('H:i:s') }}</flux:table.cell>
                     <flux:table.cell>
                         <div class="flex flex-wrap items-center gap-1">
                             @if($record->type === 'clock_in')
@@ -338,8 +413,8 @@ new #[Layout('layouts.panels.administrator')] class extends Component
                             <flux:badge color="orange" size="sm">{{ __('app.pending_approval') }}</flux:badge>
                         @endif
                     </flux:table.cell>
-                    <flux:table.cell class="whitespace-nowrap">
-                        <div class="flex gap-2">
+                    <flux:table.cell class="whitespace-nowrap text-end">
+                        <div class="flex gap-2 justify-end">
                             @if(!$record->is_device_approved)
                                 <flux:tooltip content="{{ __('app.approve') }}">
                                     <flux:button size="xs" variant="primary" color="green" icon="check" icon:variant="outline" wire:click="approve({{ $record->id }})" />
