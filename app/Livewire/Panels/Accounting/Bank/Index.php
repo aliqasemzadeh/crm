@@ -23,6 +23,15 @@ class Index extends Component
         return TodayChequeRemainingService::balances();
     }
 
+    /**
+     * @return array<int, array{payment: float, receipt: float}>
+     */
+    #[Computed]
+    public function todayChequeRemainingByAccount(): array
+    {
+        return TodayChequeRemainingService::balancesByBankAccount();
+    }
+
     #[Layout('layouts.panels.accounting')]
     public function render()
     {

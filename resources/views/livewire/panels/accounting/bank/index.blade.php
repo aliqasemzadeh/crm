@@ -41,7 +41,7 @@
 
     <flux:table>
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column colspan="6" class="bg-white dark:bg-zinc-900">
+            <flux:table.column colspan="8" class="bg-white dark:bg-zinc-900">
                 <div class="flex flex-col gap-1 pe-2 items-end">
                     <flux:input
                         size="sm"
@@ -56,6 +56,8 @@
             <flux:table.column>{{ __('app.bank_name') }}</flux:table.column>
             <flux:table.column>{{ __('app.creator') }}</flux:table.column>
             <flux:table.column>{{ __('app.bank_balance') }}</flux:table.column>
+            <flux:table.column>{{ __('app.today_payable_cheques_remaining') }}</flux:table.column>
+            <flux:table.column>{{ __('app.today_receivable_cheques_remaining') }}</flux:table.column>
             @can('accounting_profit_index')
                 <flux:table.column>{{ __('app.usdt_rate') }}</flux:table.column>
                 <flux:table.column>{{ __('app.bank_balance') }} ({{ __('app.usdt') }})</flux:table.column>
@@ -64,6 +66,7 @@
         <flux:table.rows>
             @php
                 $bankTranslations = __('banks');
+                $todayByAccount = $this->todayChequeRemainingByAccount;
             @endphp
             @foreach ($bankAccounts as $bankAccount)
                 @php
@@ -83,6 +86,9 @@
                     $logoUrl = $bankKey ? asset("images/banks/{$bankKey}.svg") : null;
                     $bankBalanceRial = $bankAccount->Balance;
                     $usdtBalance = $this->usdtRate > 0 ? $bankBalanceRial / $this->usdtRate : 0;
+                    $accountId = (int) $bankAccount->BankAccountId;
+                    $todayPayment = (float) ($todayByAccount[$accountId]['payment'] ?? 0);
+                    $todayReceipt = (float) ($todayByAccount[$accountId]['receipt'] ?? 0);
                 @endphp
                 <flux:table.row :key="$bankAccount->BankAccountId">
                     <flux:table.cell>
@@ -99,6 +105,12 @@
                     </flux:table.cell>
                     <flux:table.cell>
                         {{ number_format($bankBalanceRial, 0) }} {{ __('app.rial') }}
+                    </flux:table.cell>
+                    <flux:table.cell>
+                        {{ number_format($todayPayment, 0) }} {{ __('app.rial') }}
+                    </flux:table.cell>
+                    <flux:table.cell>
+                        {{ number_format($todayReceipt, 0) }} {{ __('app.rial') }}
                     </flux:table.cell>
                     @can('accounting_profit_index')
                         <flux:table.cell>
