@@ -134,3 +134,15 @@ Route::middleware(['auth'])->group( function () {
 Route::get('/invoice/{invoiceId}/view', \App\Livewire\Panels\Customer\Invoice\View::class)
     ->name('panels.customer.invoice.view')
     ->middleware('signed');
+
+Route::get('/i/{code}', function (string $code) {
+    $shortLink = \App\Models\ShortLink::query()->where('code', $code)->first();
+
+    if (! $shortLink || $shortLink->isExpired()) {
+        abort(404);
+    }
+
+    $shortLink->increment('hits');
+
+    return redirect()->away($shortLink->destination);
+})->where('code', '[A-Za-z0-9]+')->name('short-link.redirect');
