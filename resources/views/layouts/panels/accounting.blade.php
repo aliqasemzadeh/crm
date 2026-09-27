@@ -111,10 +111,10 @@
 
         @canany(['accounting_payment_cheque_index', 'accounting_receipt_cheque_index'])
         <flux:sidebar.item icon="calendar-range"
-                           href="{{ route('panels.accounting.cheque-report.index') }}"
-                           :current="request()->routeIs('panels.accounting.cheque-report.*')"
+                           href="{{ route('panels.accounting.cheque-period.index') }}"
+                           :current="request()->routeIs('panels.accounting.cheque-period.*')"
                            wire:navigate>
-            {{ __('app.cheque_period_report') }}
+            {{ __('app.cheque_period_board') }}
         </flux:sidebar.item>
         @endcanany
 

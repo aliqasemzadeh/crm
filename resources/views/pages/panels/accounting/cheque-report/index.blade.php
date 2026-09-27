@@ -3,6 +3,7 @@
 use App\Livewire\Panels\Accounting\Concerns\SelectsJalaliChequeMonth;
 use App\Models\Accounting\PaymentChequePeriodStat;
 use App\Models\Accounting\ReceiptChequePeriodStat;
+use App\Services\Accounting\ChequePeriodBuckets;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -19,7 +20,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     public int $month = 0;
 
     #[Url]
-    public string $periodMode = 'ten_days';
+    public int $periodDays = 10;
 
     public function mount(): void
     {
@@ -30,29 +31,25 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         );
 
         $this->bootJalaliChequeMonth();
-
-        if (! in_array($this->periodMode, ['ten_days', 'weekly'], true)) {
-            $this->periodMode = 'ten_days';
-        }
+        $this->periodDays = ChequePeriodBuckets::normalizeDays($this->periodDays);
     }
 
-    public function updatedPeriodMode(string $value): void
+    public function updatedPeriodDays(int|string $value): void
     {
-        if (! in_array($value, ['ten_days', 'weekly'], true)) {
-            $this->periodMode = 'ten_days';
-        }
+        $this->periodDays = ChequePeriodBuckets::normalizeDays((int) $value);
+        unset($this->paymentPeriods, $this->receiptPeriods);
     }
 
     #[Computed]
     public function paymentPeriods(): array
     {
-        return PaymentChequePeriodStat::forMonth($this->year, $this->month, $this->periodMode);
+        return PaymentChequePeriodStat::forMonth($this->year, $this->month, $this->periodDays);
     }
 
     #[Computed]
     public function receiptPeriods(): array
     {
-        return ReceiptChequePeriodStat::forMonth($this->year, $this->month, $this->periodMode);
+        return ReceiptChequePeriodStat::forMonth($this->year, $this->month, $this->periodDays);
     }
 };
 ?>
@@ -69,6 +66,9 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                 <flux:subheading size="lg" class="mb-6">{{ __('app.cheque_period_report_description') }}</flux:subheading>
             </div>
             <div class="flex flex-wrap gap-2">
+                <flux:button variant="primary" color="teal" icon="calendar-range" href="{{ route('panels.accounting.cheque-period.index', ['year' => $year, 'month' => $month, 'periodDays' => $periodDays]) }}" wire:navigate>
+                    {{ __('app.cheque_period_board') }}
+                </flux:button>
                 @can('accounting_payment_cheque_index')
                     <flux:button variant="filled" color="zinc" icon="badge-dollar-sign" href="{{ route('panels.accounting.payment-cheque.index', ['year' => $year, 'month' => $month]) }}" wire:navigate>
                         {{ __('app.payment_cheques') }}
@@ -100,7 +100,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             @foreach(range(1, 12) as $monthNumber)
                 <div
                     wire:click="selectMonth({{ $monthNumber }})"
-                    wire:key="cheque-period-month-{{ $year }}-{{ $monthNumber }}"
+                    wire:key="cheque-report-month-{{ $year }}-{{ $monthNumber }}"
                     class="cursor-pointer rounded-lg {{ (int) $month === (int) $monthNumber ? 'ring-2 ring-sky-500' : '' }}"
                 >
                     <flux:card class="flex items-center justify-center p-4 border-t-4 {{ (int) $month === (int) $monthNumber ? 'border-sky-500' : 'border-zinc-200 dark:border-zinc-700' }}">
@@ -110,9 +110,10 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             @endforeach
         </div>
 
-        <flux:tabs variant="segmented" wire:model.live="periodMode">
-            <flux:tab name="ten_days">{{ __('app.invoice_period_ten_days') }}</flux:tab>
-            <flux:tab name="weekly">{{ __('app.invoice_period_weekly') }}</flux:tab>
+        <flux:tabs variant="segmented" wire:model.live="periodDays">
+            <flux:tab name="5">{{ __('app.cheque_period_days_5') }}</flux:tab>
+            <flux:tab name="7">{{ __('app.cheque_period_days_7') }}</flux:tab>
+            <flux:tab name="10">{{ __('app.cheque_period_days_10') }}</flux:tab>
         </flux:tabs>
     </div>
 
@@ -140,7 +141,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
         @foreach($tables as $table)
-            <div class="space-y-4" wire:key="cheque-period-table-{{ $table['key'] }}-{{ $year }}-{{ $month }}-{{ $periodMode }}">
+            <div class="space-y-4" wire:key="cheque-report-table-{{ $table['key'] }}-{{ $year }}-{{ $month }}-{{ $periodDays }}">
                 <flux:heading size="lg">
                     {{ $table['title'] }}
                     —
@@ -178,7 +179,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                     </flux:table.columns>
                     <flux:table.rows>
                         @forelse($table['stats']['periods'] as $period)
-                            <flux:table.row wire:key="cheque-period-{{ $table['key'] }}-{{ $period['from'] }}-{{ $period['to'] }}">
+                            <flux:table.row wire:key="cheque-report-row-{{ $table['key'] }}-{{ $period['from'] }}-{{ $period['to'] }}">
                                 <flux:table.cell>
                                     <div class="flex flex-col gap-0.5">
                                         <span class="font-medium">{{ $period['label'] }}</span>

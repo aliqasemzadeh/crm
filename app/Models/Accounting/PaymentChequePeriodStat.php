@@ -18,8 +18,9 @@ class PaymentChequePeriodStat
      *     total: float
      * }
      */
-    public static function forMonth(int $year, int $month, string $mode = 'ten_days'): array
+    public static function forMonth(int $year, int $month, int $periodDays = 10): array
     {
+        $periodDays = ChequePeriodBuckets::normalizeDays($periodDays);
         $daysInMonth = (new Jalalian($year, $month, 1))->getMonthDays();
         $start = (new Jalalian($year, $month, 1))->toCarbon()->startOfDay();
         $end = (new Jalalian($year, $month, $daysInMonth))->toCarbon()->endOfDay();
@@ -31,7 +32,14 @@ class PaymentChequePeriodStat
             ->whereBetween('Date', [$start, $end])
             ->get();
 
-        return self::build($cheques, $year, $month, $daysInMonth, $mode, fn (PaymentCheque $cheque): bool => (int) $cheque->is_passed === 1);
+        return self::build(
+            $cheques,
+            $year,
+            $month,
+            $daysInMonth,
+            $periodDays,
+            fn (PaymentCheque $cheque): bool => (int) $cheque->is_passed === 1,
+        );
     }
 
     /**
@@ -44,10 +52,10 @@ class PaymentChequePeriodStat
      *     total: float
      * }
      */
-    public static function build(Collection $cheques, int $year, int $month, int $daysInMonth, string $mode, callable $isPassed): array
+    public static function build(Collection $cheques, int $year, int $month, int $daysInMonth, int $periodDays, callable $isPassed): array
     {
-        $periods = ChequePeriodBuckets::blank($daysInMonth, $mode);
-        $monthName = __('app.jalali_months.'.$month);
+        $periodDays = ChequePeriodBuckets::normalizeDays($periodDays);
+        $periods = ChequePeriodBuckets::blank($daysInMonth, $periodDays);
 
         foreach ($cheques as $cheque) {
             if (! $cheque->Date) {
@@ -71,13 +79,12 @@ class PaymentChequePeriodStat
         $rows = [];
 
         foreach ($periods as $index => $period) {
-            $ordinal = __('app.ordinals.'.($index + 1));
-            $labelKey = $mode === 'ten_days'
-                ? 'app.invoice_period_ten_days_label'
-                : 'app.invoice_period_week_label';
-
             $rows[] = [
-                'label' => __($labelKey, ['ordinal' => $ordinal, 'month' => $monthName]),
+                'label' => __('app.cheque_period_card_label', [
+                    'n' => $index + 1,
+                    'from' => $period['from'],
+                    'to' => $period['to'],
+                ]),
                 'range' => __('app.invoice_period_range', ['from' => $period['from'], 'to' => $period['to']]),
                 'from' => $period['from'],
                 'to' => $period['to'],

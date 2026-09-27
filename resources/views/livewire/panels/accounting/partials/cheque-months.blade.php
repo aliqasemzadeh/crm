@@ -73,10 +73,10 @@
             color="teal"
             icon="calendar-range"
             icon:variant="outline"
-            href="{{ route('panels.accounting.cheque-report.index', ['year' => $year, 'month' => $month]) }}"
+            href="{{ route('panels.accounting.cheque-period.index', ['year' => $year, 'month' => $month]) }}"
             wire:navigate
         >
-            {{ __('app.cheque_period_report') }}
+            {{ __('app.cheque_period_board') }}
         </flux:button>
     </div>
 

@@ -18,8 +18,9 @@ class ReceiptChequePeriodStat
      *     total: float
      * }
      */
-    public static function forMonth(int $year, int $month, string $mode = 'ten_days'): array
+    public static function forMonth(int $year, int $month, int $periodDays = 10): array
     {
+        $periodDays = ChequePeriodBuckets::normalizeDays($periodDays);
         $daysInMonth = (new Jalalian($year, $month, 1))->getMonthDays();
         $start = (new Jalalian($year, $month, 1))->toCarbon()->startOfDay();
         $end = (new Jalalian($year, $month, $daysInMonth))->toCarbon()->endOfDay();
@@ -35,7 +36,7 @@ class ReceiptChequePeriodStat
             $year,
             $month,
             $daysInMonth,
-            $mode,
+            $periodDays,
             fn (ReceiptCheque $cheque): bool => ChequeState::receiptPassed($cheque->State),
         );
     }

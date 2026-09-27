@@ -4,31 +4,23 @@ namespace App\Services\Accounting;
 
 class ChequePeriodBuckets
 {
+    public const ALLOWED_DAYS = [5, 7, 10];
+
+    public static function normalizeDays(int $periodDays): int
+    {
+        return in_array($periodDays, self::ALLOWED_DAYS, true) ? $periodDays : 10;
+    }
+
     /**
      * @return array<int, array{0: int, 1: int}>
      */
-    public static function ranges(int $daysInMonth, string $mode = 'ten_days'): array
+    public static function ranges(int $daysInMonth, int $periodDays = 10): array
     {
-        if ($mode === 'weekly') {
-            $ranges = [];
+        $chunk = self::normalizeDays($periodDays);
+        $ranges = [];
 
-            for ($start = 1; $start <= $daysInMonth; $start += 7) {
-                $ranges[] = [$start, min($start + 6, $daysInMonth)];
-            }
-
-            return $ranges;
-        }
-
-        $ranges = [
-            [1, min(10, $daysInMonth)],
-        ];
-
-        if ($daysInMonth > 10) {
-            $ranges[] = [11, min(20, $daysInMonth)];
-        }
-
-        if ($daysInMonth > 20) {
-            $ranges[] = [21, $daysInMonth];
+        for ($start = 1; $start <= $daysInMonth; $start += $chunk) {
+            $ranges[] = [$start, min($start + $chunk - 1, $daysInMonth)];
         }
 
         return $ranges;
@@ -37,11 +29,11 @@ class ChequePeriodBuckets
     /**
      * @return list<array{passed: float, unpassed: float, remaining: float, total: float, from: int, to: int}>
      */
-    public static function blank(int $daysInMonth, string $mode = 'ten_days'): array
+    public static function blank(int $daysInMonth, int $periodDays = 10): array
     {
         $periods = [];
 
-        foreach (self::ranges($daysInMonth, $mode) as [$from, $to]) {
+        foreach (self::ranges($daysInMonth, $periodDays) as [$from, $to]) {
             $periods[] = [
                 'from' => $from,
                 'to' => $to,
