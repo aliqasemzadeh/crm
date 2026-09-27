@@ -140,6 +140,7 @@ class Index extends Component
         return [
             'passed' => $month['passed'],
             'unpassed' => $month['unpassed'],
+            'remaining' => $month['total'] - $month['passed'],
             'total' => $month['total'],
             'accounts' => $accounts,
             'deposit' => array_sum(array_map(fn (array $row) => $row['deposit'] ?? 0, $accounts)),

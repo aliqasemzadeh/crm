@@ -22,13 +22,13 @@
             $tone = $this->chequeTone($cheque);
             $id = $cheque->{$idField};
             $rowClass = match ($tone) {
-                'green' => 'bg-green-100 dark:bg-green-950/40',
-                'red' => 'bg-red-100 dark:bg-red-950/40',
+                'green' => 'bg-emerald-50 dark:bg-emerald-500/20 border-s-4 border-emerald-500',
+                'red' => 'bg-rose-50 dark:bg-rose-500/20 border-s-4 border-rose-500',
                 default => '',
             };
             $amountClass = match ($tone) {
-                'green' => 'text-green-700 dark:text-green-300 font-semibold',
-                'red' => 'text-red-700 dark:text-red-300 font-semibold',
+                'green' => 'text-emerald-700 dark:text-emerald-400 font-semibold',
+                'red' => 'text-rose-700 dark:text-rose-400 font-semibold',
                 default => '',
             };
             $balance = $this->chequeAccountBalance($cheque);
@@ -41,17 +41,17 @@
             </flux:table.cell>
             <flux:table.cell class="whitespace-nowrap">{{ $cheque->Number }}</flux:table.cell>
             <flux:table.cell class="whitespace-nowrap">{{ $cheque->dl->Title ?? $cheque->DlRef }}</flux:table.cell>
-            <flux:table.cell class="whitespace-nowrap {{ $amountClass }}">{{ number_format($cheque->Amount) }}</flux:table.cell>
+            <flux:table.cell class="whitespace-nowrap tabular-nums {{ $amountClass }}">{{ number_format($cheque->Amount) }}</flux:table.cell>
             <flux:table.cell class="whitespace-nowrap">
                 {{ $cheque->Date ? \Morilog\Jalali\Jalalian::fromDateTime($cheque->Date)->format('%Y-%m-%d') : '-' }}
             </flux:table.cell>
             <flux:table.cell class="whitespace-nowrap">
-                <flux:badge size="sm" color="{{ $tone === 'green' ? 'green' : ($tone === 'red' ? 'red' : 'amber') }}">
+                <flux:badge size="sm" color="{{ $tone === 'green' ? 'lime' : ($tone === 'red' ? 'rose' : 'amber') }}">
                     {{ $this->chequeStatusLabel($cheque) }}
                 </flux:badge>
             </flux:table.cell>
             <flux:table.cell class="whitespace-nowrap">{{ $this->chequeAccountLabel($cheque) }}</flux:table.cell>
-            <flux:table.cell class="whitespace-nowrap">
+            <flux:table.cell class="whitespace-nowrap tabular-nums">
                 {{ $balance === null ? '—' : number_format($balance).' '.__('app.rial') }}
             </flux:table.cell>
         </flux:table.row>

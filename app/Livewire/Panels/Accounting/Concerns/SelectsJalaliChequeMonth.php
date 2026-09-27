@@ -26,24 +26,31 @@ trait SelectsJalaliChequeMonth
         }
 
         $this->month = $month;
-        $this->resetPage();
+        $this->resetChequeListPage();
     }
 
     public function previousYear(): void
     {
         $this->year--;
-        $this->resetPage();
+        $this->resetChequeListPage();
     }
 
     public function nextYear(): void
     {
         $this->year++;
-        $this->resetPage();
+        $this->resetChequeListPage();
     }
 
     public function updatingSearch(): void
     {
-        $this->resetPage();
+        $this->resetChequeListPage();
+    }
+
+    protected function resetChequeListPage(): void
+    {
+        if (method_exists($this, 'resetPage')) {
+            $this->resetPage();
+        }
     }
 
     /**

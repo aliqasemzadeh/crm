@@ -52,14 +52,19 @@ class ChequeMonthBuckets
 
     /**
      * @param  array<int, array{passed: float, unpassed: float, total: float}>  $months
-     * @return array{passed: float, unpassed: float, total: float}
+     * @return array{passed: float, unpassed: float, remaining: float, total: float}
      */
     public static function totals(array $months): array
     {
+        $passed = (float) array_sum(array_column($months, 'passed'));
+        $total = (float) array_sum(array_column($months, 'total'));
+        $unpassed = (float) array_sum(array_column($months, 'unpassed'));
+
         return [
-            'passed' => (float) array_sum(array_column($months, 'passed')),
-            'unpassed' => (float) array_sum(array_column($months, 'unpassed')),
-            'total' => (float) array_sum(array_column($months, 'total')),
+            'passed' => $passed,
+            'unpassed' => $unpassed,
+            'remaining' => $total - $passed,
+            'total' => $total,
         ];
     }
 

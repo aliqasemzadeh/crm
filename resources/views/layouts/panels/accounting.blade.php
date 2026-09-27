@@ -94,6 +94,7 @@
         @can('accounting_receipt_cheque_index')
         <flux:sidebar.item icon="wallet"
                            href="{{ route('panels.accounting.receipt-cheque.index') }}"
+                           :current="request()->routeIs('panels.accounting.receipt-cheque.*')"
                            wire:navigate>
             {{ __('app.receipt_cheques') }}
         </flux:sidebar.item>
@@ -102,10 +103,20 @@
         @can('accounting_payment_cheque_index')
         <flux:sidebar.item icon="badge-dollar-sign"
                            href="{{ route('panels.accounting.payment-cheque.index') }}"
+                           :current="request()->routeIs('panels.accounting.payment-cheque.*')"
                            wire:navigate>
             {{ __('app.payment_cheques') }}
         </flux:sidebar.item>
         @endcan
+
+        @canany(['accounting_payment_cheque_index', 'accounting_receipt_cheque_index'])
+        <flux:sidebar.item icon="calendar-range"
+                           href="{{ route('panels.accounting.cheque-report.index') }}"
+                           :current="request()->routeIs('panels.accounting.cheque-report.*')"
+                           wire:navigate>
+            {{ __('app.cheque_period_report') }}
+        </flux:sidebar.item>
+        @endcanany
 
             @can('accounting_price_note_index')
                 <flux:sidebar.item icon="chart-candlestick"

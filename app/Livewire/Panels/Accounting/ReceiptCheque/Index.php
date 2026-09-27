@@ -146,6 +146,7 @@ class Index extends Component
         return [
             'passed' => $month['passed'],
             'unpassed' => $month['unpassed'],
+            'remaining' => $month['total'] - $month['passed'],
             'total' => $month['total'],
             'accounts' => $accounts,
             'deposit' => 0.0,
