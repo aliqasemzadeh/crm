@@ -41,21 +41,31 @@
     </div>
 
     <flux:card class="bg-zinc-50 dark:bg-zinc-900 border-t-4 border-zinc-500">
-        <div class="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
+        <div class="space-y-4">
             <flux:heading size="lg">{{ $yearTotalLabel }}</flux:heading>
-            <div class="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-end">
-                <flux:text size="lg" class="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
-                    {{ __('app.cheque_passed') }}:
-                    {{ number_format($this->chequeStats['passed']) }}
-                </flux:text>
-                <flux:text size="lg" class="font-bold tabular-nums text-rose-600 dark:text-rose-400">
-                    {{ __('app.cheque_remaining') }}:
-                    {{ number_format($this->chequeStats['remaining'] ?? ($this->chequeStats['total'] - $this->chequeStats['passed'])) }}
-                </flux:text>
-                <flux:text size="2xl" class="font-black text-zinc-900 dark:text-white tabular-nums">
-                    {{ number_format($this->chequeStats['total']) }}
-                    <span class="text-lg font-bold">{{ __('app.rial') }}</span>
-                </flux:text>
+
+            <div class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                <div class="flex items-center justify-between gap-4 py-2">
+                    <flux:text>{{ __('app.cheque_passed') }}</flux:text>
+                    <flux:text size="lg" class="font-bold tabular-nums text-emerald-600 dark:text-emerald-400">
+                        {{ number_format($this->chequeStats['passed']) }}
+                        <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:text>
+                </div>
+                <div class="flex items-center justify-between gap-4 py-2">
+                    <flux:text>{{ __('app.cheque_remaining') }}</flux:text>
+                    <flux:text size="lg" class="font-bold tabular-nums text-rose-600 dark:text-rose-400">
+                        {{ number_format($this->chequeStats['remaining'] ?? ($this->chequeStats['total'] - $this->chequeStats['passed'])) }}
+                        <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:text>
+                </div>
+                <div class="flex items-center justify-between gap-4 py-2">
+                    <flux:text class="font-semibold">{{ __('app.amount') }}</flux:text>
+                    <flux:heading size="xl" class="tabular-nums text-zinc-900 dark:text-white">
+                        {{ number_format($this->chequeStats['total']) }}
+                        <span class="text-base font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:heading>
+                </div>
             </div>
         </div>
     </flux:card>
