@@ -25,4 +25,16 @@ class BankAccount extends Model
     {
         return $this->hasMany(BankAccountBalance::class, 'BankAccountRef', 'BankAccountId');
     }
+
+    public function displayName(): string
+    {
+        $bankTitle = $this->bankBranch?->bank?->Title;
+        $accountNo = $this->AccountNo;
+
+        if ($bankTitle && $accountNo) {
+            return trim($bankTitle.' - '.$accountNo);
+        }
+
+        return (string) ($accountNo ?: ('#'.$this->BankAccountId));
+    }
 }

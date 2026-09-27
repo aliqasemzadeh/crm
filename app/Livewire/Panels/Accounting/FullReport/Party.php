@@ -45,20 +45,12 @@ class Party extends Component
 
     public function receiptChequeStateLabel(?int $state): string
     {
-        return match ($state) {
-            1 => __('app.receipt_cheque_state_1'),
-            5 => __('app.receipt_cheque_state_5'),
-            default => __('app.cheque_state_fallback', ['n' => $state ?? '-']),
-        };
+        return \App\Models\Sepidar\RPA\ChequeState::receiptLabel($state);
     }
 
     public function paymentChequeStateLabel(?int $state): string
     {
-        return match ($state) {
-            1 => __('app.payment_cheque_state_1'),
-            2 => __('app.payment_cheque_state_2'),
-            default => __('app.cheque_state_fallback', ['n' => $state ?? '-']),
-        };
+        return \App\Models\Sepidar\RPA\ChequeState::paymentLabel($state);
     }
 
     #[Computed]

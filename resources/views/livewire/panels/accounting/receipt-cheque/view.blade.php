@@ -30,8 +30,25 @@
                             <flux:text class="font-bold">{{ $cheque->Date ? \Morilog\Jalali\Jalalian::fromDateTime($cheque->Date)->format('%Y-%m-%d') : '-' }}</flux:text>
                         </div>
                         <div class="flex justify-between">
-                            <flux:text>{{ __('app.bank') }}:</flux:text>
-                            <flux:text class="font-bold">{{ $cheque->BankRef ?? '-' }}</flux:text>
+                            <flux:text>{{ __('app.status') }}:</flux:text>
+                            @php
+                                $passed = \App\Models\Sepidar\RPA\ChequeState::receiptPassed($cheque->State);
+                                $overdue = ! $passed && $cheque->Date && \Illuminate\Support\Carbon::parse($cheque->Date)->startOfDay()->lt(now()->startOfDay());
+                            @endphp
+                            <flux:badge size="sm" color="{{ $passed ? 'green' : ($overdue ? 'red' : 'amber') }}">
+                                {{ $passed ? __('app.cheque_passed') : __('app.cheque_unpassed') }}
+                                — {{ \App\Models\Sepidar\RPA\ChequeState::receiptLabel($cheque->State) }}
+                            </flux:badge>
+                        </div>
+                        <div class="flex justify-between">
+                            <flux:text>{{ __('app.cheque_bank_account') }}:</flux:text>
+                            <flux:text class="font-bold">{{ $cheque->latestBankingItem?->bankAccount?->displayName() ?? '-' }}</flux:text>
+                        </div>
+                        <div class="flex justify-between">
+                            <flux:text>{{ __('app.cheque_account_balance') }}:</flux:text>
+                            <flux:text class="font-bold">
+                                {{ $cheque->latestBankingItem?->bankAccount ? number_format($cheque->latestBankingItem->bankAccount->Balance).' '.__('app.rial') : '-' }}
+                            </flux:text>
                         </div>
                         <flux:separator />
                         <div class="pt-2">

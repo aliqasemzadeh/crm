@@ -14,12 +14,16 @@ class View extends Component
     #[On('panels.accounting.receipt-cheque.view.assign-data')]
     public function assignData($id): void
     {
-        $this->cheque = ReceiptCheque::with(['dl'])->findOrFail($id);
+        $this->cheque = ReceiptCheque::with(['dl', 'latestBankingItem.bankAccount.bankBranch.bank'])->findOrFail($id);
         Flux::modal('panels.accounting.receipt-cheque.view.modal')->show();
     }
 
     public function render()
     {
+        if (isset($this->cheque)) {
+            $this->cheque->loadMissing(['dl', 'latestBankingItem.bankAccount.bankBranch.bank']);
+        }
+
         return view('livewire.panels.accounting.receipt-cheque.view');
     }
 }

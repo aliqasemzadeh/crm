@@ -29,6 +29,24 @@
                             <flux:text>{{ __('app.date') }}:</flux:text>
                             <flux:text class="font-bold">{{ $cheque->Date ? \Morilog\Jalali\Jalalian::fromDateTime($cheque->Date)->format('%Y-%m-%d') : '-' }}</flux:text>
                         </div>
+                        <div class="flex justify-between">
+                            <flux:text>{{ __('app.status') }}:</flux:text>
+                            @php
+                                $passed = (int) $cheque->is_passed === 1;
+                                $overdue = ! $passed && $cheque->Date && \Illuminate\Support\Carbon::parse($cheque->Date)->startOfDay()->lt(now()->startOfDay());
+                            @endphp
+                            <flux:badge size="sm" color="{{ $passed ? 'green' : ($overdue ? 'red' : 'amber') }}">
+                                {{ $passed ? __('app.cheque_passed') : __('app.cheque_unpassed') }}
+                            </flux:badge>
+                        </div>
+                        <div class="flex justify-between">
+                            <flux:text>{{ __('app.cheque_bank_account') }}:</flux:text>
+                            <flux:text class="font-bold">{{ $cheque->bankAccount?->displayName() ?? '-' }}</flux:text>
+                        </div>
+                        <div class="flex justify-between">
+                            <flux:text>{{ __('app.cheque_account_balance') }}:</flux:text>
+                            <flux:text class="font-bold">{{ $cheque->bankAccount ? number_format($cheque->bankAccount->Balance).' '.__('app.rial') : '-' }}</flux:text>
+                        </div>
                         <flux:separator />
                         <div class="pt-2">
                             <flux:text>{{ __('app.description') }}:</flux:text>
