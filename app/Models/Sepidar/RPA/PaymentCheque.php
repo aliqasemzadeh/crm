@@ -2,6 +2,9 @@
 
 namespace App\Models\Sepidar\RPA;
 
+use App\Livewire\Panels\Accounting\Dashboard\Index as DashboardIndex;
+use App\Livewire\Panels\Accounting\PaymentCheque\Index;
+use App\Models\Sepidar\ACC\DL;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PaymentCheque extends Model
 {
     public $table = 'RPA.PaymentCheque';
+
     public $connection = 'sqlsrv';
+
     public $primaryKey = 'PaymentChequeId';
 
     protected $casts = [
@@ -22,21 +27,24 @@ class PaymentCheque extends Model
     protected static function booted()
     {
         static::deleted(function ($cheque) {
-            \App\Livewire\Panels\Accounting\PaymentCheque\Index::clearCache();
+            Index::clearCache();
+            DashboardIndex::clearCache();
         });
 
         static::created(function ($cheque) {
-            \App\Livewire\Panels\Accounting\PaymentCheque\Index::clearCache();
+            Index::clearCache();
+            DashboardIndex::clearCache();
         });
 
         static::updated(function ($cheque) {
-            \App\Livewire\Panels\Accounting\PaymentCheque\Index::clearCache();
+            Index::clearCache();
+            DashboardIndex::clearCache();
         });
     }
 
     public function dl(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\Sepidar\ACC\DL::class, 'DlRef', 'DLId');
+        return $this->belongsTo(DL::class, 'DlRef', 'DLId');
     }
 
     public function bankAccount(): BelongsTo
