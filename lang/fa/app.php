@@ -1592,6 +1592,8 @@ return [
             'report_submitted' => 'گزارش شما با موفقیت ثبت شد.',
             'task_is_locked' => 'این وظیفه تایید شده و امکان ثبت فعالیت جدید وجود ندارد.',
             'cannot_add_to_approved_task' => 'امکان ثبت گزارش برای وظیفه تایید شده وجود ندارد.',
+            'report_bale_message' => "گزارش جدید روی فعالیت: :title\nنویسنده: :author\nمتن: :body\nمیزکار: :url",
+            'report_bale_attachments' => 'پیوست‌ها: :count فایل',
         ],
     ],
     'pending' => 'منتظر تایید',

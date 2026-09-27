@@ -8,6 +8,7 @@ use App\Models\Workspace\Task;
 use App\Models\Workspace\TaskChecklist;
 use App\Models\Workspace\TaskReport;
 use App\Models\Workspace\TaskFile;
+use App\Services\Workspace\TaskReportBaleNotifier;
 use Flux\Flux;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\On;
@@ -73,6 +74,8 @@ class Activity extends Component
                 ]);
             }
         }
+
+        app(TaskReportBaleNotifier::class)->notify($report);
 
         $this->reset(['body', 'files']);
         $this->task->load(['reports.user', 'reports.files', 'checklists']);
