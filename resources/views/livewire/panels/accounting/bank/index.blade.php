@@ -28,6 +28,17 @@
         </flux:card>
     </div>
 
+    <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <flux:card class="border-t-4 border-orange-500">
+            <flux:text>{{ __('app.today_payable_cheques_remaining') }}</flux:text>
+            <flux:heading size="xl" class="mb-1">{{ number_format($this->todayChequeRemaining['payment'], 0) }} {{ __('app.rial') }}</flux:heading>
+        </flux:card>
+        <flux:card class="border-t-4 border-sky-500">
+            <flux:text>{{ __('app.today_receivable_cheques_remaining') }}</flux:text>
+            <flux:heading size="xl" class="mb-1">{{ number_format($this->todayChequeRemaining['receipt'], 0) }} {{ __('app.rial') }}</flux:heading>
+        </flux:card>
+    </div>
+
     <flux:table>
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
             <flux:table.column colspan="6" class="bg-white dark:bg-zinc-900">

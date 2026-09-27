@@ -2,8 +2,7 @@
 
 namespace App\Livewire\Panels\Accounting\Bank;
 
-use App\Models\Sepidar\RPA\BankAccountBalance;
-use Illuminate\Support\Facades\Cache;
+use App\Services\Accounting\TodayChequeRemainingService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -15,11 +14,18 @@ class Index extends Component
     public $usdtRate = 0;
     public $search = '';
 
+    /**
+     * @return array{payment: float, receipt: float}
+     */
+    #[Computed]
+    public function todayChequeRemaining(): array
+    {
+        return TodayChequeRemainingService::balances();
+    }
+
     #[Layout('layouts.panels.accounting')]
     public function render()
     {
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
-
         $bankAccounts = \App\Models\Sepidar\RPA\BankAccount::with(['bankBranch.bank', 'creator'])
             ->when($this->search, function ($query) {
                 $query->whereHas('bankBranch.bank', function ($q) {

@@ -1317,6 +1317,8 @@ return [
     'view_official_unofficial_breakdown' => 'مشاهده تفکیک رسمی و غیررسمی',
     'payable_cheques_balance' => 'مانده چک‌های پرداختنی',
     'receivable_cheques_balance' => 'مانده چک‌های دریافتنی',
+    'today_payable_cheques_remaining' => 'مانده چک‌های پرداختنی — امروز',
+    'today_receivable_cheques_remaining' => 'مانده چک‌های دریافتنی — امروز',
     'sales_by_month' => 'نمودار فروش ماهانه',
     'sales' => 'فروش',
     'bank_month_end_balances' => 'مانده حساب‌ها در پایان ماه',

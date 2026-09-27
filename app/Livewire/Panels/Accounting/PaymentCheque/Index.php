@@ -151,6 +151,7 @@ class Index extends Component
     {
         $fiscalYearRef = config('sepidar.FiscalYearRef');
         Cache::forget("payment_cheque_stats_fiscal_year_{$fiscalYearRef}");
+        \App\Services\Accounting\TodayChequeRemainingService::clearCache();
     }
 
     #[Computed]
