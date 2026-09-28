@@ -115,6 +115,7 @@ Route::middleware(['auth'])->group( function () {
         });
     })->name('item.image');
 
+    Route::livewire('/panels/hr/dashboard/index', 'pages::panels.hr.dashboard.index')->name('panels.hr.dashboard.index');
     Route::livewire('/panels/hr/attendance/index', 'pages::panels.hr.attendance.index')->name('panels.hr.attendance.index');
     Route::livewire('/panels/hr/history/index', 'pages::panels.hr.history.index')->name('panels.hr.history.index');
     Route::livewire('/panels/hr/days/index', 'pages::panels.hr.days.index')->name('panels.hr.days.index');

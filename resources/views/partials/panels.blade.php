@@ -31,7 +31,7 @@
         <flux:sidebar.item icon="chart-column" href="{{ route('panels.report.dashboard.index') }}" :current="request()->routeIs('panels.report.*')" wire:navigate>{{ __('app.reports') }}</flux:sidebar.item>
     @endcan
 
-    <flux:sidebar.item icon="clock" href="{{ route('panels.hr.attendance.index') }}" :current="request()->routeIs('panels.hr.*')" wire:navigate>{{ __('app.hr') }}</flux:sidebar.item>
+    <flux:sidebar.item icon="clock" href="{{ route('panels.hr.dashboard.index') }}" :current="request()->routeIs('panels.hr.*')" wire:navigate>{{ __('app.hr') }}</flux:sidebar.item>
 
 
 
