@@ -34,6 +34,8 @@ class LocalNetworkMiddleware
             $request->session()->regenerateToken();
         }
 
-        abort(403, __('app.login.requires_local_network'));
+        return redirect()
+            ->route('login')
+            ->with('local_network_redirect', true);
     }
 }

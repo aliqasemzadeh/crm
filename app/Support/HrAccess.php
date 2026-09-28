@@ -55,4 +55,17 @@ class HrAccess
 
         return false;
     }
+
+    public static function internalLoginUrl(): string
+    {
+        $host = config('hr.allowed_hosts.0');
+
+        if (! is_string($host) || $host === '') {
+            return url('/login');
+        }
+
+        $path = parse_url(route('login'), PHP_URL_PATH) ?: '/login';
+
+        return 'http://'.$host.$path;
+    }
 }

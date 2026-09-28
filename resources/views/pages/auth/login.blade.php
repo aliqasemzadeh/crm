@@ -13,6 +13,23 @@ new #[Layout('layouts.auth')] class extends Component {
 
     public bool $remember = false;
 
+    public bool $localNetworkRedirect = false;
+
+    public string $localNetworkUrl = '';
+
+    public function mount(): void
+    {
+        if (session()->pull('local_network_redirect')) {
+            $this->enableLocalNetworkRedirect();
+        }
+    }
+
+    protected function enableLocalNetworkRedirect(): void
+    {
+        $this->localNetworkRedirect = true;
+        $this->localNetworkUrl = HrAccess::internalLoginUrl();
+    }
+
     protected function rules(): array
     {
         return [
@@ -24,6 +41,7 @@ new #[Layout('layouts.auth')] class extends Component {
 
     public function login()
     {
+        $this->localNetworkRedirect = false;
         $this->validate();
 
         $fieldType = filter_var($this->login_id, FILTER_VALIDATE_EMAIL) ? 'email' : 'mobile';
@@ -43,12 +61,10 @@ new #[Layout('layouts.auth')] class extends Component {
 
         if ($user?->requires_local_network && ! HrAccess::isOnAllowedNetwork()) {
             Auth::guard('web')->logout();
-            request()->session()->invalidate();
-            request()->session()->regenerateToken();
+            $this->reset('password');
+            $this->enableLocalNetworkRedirect();
 
-            throw ValidationException::withMessages([
-                'login_id' => __('app.login.requires_local_network'),
-            ]);
+            return;
         }
 
         request()->session()->regenerate();
@@ -61,6 +77,47 @@ new #[Layout('layouts.auth')] class extends Component {
 
 <div class="space-y-6">
     <flux:heading class="text-center" size="xl">{{ __('app.login.welcome_back') }}</flux:heading>
+
+    @if ($localNetworkRedirect)
+        <div
+            class="rounded-xl border border-orange-200 bg-orange-50 p-4 text-center dark:border-orange-800 dark:bg-orange-950/50"
+            x-data="{
+                seconds: 5,
+                url: @js($localNetworkUrl),
+                timer: null,
+                start() {
+                    this.timer = setInterval(() => {
+                        this.seconds--
+                        if (this.seconds <= 0) {
+                            clearInterval(this.timer)
+                            window.location.href = this.url
+                        }
+                    }, 1000)
+                }
+            }"
+            x-init="start()"
+            wire:key="local-network-redirect"
+        >
+            <flux:heading size="sm" class="text-orange-800 dark:text-orange-200">
+                {{ __('app.login.requires_local_network') }}
+            </flux:heading>
+            <flux:text class="mt-2 text-orange-700 dark:text-orange-300">
+                {{ __('app.login.local_network_redirect_in') }}
+                <span class="font-bold tabular-nums" x-text="seconds"></span>
+                {{ __('app.login.local_network_redirect_seconds') }}
+            </flux:text>
+            <div class="mt-4">
+                <flux:button
+                    variant="primary"
+                    color="orange"
+                    class="w-full"
+                    x-on:click="clearInterval(timer); window.location.href = url"
+                >
+                    {{ __('app.login.go_to_local_network') }}
+                </flux:button>
+            </div>
+        </div>
+    @endif
 
     @if(config('main.auth.socialite'))
         <div class="space-y-4">
