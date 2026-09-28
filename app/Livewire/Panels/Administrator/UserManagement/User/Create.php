@@ -21,6 +21,8 @@ class Create extends Component
 
     public string $password_confirmation = '';
 
+    public bool $requires_local_network = false;
+
     public function create()
     {
         $this->authorize('administrator_user_management_create');
@@ -31,6 +33,7 @@ class Create extends Component
             'mobile' => ['required', 'string', 'ir_mobile', 'max:255', 'unique:'.User::class],
             'email' => ['nullable', 'string', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', \Illuminate\Validation\Rules\Password::defaults()],
+            'requires_local_network' => ['boolean'],
         ]);
 
         User::create($validated);
@@ -40,7 +43,7 @@ class Create extends Component
             'password' => $this->password
         ]));
 
-        $this->reset(['mobile', 'first_name', 'last_name', 'email', 'password', 'password_confirmation']);
+        $this->reset(['mobile', 'first_name', 'last_name', 'email', 'password', 'password_confirmation', 'requires_local_network']);
 
         $this->dispatch('panels.administrator.user-management.user.index.render');
         Flux::modal('panels.administrator.user-management.user.create.modal')->close();

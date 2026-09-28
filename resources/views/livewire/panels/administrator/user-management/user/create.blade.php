@@ -42,6 +42,12 @@
                     <flux:error name="password_confirmation" />
                 </flux:field>
 
+                <flux:field>
+                    <flux:checkbox wire:model="requires_local_network" label="{{ __('app.requires_local_network') }}" />
+                    <flux:description>{{ __('app.requires_local_network_description') }}</flux:description>
+                    <flux:error name="requires_local_network" />
+                </flux:field>
+
                 <flux:button type="submit" class="w-full" variant="primary">
                     {{ __('app.create') }}
                 </flux:button>

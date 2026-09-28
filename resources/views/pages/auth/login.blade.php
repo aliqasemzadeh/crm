@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Auth;
+use App\Support\HrAccess;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -35,6 +36,18 @@ new #[Layout('layouts.auth')] class extends Component {
         if (! Auth::guard('web')->attempt($credentials, $this->remember)) {
             throw ValidationException::withMessages([
                 'login_id' => trans('app.login.auth_failed'),
+            ]);
+        }
+
+        $user = Auth::guard('web')->user();
+
+        if ($user?->requires_local_network && ! HrAccess::isOnAllowedNetwork()) {
+            Auth::guard('web')->logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'login_id' => __('app.login.requires_local_network'),
             ]);
         }
 

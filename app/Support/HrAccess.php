@@ -15,6 +15,11 @@ class HrAccess
             return true;
         }
 
+        return self::isOnAllowedNetwork($request);
+    }
+
+    public static function isOnAllowedNetwork(?Request $request = null): bool
+    {
         $request ??= request();
         $config = config('hr');
         $ip = $request->ip();

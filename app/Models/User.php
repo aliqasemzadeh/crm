@@ -42,6 +42,7 @@ class User extends Authenticatable
         'personnel_code',
         'timex_code',
         'sepidar_user_id',
+        'requires_local_network',
     ];
 
     /**
@@ -69,6 +70,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'mobile_verified_at' => 'datetime',
             'password' => 'hashed',
+            'requires_local_network' => 'boolean',
         ];
     }
 

@@ -119,7 +119,7 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
 
     <flux:table :paginate="$this->users">
         <flux:table.columns sticky class="bg-white dark:bg-zinc-900">
-            <flux:table.column colspan="5" class="bg-white dark:bg-zinc-900">
+            <flux:table.column colspan="6" class="bg-white dark:bg-zinc-900">
                 <div class="flex flex-col md:flex-row gap-2 pe-2 items-end">
                     <flux:select wire:model.live="baleFilter" placeholder="{{ __('app.bale_connection') }}" size="sm" class="min-w-[180px]" searchable>
                         <flux:select.option value="">{{ __('app.all') }}</flux:select.option>
@@ -139,6 +139,7 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
             <flux:table.column>{{ __('app.mobile') }}</flux:table.column>
             <flux:table.column>{{ __('app.name') }}</flux:table.column>
             <flux:table.column>{{ __('app.bale_connection') }}</flux:table.column>
+            <flux:table.column>{{ __('app.requires_local_network') }}</flux:table.column>
             <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('app.date') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
@@ -167,6 +168,13 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
                             <flux:badge color="green" size="sm">{{ __('app.bale_connected') }}</flux:badge>
                         @else
                             <flux:badge color="zinc" size="sm">{{ __('app.bale_not_connected') }}</flux:badge>
+                        @endif
+                    </flux:table.cell>
+                    <flux:table.cell>
+                        @if ($user->requires_local_network)
+                            <flux:badge color="orange" size="sm">{{ __('app.requires_local_network_badge') }}</flux:badge>
+                        @else
+                            <flux:badge color="zinc" size="sm">{{ __('app.public_access_badge') }}</flux:badge>
                         @endif
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">

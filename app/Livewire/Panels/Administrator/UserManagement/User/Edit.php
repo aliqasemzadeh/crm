@@ -54,6 +54,8 @@ class Edit extends Component
 
     public string $sepidar_user_search = '';
 
+    public bool $requires_local_network = false;
+
     #[On('panels.administrator.user-management.user.edit.assign-data')]
     public function assignData($id): void
     {
@@ -74,6 +76,7 @@ class Edit extends Component
         $this->timex_code = (string) ($this->user->timex_code ?? '');
         $this->sepidar_user_id = $this->user->sepidar_user_id ? (int) $this->user->sepidar_user_id : null;
         $this->sepidar_user_search = '';
+        $this->requires_local_network = (bool) $this->user->requires_local_network;
         Flux::modal('panels.administrator.user-management.user.edit.modal')->show();
     }
 
@@ -183,6 +186,7 @@ class Edit extends Component
             'personnel_code' => ['nullable', 'string', 'max:255'],
             'timex_code' => ['nullable', 'string', 'max:255'],
             'sepidar_user_id' => ['nullable', 'integer'],
+            'requires_local_network' => ['boolean'],
         ]);
 
         if ($this->photo) {
@@ -221,6 +225,7 @@ class Edit extends Component
         $this->user->timex_code = $timex === '' ? null : $timex;
 
         $this->user->sepidar_user_id = $validated['sepidar_user_id'] ?? null;
+        $this->user->requires_local_network = (bool) ($validated['requires_local_network'] ?? false);
 
         if (! empty($validated['password'] ?? '')) {
             // Will be hashed automatically via the model cast

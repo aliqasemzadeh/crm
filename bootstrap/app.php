@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\LogRouteAccessActivity::class,
         ]);
+        $middleware->alias([
+            'local.network' => \App\Http\Middleware\LocalNetworkMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

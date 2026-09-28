@@ -11,7 +11,7 @@ Route::middleware(['guest'])->group( function () {
 Route::livewire('/forget-password', 'pages::auth.forget-password')->name('forget-password');
 Route::livewire('/change-password/{token}', 'pages::auth.change-password')->name('change-password');
 
-Route::middleware(['auth'])->group( function () {
+Route::middleware(['auth', 'local.network'])->group( function () {
     Route::livewire('/panels/crm/dashboard/index', 'pages::panels.crm.dashboard.index')->name('panels.crm.dashboard.index');
     Route::livewire('/panels/crm/follow-up/index', 'pages::panels.crm.follow-up.index')->name('panels.crm.follow-up.index');
     Route::livewire('/panels/crm/cash-back-rule/index', 'pages::panels.crm.cash-back-rule.index')->name('panels.crm.cash-back-rule.index');
