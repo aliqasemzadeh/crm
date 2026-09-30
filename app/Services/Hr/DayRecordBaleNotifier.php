@@ -17,10 +17,16 @@ class DayRecordBaleNotifier
             ? __('app.hr_day_record_type_leave')
             : __('app.hr_day_record_type_mission');
 
+        $noteLine = filled($dayRecord->user_note)
+            ? __('app.hr_day_record_submitted_bale_note_line', ['note' => $dayRecord->user_note])
+            : '';
+
         $message = __('app.hr_day_record_submitted_bale_message', [
             'name' => $dayRecord->user?->name ?? '',
+            'mobile' => $dayRecord->user?->mobile ?? '—',
             'type' => $typeLabel,
             'date' => Jalalian::fromDateTime($dayRecord->date)->format('Y/m/d'),
+            'note' => $noteLine,
             'url' => route('panels.administrator.user-management.days.index'),
         ]);
 
@@ -36,7 +42,7 @@ class DayRecordBaleNotifier
 
     public function notifyApproved(DayRecord $dayRecord): void
     {
-        $dayRecord->loadMissing('user');
+        $dayRecord->loadMissing('user', 'reviewer');
 
         $user = $dayRecord->user;
 
@@ -53,6 +59,7 @@ class DayRecordBaleNotifier
                 'name' => $user->name,
                 'type' => $typeLabel,
                 'date' => Jalalian::fromDateTime($dayRecord->date)->format('Y/m/d'),
+                'reviewer' => $dayRecord->reviewer?->name ?? '—',
             ]),
             'crm',
             (string) $user->bale_code,
@@ -61,7 +68,7 @@ class DayRecordBaleNotifier
 
     public function notifyRejected(DayRecord $dayRecord): void
     {
-        $dayRecord->loadMissing('user');
+        $dayRecord->loadMissing('user', 'reviewer');
 
         $user = $dayRecord->user;
 
@@ -78,6 +85,7 @@ class DayRecordBaleNotifier
                 'name' => $user->name,
                 'type' => $typeLabel,
                 'date' => Jalalian::fromDateTime($dayRecord->date)->format('Y/m/d'),
+                'reviewer' => $dayRecord->reviewer?->name ?? '—',
             ]),
             'crm',
             (string) $user->bale_code,
