@@ -20,12 +20,14 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
     protected function queryString(): array
     {
-        $today = Jalalian::now()->format('Y/m/d');
+        $now = Jalalian::now();
+        $monthStart = $now->getFirstDayOfMonth()->format('Y/m/d');
+        $monthEnd = $now->getEndDayOfMonth()->format('Y/m/d');
 
         return [
             'userId' => ['except' => null],
-            'dateStart' => ['except' => $today],
-            'dateEnd' => ['except' => $today],
+            'dateStart' => ['except' => $monthStart],
+            'dateEnd' => ['except' => $monthEnd],
         ];
     }
 
@@ -34,10 +36,20 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         $this->authorize('administrator_user_management_hr');
 
         if (! request()->hasAny(['dateStart', 'dateEnd'])) {
-            $today = Jalalian::now()->format('Y/m/d');
-            $this->dateStart = $today;
-            $this->dateEnd = $today;
+            $now = Jalalian::now();
+            $this->dateStart = $now->getFirstDayOfMonth()->format('Y/m/d');
+            $this->dateEnd = $now->getEndDayOfMonth()->format('Y/m/d');
         }
+    }
+
+    #[Computed]
+    public function selectedUser(): ?User
+    {
+        if (! $this->userId) {
+            return null;
+        }
+
+        return User::query()->find($this->userId);
     }
 
     #[Computed]
@@ -113,7 +125,11 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
         $query = DayRecord::query()
             ->where('user_id', $this->userId)
-            ->whereIn('status', [DayRecord::STATUS_PENDING, DayRecord::STATUS_APPROVED]);
+            ->whereIn('status', [
+                DayRecord::STATUS_PENDING,
+                DayRecord::STATUS_APPROVED,
+                DayRecord::STATUS_REJECTED,
+            ]);
 
         if ($this->dateStart) {
             $startGregorian = Jalalian::fromFormat('Y/m/d', $this->dateStart)->toCarbon()->startOfDay();
@@ -250,32 +266,46 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
     public function clearFilters(): void
     {
-        $today = Jalalian::now()->format('Y/m/d');
+        $now = Jalalian::now();
 
         $this->userId = null;
         $this->userSearch = '';
-        $this->dateStart = $today;
-        $this->dateEnd = $today;
+        $this->dateStart = $now->getFirstDayOfMonth()->format('Y/m/d');
+        $this->dateEnd = $now->getEndDayOfMonth()->format('Y/m/d');
 
-        unset($this->users, $this->records, $this->dayRecords, $this->dailyReport, $this->totalHours, $this->activePreset);
+        unset($this->users, $this->selectedUser, $this->records, $this->dayRecords, $this->dailyReport, $this->totalHours, $this->activePreset);
         Flux::toast(__('app.filters_cleared'));
     }
 
     public function updatedUserId(): void
     {
-        unset($this->records, $this->dayRecords, $this->dailyReport, $this->totalHours);
+        unset($this->selectedUser, $this->records, $this->dayRecords, $this->dailyReport, $this->totalHours);
     }
 };
 
 ?>
 
 <x-slot name="title">
-    {{ __('app.hr_report') }}
+    {{ $this->selectedUser ? __('app.hr_report_for_user', ['name' => $this->selectedUser->name]) : __('app.hr_report') }}
 </x-slot>
 <div>
     <div class="relative mb-6 w-full">
-        <flux:heading size="xl" level="1">{{ __('app.hr_report') }}</flux:heading>
-        <flux:subheading size="lg" class="mb-6">{{ __('app.hr_report_description') }}</flux:subheading>
+        <div class="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+                @if($this->selectedUser)
+                    <flux:heading size="xl" level="1">{{ __('app.hr_report_for_user', ['name' => $this->selectedUser->name]) }}</flux:heading>
+                    <flux:subheading size="lg" class="mb-6">{{ __('app.hr_report_for_user_description') }}</flux:subheading>
+                @else
+                    <flux:heading size="xl" level="1">{{ __('app.hr_report') }}</flux:heading>
+                    <flux:subheading size="lg" class="mb-6">{{ __('app.hr_report_description') }}</flux:subheading>
+                @endif
+            </div>
+            @can('administrator_user_management_index')
+                <flux:button variant="ghost" icon="arrow-right" href="{{ route('panels.administrator.user-management.user.index') }}" wire:navigate>
+                    {{ __('app.users') }}
+                </flux:button>
+            @endcan
+        </div>
         <flux:separator variant="subtle" />
     </div>
 
@@ -388,6 +418,8 @@ new #[Layout('layouts.panels.administrator')] class extends Component
                                                 @endcan
                                             @elseif($day->day_record->status === 'approved')
                                                 <flux:badge color="green" size="sm">{{ __('app.approved') }}</flux:badge>
+                                            @elseif($day->day_record->status === 'rejected')
+                                                <flux:badge color="red" size="sm">{{ __('app.rejected') }}</flux:badge>
                                             @endif
                                         @endif
                                     </div>
@@ -415,6 +447,8 @@ new #[Layout('layouts.panels.administrator')] class extends Component
                                     <flux:table.cell>
                                         @if($day->day_record->status === 'approved')
                                             <flux:badge color="green" size="sm">{{ __('app.approved') }}</flux:badge>
+                                        @elseif($day->day_record->status === 'rejected')
+                                            <flux:badge color="red" size="sm">{{ __('app.rejected') }}</flux:badge>
                                         @else
                                             <flux:badge color="orange" size="sm">{{ __('app.pending_approval') }}</flux:badge>
                                         @endif
@@ -469,7 +503,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
             </flux:card>
         @else
             <flux:card>
-                <p class="text-sm text-zinc-500 py-8 text-center">{{ __('app.no_records_today') }}</p>
+                <p class="text-sm text-zinc-500 py-8 text-center">{{ __('app.no_records_in_range') }}</p>
             </flux:card>
         @endif
     @else

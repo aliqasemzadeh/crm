@@ -143,6 +143,10 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
             <flux:table.column sortable :sorted="$sortBy === 'created_at'" :direction="$sortDirection" wire:click="sort('created_at')">{{ __('app.date') }}</flux:table.column>
         </flux:table.columns>
         <flux:table.rows>
+            @php
+                $attendanceMonthStart = \Morilog\Jalali\Jalalian::now()->getFirstDayOfMonth()->format('Y/m/d');
+                $attendanceMonthEnd = \Morilog\Jalali\Jalalian::now()->getEndDayOfMonth()->format('Y/m/d');
+            @endphp
             @foreach ($this->users as $user)
                 @php
                     $avatarUrl = $user->getAvatarUrl();
@@ -186,6 +190,23 @@ new #[Layout('layouts.panels.administrator')] #[On('panels.administrator.user-ma
                                     </flux:tooltip>
                                 @endcan
                             @endif
+                            @can('administrator_user_management_hr')
+                                <flux:tooltip content="{{ __('app.hr_report') }}">
+                                    <flux:button
+                                        size="xs"
+                                        variant="primary"
+                                        color="teal"
+                                        icon="calendar-check"
+                                        icon:variant="outline"
+                                        href="{{ route('panels.administrator.user-management.hr.index', [
+                                            'userId' => $user->id,
+                                            'dateStart' => $attendanceMonthStart,
+                                            'dateEnd' => $attendanceMonthEnd,
+                                        ]) }}"
+                                        wire:navigate
+                                    />
+                                </flux:tooltip>
+                            @endcan
                             @can('administrator_user_management_edit')
                                 <flux:tooltip content="{{ __('app.edit') }}">
                                     <flux:button size="xs" variant="primary" icon="pencil" icon:variant="outline" wire:click="$dispatch('panels.administrator.user-management.user.edit.assign-data', { id: '{{ $user->id }}' })" />
