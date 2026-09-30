@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Hr\Record;
 use App\Models\User;
 use App\Models\UserDevice;
 use Flux\Flux;
@@ -13,6 +14,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     use WithPagination;
 
     public string $search = '';
+
     public ?int $filterUserId = null;
 
     protected $queryString = [
@@ -20,21 +22,38 @@ new #[Layout('layouts.panels.administrator')] class extends Component
         'filterUserId' => ['except' => null],
     ];
 
-    #[Computed]
-    public function devices()
+    private function filteredQuery()
     {
         return UserDevice::query()
             ->with('user')
-            ->when($this->filterUserId, fn($q) => $q->where('user_id', $this->filterUserId))
+            ->when($this->filterUserId, fn ($q) => $q->where('user_id', $this->filterUserId))
             ->when($this->search, function ($query) {
-                $search = '%' . $this->search . '%';
-                $query->where('token', 'like', $search)
-                    ->orWhere('ip', 'like', $search)
-                    ->orWhere('name', 'like', $search)
-                    ->orWhereHas('user', fn($q) => $q->where('first_name', 'like', $search)->orWhere('last_name', 'like', $search));
-            })
+                $search = '%'.$this->search.'%';
+                $query->where(function ($q) use ($search) {
+                    $q->where('token', 'like', $search)
+                        ->orWhere('ip', 'like', $search)
+                        ->orWhere('name', 'like', $search)
+                        ->orWhereHas('user', fn ($userQuery) => $userQuery
+                            ->where('first_name', 'like', $search)
+                            ->orWhere('last_name', 'like', $search));
+                });
+            });
+    }
+
+    #[Computed]
+    public function devices()
+    {
+        return $this->filteredQuery()
             ->latest()
             ->paginate(20);
+    }
+
+    #[Computed]
+    public function pendingCount(): int
+    {
+        return $this->filteredQuery()
+            ->where('is_approved', false)
+            ->count();
     }
 
     public function approve(int $id): void
@@ -45,6 +64,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
         $device->records()->where('is_device_approved', false)->update(['is_device_approved' => true]);
 
+        unset($this->devices, $this->pendingCount);
         Flux::toast(__('app.device_approved'));
     }
 
@@ -56,13 +76,42 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 
         $device->records()->where('is_device_approved', true)->update(['is_device_approved' => false]);
 
+        unset($this->devices, $this->pendingCount);
         Flux::toast(__('app.device_rejected'));
+    }
+
+    public function approveAll(): void
+    {
+        $this->authorize('administrator_user_management_device');
+
+        $deviceIds = $this->filteredQuery()
+            ->where('is_approved', false)
+            ->pluck('id');
+
+        if ($deviceIds->isEmpty()) {
+            Flux::toast(__('app.no_results_found'), variant: 'danger');
+
+            return;
+        }
+
+        UserDevice::query()
+            ->whereIn('id', $deviceIds)
+            ->update(['is_approved' => true]);
+
+        Record::query()
+            ->whereIn('user_device_id', $deviceIds)
+            ->where('is_device_approved', false)
+            ->update(['is_device_approved' => true]);
+
+        unset($this->devices, $this->pendingCount);
+        Flux::toast(__('app.devices_approve_all_success'));
     }
 
     public function deleteDevice(int $id): void
     {
         $this->authorize('administrator_user_management_device');
         UserDevice::findOrFail($id)->delete();
+        unset($this->devices, $this->pendingCount);
         Flux::toast(__('app.device_deleted'));
     }
 
@@ -72,7 +121,7 @@ new #[Layout('layouts.panels.administrator')] class extends Component
     public function users()
     {
         return User::query()
-            ->when($this->userSearch, fn($q) => $q->where('first_name', 'like', "%{$this->userSearch}%")->orWhere('last_name', 'like', "%{$this->userSearch}%")->orWhere('mobile', 'like', "%{$this->userSearch}%"))
+            ->when($this->userSearch, fn ($q) => $q->where('first_name', 'like', "%{$this->userSearch}%")->orWhere('last_name', 'like', "%{$this->userSearch}%")->orWhere('mobile', 'like', "%{$this->userSearch}%"))
             ->limit(20)
             ->get();
     }
@@ -100,11 +149,23 @@ new #[Layout('layouts.panels.administrator')] class extends Component
 </x-slot>
 <div>
     <div class="relative mb-6 w-full">
-        <div class="flex items-center justify-between">
+        <div class="flex items-center justify-between gap-4 flex-wrap">
             <div>
                 <flux:heading size="xl" level="1">{{ __('app.devices') }}</flux:heading>
                 <flux:subheading size="lg" class="mb-6">{{ __('app.devices_description') }}</flux:subheading>
             </div>
+            @if($this->pendingCount > 0)
+                <flux:button
+                    size="sm"
+                    variant="primary"
+                    color="green"
+                    icon="check-circle"
+                    wire:click="approveAll"
+                    wire:confirm="{{ __('app.devices_approve_all_confirm') }}"
+                >
+                    {{ __('app.devices_approve_all') }}
+                </flux:button>
+            @endif
         </div>
         <flux:separator variant="subtle" />
     </div>
