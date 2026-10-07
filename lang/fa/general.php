@@ -5,6 +5,7 @@ return [
     'purchase_history_description' => 'مشاهده و بررسی سوابق فاکتورهای خرید مشتری',
     'total_purchases' => 'مجموع خریدها',
     'invoices_count' => 'تعداد فاکتورها',
+    'items_count' => 'تعداد اقلام',
     'last_purchase_date' => 'تاریخ آخرین خرید',
     'no_invoices_found' => 'فاکتوری برای این مشتری ثبت نشده است.',
     'view_invoice' => 'مشاهده فاکتور',
