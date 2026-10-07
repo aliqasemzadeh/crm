@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'purchase_history' => 'تاریخچه خریدها',
+    'purchase_history_description' => 'مشاهده و بررسی سوابق فاکتورهای خرید مشتری',
+    'total_purchases' => 'مجموع خریدها',
+    'invoices_count' => 'تعداد فاکتورها',
+    'last_purchase_date' => 'تاریخ آخرین خرید',
+    'no_invoices_found' => 'فاکتوری برای این مشتری ثبت نشده است.',
+    'view_invoice' => 'مشاهده فاکتور',
+    'invoice_details' => 'جزئیات فاکتور',
+    'invoice_number' => 'شماره فاکتور',
+    'customer' => 'مشتری',
+    'date' => 'تاریخ',
+    'total_price' => 'مبلغ کل',
+    'rial' => 'ریال',
+    'item_name' => 'نام کالا',
+    'quantity' => 'تعداد',
+    'fee' => 'مبلغ',
+    'total' => 'جمع',
+    'search' => 'جستجو',
+    'options' => 'گزینه‌ها',
+    'row' => 'ردیف',
+    'view' => 'مشاهده',
+];

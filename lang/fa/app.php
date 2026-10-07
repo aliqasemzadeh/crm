@@ -2088,4 +2088,12 @@ return [
     'settled' => 'تسویه',
     'debtor' => 'بدهکار',
     'creditor' => 'بستانکار',
+
+    'purchase_history' => 'تاریخچه خریدها',
+    'purchase_history_description' => 'مشاهده و بررسی سوابق فاکتورهای خرید مشتری',
+    'total_purchases' => 'مجموع خریدها',
+    'invoices_count' => 'تعداد فاکتورها',
+    'last_purchase_date' => 'تاریخ آخرین خرید',
+    'no_invoices_found' => 'فاکتوری برای این مشتری ثبت نشده است.',
+    'row' => 'ردیف',
 ];
