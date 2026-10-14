@@ -244,7 +244,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                         size="xs"
                         variant="primary"
                         color="rose"
-                        icon="globe-alt"
+                        icon="globe"
                         icon:variant="outline"
                         wire:click="$dispatch('panels.sale.item-price.edit-site.assign-data', { id: '{{ $item->ItemID }}' })"
                     />
