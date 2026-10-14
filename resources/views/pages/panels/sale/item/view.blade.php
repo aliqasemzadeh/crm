@@ -103,6 +103,63 @@ new #[Layout('layouts.panels.sale')] class extends Component
             ->latest('InvoiceItemId')
             ->paginate(10, pageName: 'invoicesPage');
     }
+
+    #[Computed]
+    public function totalPurchasesQuantity(): float
+    {
+        return (float) InventoryReceiptItem::query()
+            ->where('ItemRef', $this->item->ItemID)
+            ->sum('Quantity');
+    }
+
+    #[Computed]
+    public function totalPurchasesCount(): int
+    {
+        return (int) InventoryReceiptItem::query()
+            ->where('ItemRef', $this->item->ItemID)
+            ->count();
+    }
+
+    #[Computed]
+    public function totalSalesQuantity(): float
+    {
+        return (float) InvoiceItem::query()
+            ->where('ItemRef', $this->item->ItemID)
+            ->sum('Quantity');
+    }
+
+    #[Computed]
+    public function totalSalesCount(): int
+    {
+        return (int) InvoiceItem::query()
+            ->where('ItemRef', $this->item->ItemID)
+            ->count();
+    }
+
+    #[Computed]
+    public function purchasesBySupplier()
+    {
+        return InventoryReceiptItem::query()
+            ->join('INV.InventoryReceipt', 'INV.InventoryReceiptItem.InventoryReceiptRef', '=', 'INV.InventoryReceipt.InventoryReceiptID')
+            ->leftJoin('ACC.DL', 'INV.InventoryReceipt.DelivererDLRef', '=', 'ACC.DL.DLId')
+            ->where('INV.InventoryReceiptItem.ItemRef', $this->item->ItemID)
+            ->selectRaw('COALESCE(ACC.DL.Title, CAST(INV.InventoryReceipt.DelivererDLRef AS NVARCHAR(50))) as party_name, COUNT(DISTINCT INV.InventoryReceipt.InventoryReceiptID) as receipt_count, SUM(INV.InventoryReceiptItem.Quantity) as total_quantity')
+            ->groupBy('ACC.DL.Title', 'INV.InventoryReceipt.DelivererDLRef')
+            ->orderByDesc('total_quantity')
+            ->get();
+    }
+
+    #[Computed]
+    public function salesByCustomer()
+    {
+        return InvoiceItem::query()
+            ->join('SLS.Invoice', 'SLS.InvoiceItem.InvoiceRef', '=', 'SLS.Invoice.InvoiceId')
+            ->where('SLS.InvoiceItem.ItemRef', $this->item->ItemID)
+            ->selectRaw('COALESCE(SLS.Invoice.CustomerRealName, N\'نامشخص\') as customer_name, COUNT(DISTINCT SLS.Invoice.InvoiceId) as invoice_count, SUM(SLS.InvoiceItem.Quantity) as total_quantity')
+            ->groupBy('SLS.Invoice.CustomerRealName')
+            ->orderByDesc('total_quantity')
+            ->get();
+    }
 };
 ?>
 
@@ -219,11 +276,25 @@ new #[Layout('layouts.panels.sale')] class extends Component
     <livewire:panels.sale.item.upload-image />
     <livewire:panels.sale.item-price.edit-site />
 
-    {{-- Price cards --}}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    {{-- Price and Summary cards --}}
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <flux:card class="flex flex-col gap-1 bg-teal-50 p-4 dark:bg-teal-950/20">
-            <flux:text class="font-bold text-teal-700 dark:text-teal-400">{{ __('app.stock') }}</flux:text>
+            <flux:text class="font-bold text-teal-700 dark:text-teal-400">{{ __('general.stock') }}</flux:text>
             <flux:heading size="lg">{{ number_format($this->stock) }}</flux:heading>
+        </flux:card>
+        <flux:card class="flex flex-col gap-1 bg-emerald-50 p-4 dark:bg-emerald-950/20">
+            <flux:text class="font-bold text-emerald-700 dark:text-emerald-400">{{ __('general.total_purchases_quantity') }}</flux:text>
+            <div class="flex items-baseline justify-between gap-1">
+                <flux:heading size="lg">{{ number_format($this->totalPurchasesQuantity) }}</flux:heading>
+                <flux:text size="sm" class="text-emerald-600 dark:text-emerald-400">({{ number_format($this->totalPurchasesCount) }} {{ __('general.receipts_count_label') }})</flux:text>
+            </div>
+        </flux:card>
+        <flux:card class="flex flex-col gap-1 bg-blue-50 p-4 dark:bg-blue-950/20">
+            <flux:text class="font-bold text-blue-700 dark:text-blue-400">{{ __('general.total_sales_quantity') }}</flux:text>
+            <div class="flex items-baseline justify-between gap-1">
+                <flux:heading size="lg">{{ number_format($this->totalSalesQuantity) }}</flux:heading>
+                <flux:text size="sm" class="text-blue-600 dark:text-blue-400">({{ number_format($this->totalSalesCount) }} {{ __('general.invoices_count_label') }})</flux:text>
+            </div>
         </flux:card>
         <flux:card class="flex flex-col gap-1 bg-sky-50 p-4 dark:bg-sky-950/20">
             <flux:text class="font-bold text-sky-700 dark:text-sky-400">{{ __('app.last_sale_price') }}</flux:text>
@@ -392,8 +463,44 @@ new #[Layout('layouts.panels.sale')] class extends Component
     @endcan
 
     {{-- Inventory receipts --}}
-    <div>
-        <flux:heading size="lg" class="mb-3">{{ __('app.inventory_receipts') }}</flux:heading>
+    <div class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <flux:heading size="lg">{{ __('app.inventory_receipts') }}</flux:heading>
+                <flux:badge color="emerald" size="sm">{{ __('general.total') }}: {{ number_format($this->totalPurchasesQuantity) }} {{ __('general.units') }}</flux:badge>
+                <flux:badge color="zinc" size="sm">{{ number_format($this->totalPurchasesCount) }} {{ __('general.receipts_count_label') }}</flux:badge>
+            </div>
+        </div>
+
+        {{-- Grouped Purchases by Supplier --}}
+        @if ($this->purchasesBySupplier->isNotEmpty())
+            <flux:card class="p-4 space-y-3">
+                <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.purchases_by_supplier') }}</flux:heading>
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column class="w-12">{{ __('general.row') }}</flux:table.column>
+                            <flux:table.column>{{ __('general.supplier_name') }}</flux:table.column>
+                            <flux:table.column>{{ __('general.receipts_count') }}</flux:table.column>
+                            <flux:table.column align="end">{{ __('general.total_quantity') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach ($this->purchasesBySupplier as $supplier)
+                                <flux:table.row :key="'supplier-'.$loop->index">
+                                    <flux:table.cell class="w-12 text-zinc-500">{{ $loop->iteration }}</flux:table.cell>
+                                    <flux:table.cell class="font-medium">{{ $supplier->party_name ?: __('general.unknown') }}</flux:table.cell>
+                                    <flux:table.cell>{{ number_format($supplier->receipt_count) }} {{ __('general.receipts_count_label') }}</flux:table.cell>
+                                    <flux:table.cell align="end">
+                                        <flux:badge color="emerald" size="sm">{{ number_format($supplier->total_quantity) }} {{ __('general.units') }}</flux:badge>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+            </flux:card>
+        @endif
+
         <div class="overflow-x-auto">
             <flux:table :paginate="$this->receipts">
                 <flux:table.columns>
@@ -440,8 +547,44 @@ new #[Layout('layouts.panels.sale')] class extends Component
     </div>
 
     {{-- Invoices --}}
-    <div>
-        <flux:heading size="lg" class="mb-3">{{ __('app.invoices') }}</flux:heading>
+    <div class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+                <flux:heading size="lg">{{ __('app.invoices') }}</flux:heading>
+                <flux:badge color="blue" size="sm">{{ __('general.total') }}: {{ number_format($this->totalSalesQuantity) }} {{ __('general.units') }}</flux:badge>
+                <flux:badge color="zinc" size="sm">{{ number_format($this->totalSalesCount) }} {{ __('general.invoices_count_label') }}</flux:badge>
+            </div>
+        </div>
+
+        {{-- Grouped Sales by Customer --}}
+        @if ($this->salesByCustomer->isNotEmpty())
+            <flux:card class="p-4 space-y-3">
+                <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.sales_by_customer') }}</flux:heading>
+                <div class="overflow-x-auto">
+                    <flux:table>
+                        <flux:table.columns>
+                            <flux:table.column class="w-12">{{ __('general.row') }}</flux:table.column>
+                            <flux:table.column>{{ __('general.customer_name') }}</flux:table.column>
+                            <flux:table.column>{{ __('general.invoices_count') }}</flux:table.column>
+                            <flux:table.column align="end">{{ __('general.total_quantity') }}</flux:table.column>
+                        </flux:table.columns>
+                        <flux:table.rows>
+                            @foreach ($this->salesByCustomer as $customer)
+                                <flux:table.row :key="'customer-'.$loop->index">
+                                    <flux:table.cell class="w-12 text-zinc-500">{{ $loop->iteration }}</flux:table.cell>
+                                    <flux:table.cell class="font-medium">{{ $customer->customer_name ?: __('general.unknown') }}</flux:table.cell>
+                                    <flux:table.cell>{{ number_format($customer->invoice_count) }} {{ __('general.invoices_count_label') }}</flux:table.cell>
+                                    <flux:table.cell align="end">
+                                        <flux:badge color="blue" size="sm">{{ number_format($customer->total_quantity) }} {{ __('general.units') }}</flux:badge>
+                                    </flux:table.cell>
+                                </flux:table.row>
+                            @endforeach
+                        </flux:table.rows>
+                    </flux:table>
+                </div>
+            </flux:card>
+        @endif
+
         <div class="overflow-x-auto">
             <flux:table :paginate="$this->invoices">
                 <flux:table.columns>
