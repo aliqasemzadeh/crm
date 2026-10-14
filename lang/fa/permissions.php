@@ -41,6 +41,9 @@ return [
         'administrator_user_management_record' => 'تایید رکوردهای حضور و غیاب',
         'administrator_user_management_days' => 'تایید مرخصی و ماموریت روزانه',
         'administrator_user_management_hr' => 'گزارش حضور و غیاب',
+        'hr_check_access' => 'دسترسی بررسی حضور و غیاب',
+        'hr_check_index' => 'بررسی حضور و غیاب',
+        'hr_check_days' => 'تایید مرخصی و ماموریت در بررسی حضور و غیاب',
 
         'administrator_announcement_management' => 'مدیریت اطلاعیه‌ها',
         'administrator_announcement_index' => 'فهرست اطلاعیه‌ها',
@@ -303,6 +306,12 @@ return [
         'report_dashboard_index' => 'داشبورد گزارشات',
         'report_site_index' => 'گزارش سایت',
         'report_item_index' => 'گزارش کالا',
+    ],
+
+    'hr_check' => [
+        'hr_check_access' => 'دسترسی بررسی حضور و غیاب',
+        'hr_check_index' => 'بررسی حضور و غیاب',
+        'hr_check_days' => 'تایید مرخصی و ماموریت در بررسی حضور و غیاب',
     ],
 
 ];

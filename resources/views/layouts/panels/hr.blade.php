@@ -14,6 +14,9 @@
         <flux:sidebar.item icon="clock" href="{{ route('panels.hr.attendance.index') }}" :current="request()->routeIs('panels.hr.attendance.*')" wire:navigate>{{ __('app.attendance') }}</flux:sidebar.item>
         <flux:sidebar.item icon="calendar-days" href="{{ route('panels.hr.days.index') }}" :current="request()->routeIs('panels.hr.days.*')" wire:navigate>{{ __('app.hr_day_records') }}</flux:sidebar.item>
         <flux:sidebar.item icon="history" href="{{ route('panels.hr.history.index') }}" :current="request()->routeIs('panels.hr.history.*')" wire:navigate>{{ __('app.attendance_history') }}</flux:sidebar.item>
+        @can('hr_check_index')
+            <flux:sidebar.item icon="clipboard-check" href="{{ route('panels.hr.check.index') }}" :current="request()->routeIs('panels.hr.check.*')" wire:navigate>{{ __('app.hr_check') }}</flux:sidebar.item>
+        @endcan
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />

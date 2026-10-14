@@ -11,4 +11,5 @@ return [
     'accounting' => 'حسابداری',
     'warehouse' => 'انبار دار',
     'report' => 'گزارشات',
+    'hr_check' => 'بررسی حضور و غیاب',
 ];
