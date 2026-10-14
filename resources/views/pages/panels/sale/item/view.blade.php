@@ -163,6 +163,10 @@ new #[Layout('layouts.panels.sale')] class extends Component
 };
 ?>
 
+<x-slot name="title">
+    {{ $item->Title }} - {{ config('app.name') }}
+</x-slot>
+
 <div class="space-y-8">
     {{-- Header --}}
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -464,169 +468,193 @@ new #[Layout('layouts.panels.sale')] class extends Component
 
     {{-- Inventory receipts --}}
     <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-700">
             <div class="flex items-center gap-2">
-                <flux:heading size="lg">{{ __('app.inventory_receipts') }}</flux:heading>
+                <flux:heading size="xl">{{ __('general.purchases_section') }}</flux:heading>
                 <flux:badge color="emerald" size="sm">{{ __('general.total') }}: {{ number_format($this->totalPurchasesQuantity) }} {{ __('general.units') }}</flux:badge>
                 <flux:badge color="zinc" size="sm">{{ number_format($this->totalPurchasesCount) }} {{ __('general.receipts_count_label') }}</flux:badge>
             </div>
         </div>
 
-        {{-- Grouped Purchases by Supplier --}}
-        @if ($this->purchasesBySupplier->isNotEmpty())
+        <div class="space-y-4">
+            {{-- Grouped Purchases by Supplier --}}
+            @if ($this->purchasesBySupplier->isNotEmpty())
+                <flux:card class="p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.purchases_by_supplier') }}</flux:heading>
+                        <flux:badge color="emerald" size="sm">{{ $this->purchasesBySupplier->count() }} {{ __('general.supplier_name') }}</flux:badge>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <flux:table>
+                            <flux:table.columns>
+                                <flux:table.column class="w-12">{{ __('general.row') }}</flux:table.column>
+                                <flux:table.column>{{ __('general.supplier_name') }}</flux:table.column>
+                                <flux:table.column>{{ __('general.receipts_count') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('general.total_quantity') }}</flux:table.column>
+                            </flux:table.columns>
+                            <flux:table.rows>
+                                @foreach ($this->purchasesBySupplier as $supplier)
+                                    <flux:table.row :key="'supplier-'.$loop->index">
+                                        <flux:table.cell class="w-12 text-zinc-500">{{ $loop->iteration }}</flux:table.cell>
+                                        <flux:table.cell class="font-medium">{{ $supplier->party_name ?: __('general.unknown') }}</flux:table.cell>
+                                        <flux:table.cell>{{ number_format($supplier->receipt_count) }} {{ __('general.receipts_count_label') }}</flux:cell>
+                                        <flux:table.cell align="end">
+                                            <flux:badge color="emerald" size="sm">{{ number_format($supplier->total_quantity) }} {{ __('general.units') }}</flux:badge>
+                                        </flux:table.cell>
+                                    </flux:table.row>
+                                @endforeach
+                            </flux:table.rows>
+                        </flux:table>
+                    </div>
+                </flux:card>
+            @endif
+
+            {{-- Detailed Receipts Table --}}
             <flux:card class="p-4 space-y-3">
-                <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.purchases_by_supplier') }}</flux:heading>
+                <div class="flex items-center justify-between">
+                    <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.inventory_receipts_list') }}</flux:heading>
+                    <flux:badge color="zinc" size="sm">{{ number_format($this->totalPurchasesCount) }} {{ __('general.receipts_count_label') }}</flux:badge>
+                </div>
                 <div class="overflow-x-auto">
-                    <flux:table>
+                    <flux:table :paginate="$this->receipts">
                         <flux:table.columns>
-                            <flux:table.column class="w-12">{{ __('general.row') }}</flux:table.column>
-                            <flux:table.column>{{ __('general.supplier_name') }}</flux:table.column>
-                            <flux:table.column>{{ __('general.receipts_count') }}</flux:table.column>
-                            <flux:table.column align="end">{{ __('general.total_quantity') }}</flux:table.column>
+                            <flux:table.column class="w-1 whitespace-nowrap">{{ __('app.options') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.customer') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.fee') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.price') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.date') }}</flux:table.column>
                         </flux:table.columns>
                         <flux:table.rows>
-                            @foreach ($this->purchasesBySupplier as $supplier)
-                                <flux:table.row :key="'supplier-'.$loop->index">
-                                    <flux:table.cell class="w-12 text-zinc-500">{{ $loop->iteration }}</flux:table.cell>
-                                    <flux:table.cell class="font-medium">{{ $supplier->party_name ?: __('general.unknown') }}</flux:table.cell>
-                                    <flux:table.cell>{{ number_format($supplier->receipt_count) }} {{ __('general.receipts_count_label') }}</flux:table.cell>
-                                    <flux:table.cell align="end">
-                                        <flux:badge color="emerald" size="sm">{{ number_format($supplier->total_quantity) }} {{ __('general.units') }}</flux:badge>
+                            @forelse ($this->receipts as $buy)
+                                <flux:table.row :key="$buy->InventoryReceiptItemID">
+                                    <flux:table.cell class="w-1 whitespace-nowrap">
+                                        @if ($buy->receipt)
+                                            <flux:tooltip content="{{ __('app.view') }}">
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="primary"
+                                                    color="sky"
+                                                    icon="eye"
+                                                    icon:variant="outline"
+                                                    wire:click="$dispatch('panels.accounting.inventory-receipt.view.assign-data', { id: '{{ $buy->receipt->InventoryReceiptID }}' })"
+                                                />
+                                            </flux:tooltip>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell>{{ $buy->receipt->dl->Title ?? $buy->receipt->DelivererDLRef ?? '—' }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ number_format($buy->Fee) }}</flux:table.cell>
+                                    <flux:table.cell>{{ number_format($buy->Quantity) }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ number_format($buy->Price) }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        {{ $buy->receipt?->Date ? Jalalian::fromDateTime($buy->receipt->Date)->format('%Y/%m/%d') : '—' }}
                                     </flux:table.cell>
                                 </flux:table.row>
-                            @endforeach
+                            @empty
+                                <flux:table.row>
+                                    <flux:table.cell colspan="6" class="text-center text-zinc-500">{{ __('app.no_results') }}</flux:table.cell>
+                                </flux:table.row>
+                            @endforelse
                         </flux:table.rows>
                     </flux:table>
                 </div>
             </flux:card>
-        @endif
-
-        <div class="overflow-x-auto">
-            <flux:table :paginate="$this->receipts">
-                <flux:table.columns>
-                    <flux:table.column class="w-1 whitespace-nowrap">{{ __('app.options') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.customer') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.fee') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.price') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.date') }}</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @forelse ($this->receipts as $buy)
-                        <flux:table.row :key="$buy->InventoryReceiptItemID">
-                            <flux:table.cell class="w-1 whitespace-nowrap">
-                                @if ($buy->receipt)
-                                    <flux:tooltip content="{{ __('app.view') }}">
-                                        <flux:button
-                                            size="xs"
-                                            variant="primary"
-                                            color="sky"
-                                            icon="eye"
-                                            icon:variant="outline"
-                                            wire:click="$dispatch('panels.accounting.inventory-receipt.view.assign-data', { id: '{{ $buy->receipt->InventoryReceiptID }}' })"
-                                        />
-                                    </flux:tooltip>
-                                @endif
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $buy->receipt->dl->Title ?? $buy->receipt->DelivererDLRef ?? '—' }}</flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">{{ number_format($buy->Fee) }}</flux:table.cell>
-                            <flux:table.cell>{{ number_format($buy->Quantity) }}</flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">{{ number_format($buy->Price) }}</flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">
-                                {{ $buy->receipt?->Date ? Jalalian::fromDateTime($buy->receipt->Date)->format('%Y/%m/%d') : '—' }}
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="6" class="text-center text-zinc-500">{{ __('app.no_results') }}</flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
         </div>
     </div>
 
     {{-- Invoices --}}
     <div class="space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-zinc-200 pb-3 dark:border-zinc-700">
             <div class="flex items-center gap-2">
-                <flux:heading size="lg">{{ __('app.invoices') }}</flux:heading>
+                <flux:heading size="xl">{{ __('general.sales_section') }}</flux:heading>
                 <flux:badge color="blue" size="sm">{{ __('general.total') }}: {{ number_format($this->totalSalesQuantity) }} {{ __('general.units') }}</flux:badge>
                 <flux:badge color="zinc" size="sm">{{ number_format($this->totalSalesCount) }} {{ __('general.invoices_count_label') }}</flux:badge>
             </div>
         </div>
 
-        {{-- Grouped Sales by Customer --}}
-        @if ($this->salesByCustomer->isNotEmpty())
+        <div class="space-y-4">
+            {{-- Grouped Sales by Customer --}}
+            @if ($this->salesByCustomer->isNotEmpty())
+                <flux:card class="p-4 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.sales_by_customer') }}</flux:heading>
+                        <flux:badge color="blue" size="sm">{{ $this->salesByCustomer->count() }} {{ __('general.customer') }}</flux:badge>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <flux:table>
+                            <flux:table.columns>
+                                <flux:table.column class="w-12">{{ __('general.row') }}</flux:table.column>
+                                <flux:table.column>{{ __('general.customer_name') }}</flux:table.column>
+                                <flux:table.column>{{ __('general.invoices_count') }}</flux:table.column>
+                                <flux:table.column align="end">{{ __('general.total_quantity') }}</flux:table.column>
+                            </flux:table.columns>
+                            <flux:table.rows>
+                                @foreach ($this->salesByCustomer as $customer)
+                                    <flux:table.row :key="'customer-'.$loop->index">
+                                        <flux:table.cell class="w-12 text-zinc-500">{{ $loop->iteration }}</flux:table.cell>
+                                        <flux:table.cell class="font-medium">{{ $customer->customer_name ?: __('general.unknown') }}</flux:table.cell>
+                                        <flux:table.cell>{{ number_format($customer->invoice_count) }} {{ __('general.invoices_count_label') }}</flux:table.cell>
+                                        <flux:table.cell align="end">
+                                            <flux:badge color="blue" size="sm">{{ number_format($customer->total_quantity) }} {{ __('general.units') }}</flux:badge>
+                                        </flux:table.cell>
+                                    </flux:table.row>
+                                @endforeach
+                            </flux:table.rows>
+                        </flux:table>
+                    </div>
+                </flux:card>
+            @endif
+
+            {{-- Detailed Invoices Table --}}
             <flux:card class="p-4 space-y-3">
-                <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.sales_by_customer') }}</flux:heading>
+                <div class="flex items-center justify-between">
+                    <flux:heading size="md" class="text-zinc-700 dark:text-zinc-300">{{ __('general.sales_invoices_list') }}</flux:heading>
+                    <flux:badge color="zinc" size="sm">{{ number_format($this->totalSalesCount) }} {{ __('general.invoices_count_label') }}</flux:badge>
+                </div>
                 <div class="overflow-x-auto">
-                    <flux:table>
+                    <flux:table :paginate="$this->invoices">
                         <flux:table.columns>
-                            <flux:table.column class="w-12">{{ __('general.row') }}</flux:table.column>
-                            <flux:table.column>{{ __('general.customer_name') }}</flux:table.column>
-                            <flux:table.column>{{ __('general.invoices_count') }}</flux:table.column>
-                            <flux:table.column align="end">{{ __('general.total_quantity') }}</flux:table.column>
+                            <flux:table.column class="w-1 whitespace-nowrap">{{ __('app.options') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.customer') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.fee') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.price') }}</flux:table.column>
+                            <flux:table.column>{{ __('app.date') }}</flux:table.column>
                         </flux:table.columns>
                         <flux:table.rows>
-                            @foreach ($this->salesByCustomer as $customer)
-                                <flux:table.row :key="'customer-'.$loop->index">
-                                    <flux:table.cell class="w-12 text-zinc-500">{{ $loop->iteration }}</flux:table.cell>
-                                    <flux:table.cell class="font-medium">{{ $customer->customer_name ?: __('general.unknown') }}</flux:table.cell>
-                                    <flux:table.cell>{{ number_format($customer->invoice_count) }} {{ __('general.invoices_count_label') }}</flux:table.cell>
-                                    <flux:table.cell align="end">
-                                        <flux:badge color="blue" size="sm">{{ number_format($customer->total_quantity) }} {{ __('general.units') }}</flux:badge>
+                            @forelse ($this->invoices as $sale)
+                                <flux:table.row :key="$sale->InvoiceItemId">
+                                    <flux:table.cell class="w-1 whitespace-nowrap">
+                                        @if ($sale->invoice)
+                                            <flux:tooltip content="{{ __('app.view') }}">
+                                                <flux:button
+                                                    size="xs"
+                                                    variant="primary"
+                                                    color="sky"
+                                                    icon="eye"
+                                                    icon:variant="outline"
+                                                    wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $sale->invoice->InvoiceId }}' })"
+                                                />
+                                            </flux:tooltip>
+                                        @endif
+                                    </flux:table.cell>
+                                    <flux:table.cell>{{ $sale->invoice->CustomerRealName ?? '—' }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ number_format($sale->Fee) }}</flux:table.cell>
+                                    <flux:table.cell>{{ number_format($sale->Quantity) }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">{{ number_format($sale->Price) }}</flux:table.cell>
+                                    <flux:table.cell class="whitespace-nowrap">
+                                        {{ $sale->invoice?->CreationDate ? Jalalian::fromDateTime($sale->invoice->CreationDate)->format('%Y/%m/%d') : '—' }}
                                     </flux:table.cell>
                                 </flux:table.row>
-                            @endforeach
+                            @empty
+                                <flux:table.row>
+                                    <flux:table.cell colspan="6" class="text-center text-zinc-500">{{ __('app.no_results') }}</flux:table.cell>
+                                </flux:table.row>
+                            @endforelse
                         </flux:table.rows>
                     </flux:table>
                 </div>
             </flux:card>
-        @endif
-
-        <div class="overflow-x-auto">
-            <flux:table :paginate="$this->invoices">
-                <flux:table.columns>
-                    <flux:table.column class="w-1 whitespace-nowrap">{{ __('app.options') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.customer') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.fee') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.quantity') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.price') }}</flux:table.column>
-                    <flux:table.column>{{ __('app.date') }}</flux:table.column>
-                </flux:table.columns>
-                <flux:table.rows>
-                    @forelse ($this->invoices as $sale)
-                        <flux:table.row :key="$sale->InvoiceItemId">
-                            <flux:table.cell class="w-1 whitespace-nowrap">
-                                @if ($sale->invoice)
-                                    <flux:tooltip content="{{ __('app.view') }}">
-                                        <flux:button
-                                            size="xs"
-                                            variant="primary"
-                                            color="sky"
-                                            icon="eye"
-                                            icon:variant="outline"
-                                            wire:click="$dispatch('panels.accounting.invoice.view.assign-data', { InvoiceId: '{{ $sale->invoice->InvoiceId }}' })"
-                                        />
-                                    </flux:tooltip>
-                                @endif
-                            </flux:table.cell>
-                            <flux:table.cell>{{ $sale->invoice->CustomerRealName ?? '—' }}</flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">{{ number_format($sale->Fee) }}</flux:table.cell>
-                            <flux:table.cell>{{ number_format($sale->Quantity) }}</flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">{{ number_format($sale->Price) }}</flux:table.cell>
-                            <flux:table.cell class="whitespace-nowrap">
-                                {{ $sale->invoice?->CreationDate ? Jalalian::fromDateTime($sale->invoice->CreationDate)->format('%Y/%m/%d') : '—' }}
-                            </flux:table.cell>
-                        </flux:table.row>
-                    @empty
-                        <flux:table.row>
-                            <flux:table.cell colspan="6" class="text-center text-zinc-500">{{ __('app.no_results') }}</flux:table.cell>
-                        </flux:table.row>
-                    @endforelse
-                </flux:table.rows>
-            </flux:table>
         </div>
     </div>
 

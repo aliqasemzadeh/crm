@@ -43,4 +43,10 @@ return [
     'sold_quantity' => 'تعداد فروش',
     'unknown' => 'نامشخص',
     'stock' => 'موجودی انبار',
+    'inventory_receipts' => 'رسیدهای انبار',
+    'inventory_receipts_list' => 'لیست رسیدهای انبار',
+    'sales_invoices' => 'فاکتورهای فروش',
+    'sales_invoices_list' => 'لیست فاکتورهای فروش',
+    'purchases_section' => 'رسیدهای انبار و خریدها',
+    'sales_section' => 'فاکتورها و فروش‌ها',
 ];
