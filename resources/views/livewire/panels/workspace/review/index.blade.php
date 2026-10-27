@@ -26,7 +26,7 @@
 
     <div class="space-y-4">
         @foreach ($this->tasks as $task)
-            <flux:card>
+            <flux:card class="overflow-visible!">
                 <x-workspace.task.card
                     :task="$task"
                     event-prefix="panels.workspace.review.task"

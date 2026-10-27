@@ -28,12 +28,13 @@
                 />
 
                 <flux:kanban.column.cards
+                    class="pt-5"
                     wire:sort="{{ $handler }}"
                     wire:sort:group="tasks"
                     wire:key="col-{{ $status }}"
                 >
                     @foreach ($colTasks as $task)
-                        <flux:kanban.card wire:sort:item="{{ $task->id }}" wire:sort:handle wire:key="task-{{ $task->id }}">
+                        <flux:kanban.card class="overflow-visible!" wire:sort:item="{{ $task->id }}" wire:sort:handle wire:key="task-{{ $task->id }}">
                             <x-workspace.task.card :task="$task" event-prefix="panels.workspace.dashboard.task" />
 
                             @if($task->checklists->isNotEmpty())

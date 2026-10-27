@@ -41,6 +41,8 @@ class Assign extends Component
             ]
         ]);
 
+        $this->task->ensureCreator();
+
         $user = User::findOrFail($userId);
 
         try {

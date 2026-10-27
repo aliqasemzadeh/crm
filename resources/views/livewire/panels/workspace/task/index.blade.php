@@ -25,7 +25,7 @@
 
         <div class="space-y-4">
             @forelse ($tasks as $task)
-                <flux:card>
+                <flux:card class="overflow-visible!">
                     <x-workspace.task.card
                         :task="$task"
                         :show-drag-handle="false"

@@ -26,9 +26,28 @@
     $checklistTotal = $checklists->count();
     $checklistDone = $checklists->where('is_done', true)->count();
     $checklistProgress = $checklistTotal > 0 ? (int) round(($checklistDone / $checklistTotal) * 100) : 0;
+
+    $creator = $task->relationLoaded('creator') ? $task->creator : $task->creator()->first();
+    $showCreator = $creator && (int) $creator->id !== (int) auth()->id();
 @endphp
 
-<div class="space-y-2">
+<div class="space-y-2 {{ $showCreator ? 'pt-4' : '' }}">
+    @if($showCreator)
+        <div class="flex flex-col items-center -mt-8 mb-1">
+            <div class="rounded-xl bg-white p-0.5 shadow-sm ring-1 ring-zinc-200 dark:ring-zinc-600">
+                <flux:avatar
+                    src="{{ $creator->getAvatarUrl() }}"
+                    :name="$creator->name"
+                    size="md"
+                    class="rounded-lg!"
+                />
+            </div>
+            <div class="mt-1 max-w-full truncate text-center text-[10px] font-medium text-zinc-600 dark:text-zinc-300">
+                {{ $creator->name }}
+            </div>
+        </div>
+    @endif
+
     <div class="flex items-center gap-2">
         @if($showDragHandle)
             <div class="cursor-grab">

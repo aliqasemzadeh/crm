@@ -190,4 +190,26 @@ class Task extends Model
 
         return (int) $this->locked_by === (int) $user->id || $user->hasRole('administrator');
     }
+
+    /**
+     * If created_by is empty, set it from the earliest assignee.
+     */
+    public function ensureCreator(): void
+    {
+        if ($this->created_by) {
+            return;
+        }
+
+        $firstAssignee = $this->assignees()
+            ->orderByPivot('assigned_at')
+            ->orderBy('workspace_task_user.id')
+            ->first();
+
+        if (! $firstAssignee) {
+            return;
+        }
+
+        $this->forceFill(['created_by' => $firstAssignee->id])->saveQuietly();
+        $this->unsetRelation('creator');
+    }
 }

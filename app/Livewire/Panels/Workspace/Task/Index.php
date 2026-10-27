@@ -35,7 +35,7 @@ class Index extends Component
     public function render()
     {
         $query = Task::query()
-            ->with('users')
+            ->with(['users', 'creator'])
             ->where('created_by', auth()->id());
 
         if ($this->filter_status) {

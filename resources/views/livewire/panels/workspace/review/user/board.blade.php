@@ -39,9 +39,9 @@
             <flux:kanban.column>
                 <flux:kanban.column.header :heading="__('app.statuses.'.$status)" :count="$colTasks->count()" />
 
-                <flux:kanban.column.cards wire:sort="{{ $handler }}" wire:sort:group="tasks" wire:key="col-{{ $status }}">
+                <flux:kanban.column.cards class="pt-5" wire:sort="{{ $handler }}" wire:sort:group="tasks" wire:key="col-{{ $status }}">
                     @foreach ($colTasks as $task)
-                        <flux:kanban.card wire:sort:item="{{ $task->id }}" wire:sort:handle wire:key="task-{{ $task->id }}">
+                        <flux:kanban.card class="overflow-visible!" wire:sort:item="{{ $task->id }}" wire:sort:handle wire:key="task-{{ $task->id }}">
                             <x-workspace.task.card :task="$task" event-prefix="panels.workspace.review.user.task" :show-checklist-action="true" />
 
                             @if($task->checklists->isNotEmpty())

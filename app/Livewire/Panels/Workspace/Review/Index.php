@@ -34,7 +34,7 @@ class Index extends Component
     #[\Livewire\Attributes\Computed]
     public function tasks()
     {
-        $query = Task::with('users')->where('status', 'done');
+        $query = Task::with(['users', 'creator'])->where('status', 'done');
 
         if ($this->filter === 'pending') {
             $query->where('approval_status', 'pending');

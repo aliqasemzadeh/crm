@@ -28,6 +28,8 @@ class Assigns extends Component
             ]
         ]);
 
+        $this->task->ensureCreator();
+
         $user = User::findOrFail($userId);
 
         \App\Jobs\Notification\SendSmsMessageJob::dispatch($user->mobile, "فعالیت:" . $this->task->title . " در میزکار شما قرارگرفت.");
