@@ -51,11 +51,7 @@ class AccountingDashboardService
      *     receivableCheques: float,
      *     transferredCheques: float,
      *     periodBalance: float,
-     *     fixedCosts: float,
-     *     variableCosts: float,
      *     engagedCapital: float,
-     *     operatingProfit: float,
-     *     nonOperatingProfit: float,
      *     previousMonthSales: float,
      *     previousMonthPurchases: float
      * }
@@ -81,28 +77,6 @@ class AccountingDashboardService
             $payableCheques = (float) PaymentCheque::query()->whereIn('State', [1, 2])->sum('Amount');
             $bankBalance = (float) BankAccount::query()->sum('Balance');
 
-            $fixedCosts = $this->accountNets(
-                $fiscalYearRef,
-                $start,
-                $end,
-                config('sepidar.FixedCostAccountIds', [])
-            );
-            $variableCosts = $this->accountNets(
-                $fiscalYearRef,
-                $start,
-                $end,
-                config('sepidar.VariableCostAccountIds', [])
-            );
-
-            // Topic contribution = SUM(Credit - Debit); expenses/COGS naturally reduce profit.
-            $operatingProfit = $this->topicContribution($fiscalYearRef, $start, $end, (int) config('sepidar.OperatingIncomeTopicRef', 255))
-                + $this->topicContribution($fiscalYearRef, $start, $end, (int) config('sepidar.OtherOperatingIncomeTopicRef', 260))
-                + $this->topicContribution($fiscalYearRef, $start, $end, (int) config('sepidar.CogsTopicRef', 265))
-                + $this->topicContribution($fiscalYearRef, $start, $end, (int) config('sepidar.SgaTopicRef', 270));
-
-            $nonOperatingProfit = $this->topicContribution($fiscalYearRef, $start, $end, (int) config('sepidar.NonOperatingTopicRef', 250))
-                + $this->topicContribution($fiscalYearRef, $start, $end, (int) config('sepidar.FinancialExpenseTopicRef', 165));
-
             $debtorTotal = $partySplits['debtor_total'];
             $creditorTotal = $partySplits['creditor_total'];
 
@@ -117,11 +91,7 @@ class AccountingDashboardService
                 'receivableCheques' => $receivableCheques,
                 'transferredCheques' => $transferredCheques,
                 'periodBalance' => $totalSales - $totalPurchases,
-                'fixedCosts' => $fixedCosts,
-                'variableCosts' => $variableCosts,
                 'engagedCapital' => $inventoryBalance + $bankBalance + $debtorTotal + $receivableCheques - $creditorTotal - $payableCheques,
-                'operatingProfit' => $operatingProfit,
-                'nonOperatingProfit' => $nonOperatingProfit,
                 'previousMonthSales' => $previousMonthSales,
                 'previousMonthPurchases' => $previousMonthPurchases,
             ];
@@ -248,50 +218,6 @@ class AccountingDashboardService
             'debtor_total' => $debtorTotal,
             'creditor_total' => $creditorTotal,
         ];
-    }
-
-    /**
-     * P&L contribution for a topic: SUM(Credit - Debit).
-     * Income increases the value; expenses/COGS/returns decrease it.
-     */
-    private function topicContribution(int|string $fiscalYearRef, ?Carbon $start, ?Carbon $end, int $topicRef): float
-    {
-        if (! $start || ! $end || $topicRef < 1) {
-            return 0.0;
-        }
-
-        $row = DB::connection('sqlsrv')->table('ACC.VoucherItem as vi')
-            ->join('ACC.Voucher as v', 'vi.VoucherRef', '=', 'v.VoucherId')
-            ->join('ACC.AccountTopic as at', 'vi.AccountSLRef', '=', 'at.AccountSLRef')
-            ->where('at.TopicRef', $topicRef)
-            ->where('v.FiscalYearRef', $fiscalYearRef)
-            ->whereBetween('v.Date', [$start, $end])
-            ->selectRaw('SUM(vi.Credit - vi.Debit) as net')
-            ->value('net');
-
-        return (float) ($row ?? 0);
-    }
-
-    /**
-     * Expense amount for account list: SUM(Debit - Credit), shown as a positive cost.
-     *
-     * @param  list<int>  $accountIds
-     */
-    private function accountNets(int|string $fiscalYearRef, ?Carbon $start, ?Carbon $end, array $accountIds): float
-    {
-        if (! $start || ! $end || $accountIds === []) {
-            return 0.0;
-        }
-
-        $row = DB::connection('sqlsrv')->table('ACC.VoucherItem as vi')
-            ->join('ACC.Voucher as v', 'vi.VoucherRef', '=', 'v.VoucherId')
-            ->whereIn('vi.AccountSLRef', $accountIds)
-            ->where('v.FiscalYearRef', $fiscalYearRef)
-            ->whereBetween('v.Date', [$start, $end])
-            ->selectRaw('SUM(vi.Debit - vi.Credit) as net')
-            ->value('net');
-
-        return (float) ($row ?? 0);
     }
 
     private function percentChange(float $current, float $previous): ?float

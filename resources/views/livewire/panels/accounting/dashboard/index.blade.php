@@ -99,42 +99,10 @@
             'badge' => null,
         ],
         [
-            'label' => __('app.dashboard_fixed_costs'),
-            'value' => $stats['fixedCosts'] ?? 0,
-            'color' => 'border-red-500',
-            'text' => 'text-red-600 dark:text-red-400',
-            'badge' => null,
-        ],
-        [
-            'label' => __('app.dashboard_variable_costs'),
-            'value' => $stats['variableCosts'] ?? 0,
-            'color' => 'border-pink-500',
-            'text' => 'text-pink-600 dark:text-pink-400',
-            'badge' => null,
-        ],
-        [
             'label' => __('app.dashboard_engaged_capital'),
             'value' => $stats['engagedCapital'] ?? 0,
             'color' => 'border-violet-500',
             'text' => 'text-violet-600 dark:text-violet-400',
-            'badge' => null,
-        ],
-        [
-            'label' => __('app.dashboard_operating_profit'),
-            'value' => $stats['operatingProfit'] ?? 0,
-            'color' => 'border-teal-500',
-            'text' => (($stats['operatingProfit'] ?? 0) >= 0)
-                ? 'text-teal-600 dark:text-teal-400'
-                : 'text-red-600 dark:text-red-400',
-            'badge' => null,
-        ],
-        [
-            'label' => __('app.dashboard_non_operating_profit'),
-            'value' => $stats['nonOperatingProfit'] ?? 0,
-            'color' => 'border-lime-500',
-            'text' => (($stats['nonOperatingProfit'] ?? 0) >= 0)
-                ? 'text-lime-600 dark:text-lime-400'
-                : 'text-red-600 dark:text-red-400',
             'badge' => null,
         ],
     ];
