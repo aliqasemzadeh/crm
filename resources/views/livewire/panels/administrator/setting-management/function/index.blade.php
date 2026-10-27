@@ -156,6 +156,16 @@
                 </flux:button>
                 <flux:button
                     variant="primary"
+                    color="rose"
+                    icon="bell-alert"
+                    wire:click="runLateInvoiceEditAlert"
+                    wire:confirm="{{ __('app.confirm_action') }}"
+                    class="w-full"
+                >
+                    {{ __('app.run_late_invoice_edit_alert') }}
+                </flux:button>
+                <flux:button
+                    variant="primary"
                     color="blue"
                     icon="import"
                     wire:click="runImportPhones"

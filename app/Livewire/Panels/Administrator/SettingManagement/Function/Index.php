@@ -100,6 +100,11 @@ class Index extends Component
         $this->runFixedCommand(['app:sepidar:alert-on-new-invoice-command'], __('app.invoice_alert_executed'));
     }
 
+    public function runLateInvoiceEditAlert(): void
+    {
+        $this->runFixedCommand(['app:sepidar:alert-on-late-invoice-edit-command'], __('app.late_invoice_edit_alert_executed'));
+    }
+
     public function runImportPhones(): void
     {
         $this->runFixedCommand(['app:voip:import-phones-from-sepidar'], __('app.import_phones_executed'));
