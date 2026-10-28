@@ -1598,7 +1598,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                 <flux:table.columns>
                                     <flux:table.column class="whitespace-nowrap">{{ __('app.phone') }}</flux:table.column>
                                     <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.missed_call_ai_repeat_count') }}</flux:table.column>
-                                    <flux:table.column>{{ __('app.note') }}</flux:table.column>
+                                    <flux:table.column>{{ __('app.missed_call_ai_caller_note') }}</flux:table.column>
                                 </flux:table.columns>
                                 <flux:table.rows>
                                     @foreach ($aiReport['repeat_callers'] as $caller)
@@ -1629,7 +1629,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     >
                         <div class="mb-2 flex items-center justify-between gap-2">
                             <flux:text class="text-sm font-medium text-violet-800 dark:text-violet-200">{{ __('app.missed_call_ai_sms_draft') }}</flux:text>
-                            <flux:tooltip content="{{ __('app.copy') }}">
+                            <flux:tooltip content="{{ __('app.missed_call_ai_copy') }}">
                                 <flux:button
                                     type="button"
                                     size="xs"
