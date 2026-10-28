@@ -137,8 +137,8 @@ return [
 
         'openai-compatible' => [
             'driver' => 'openai-compatible',
-            'url' => env('OPENAI_COMPATIBLE_URL', env('GAP_BASE_URL', 'https://api.gapgpt.app/v1')),
-            'key' => env('OPENAI_COMPATIBLE_API_KEY', env('GAP_API_KEY')),
+            'url' => env('OPENAI_COMPATIBLE_URL') ?: env('GAP_BASE_URL', 'https://api.gapgpt.app/v1'),
+            'key' => env('OPENAI_COMPATIBLE_API_KEY') ?: env('GAP_API_KEY'),
         ],
 
         'openrouter' => [
