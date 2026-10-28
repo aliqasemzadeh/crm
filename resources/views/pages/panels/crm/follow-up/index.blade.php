@@ -14,7 +14,6 @@ use App\Models\Voip\Phone;
 use App\Support\IranPhoneNumberNormalizer;
 use App\Support\PersianFinglishConverter;
 use App\Enums\FollowUpStatusEnum;
-use Khody2012\LaravelAmiToolkit\Facades\Ami;
 use Flux\Flux;
 use Morilog\Jalali\Jalalian;
 use Illuminate\Support\Str;
@@ -265,44 +264,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         );
     }
 
-    public function makeCall(Customer $customer)
-    {
-        $user = auth()->user();
-        $user->load('internalPhoneDevice');
-        $device = $user->internalPhoneDevice;
-
-        if (! $device || ! $device->dial) {
-            Flux::toast(__('app.internal_phone_not_found'), variant: 'danger');
-
-            return;
-        }
-
-        $mobile = $customer->userInfo?->Mobile ?: $customer->PhoneNumber;
-        if (! $mobile || filter_var($mobile, FILTER_VALIDATE_EMAIL)) {
-            Flux::toast(__('app.invalid_mobile_number'), variant: 'danger');
-
-            return;
-        }
-
-        $this->registerPhoneInVoip($customer);
-
-        try {
-            Ami::connect();
-            Ami::originate([
-                'Channel' => $device->dial,
-                'Context' => 'from-internal',
-                'Exten' => $mobile,
-                'Priority' => 1,
-                'Timeout' => 30000,
-            ]);
-
-            Flux::toast(__('app.call_initiated'));
-        } catch (\Exception $e) {
-            \Log::error('AMI Call Error: '.$e->getMessage());
-            Flux::toast(__('app.call_failed'), variant: 'danger');
-        }
-    }
-
     protected function resetForm()
     {
         $this->editing = null;
@@ -405,14 +366,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     </flux:table.cell>
                     <flux:table.cell align="end">
             <div class="flex justify-end gap-2">
-                @if($mobile = ($item->customer?->userInfo?->Mobile ?: $item->customer?->PhoneNumber))
-                    @if(! filter_var($mobile, FILTER_VALIDATE_EMAIL))
-                        <flux:tooltip content="{{ __('app.call') }}">
-                            <flux:button size="xs" variant="primary" color="green" icon="phone" icon:variant="outline" wire:click="makeCall({{ $item->customer_id }})" />
-                        </flux:tooltip>
-                    @endif
-                @endif
-
                 <flux:tooltip content="{{ __('app.orders') }}">
                     <flux:button size="xs" variant="primary" color="blue" icon="shopping-bag" icon:variant="outline" wire:click="showOrders({{ $item->customer_id }})" />
                 </flux:tooltip>

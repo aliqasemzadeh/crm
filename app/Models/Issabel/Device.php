@@ -3,8 +3,9 @@
 namespace App\Models\Issabel;
 
 use App\Models\User;
+use App\Models\UserInternalPhone;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 class Device extends Model
 {
@@ -23,10 +24,20 @@ class Device extends Model
     protected $guarded = [];
 
     /**
-     * کاربرانی که این خط داخلی Issabel به آن‌ها متصل است (users.internal_phone_id = devices.id).
+     * کاربران CRM که این خط داخلی به آن‌ها در user_internal_phones وصل است.
+     *
+     * @return Collection<int, User>
      */
-    public function users(): HasMany
+    public function crmUsers(): Collection
     {
-        return $this->hasMany(User::class, 'internal_phone_id', 'id');
+        $userIds = UserInternalPhone::query()
+            ->where('device_id', (string) $this->id)
+            ->pluck('user_id');
+
+        if ($userIds->isEmpty()) {
+            return collect();
+        }
+
+        return User::query()->whereIn('id', $userIds)->get();
     }
 }

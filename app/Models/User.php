@@ -3,23 +3,25 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Models\Issabel\Device as IssabelDevice;
-use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\Hr\DayRecord;
 use App\Models\Hr\Record;
+use App\Models\Issabel\Device as IssabelDevice;
+use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\Workspace\Task;
+use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Rappasoft\LaravelAuthenticationLog\Traits\AuthenticationLoggable;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
     use HasRoles;
@@ -37,7 +39,6 @@ class User extends Authenticatable
         'password',
         'avatar',
         'signature',
-        'internal_phone_id',
         'bale_code',
         'personnel_code',
         'timex_code',
@@ -89,9 +90,75 @@ class User extends Authenticatable
         );
     }
 
-    public function internalPhoneDevice(): BelongsTo
+    public function internalPhones(): HasMany
     {
-        return $this->belongsTo(IssabelDevice::class, 'internal_phone_id', 'id');
+        return $this->hasMany(UserInternalPhone::class);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function internalPhoneDeviceIds(): array
+    {
+        $ids = $this->relationLoaded('internalPhones')
+            ? $this->internalPhones->pluck('device_id')
+            : $this->internalPhones()->pluck('device_id');
+
+        return $ids
+            ->map(fn ($id): string => (string) $id)
+            ->filter(fn (string $id): bool => $id !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * Issabel devices assigned to this user (cross-DB via device_id strings).
+     *
+     * @return Collection<int, IssabelDevice>
+     */
+    public function internalPhoneDevices(): Collection
+    {
+        $ids = $this->internalPhoneDeviceIds();
+        if ($ids === []) {
+            return collect();
+        }
+
+        try {
+            return IssabelDevice::query()
+                ->whereIn('id', $ids)
+                ->get()
+                ->keyBy(fn (IssabelDevice $device): string => (string) $device->id)
+                ->values();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return collect();
+        }
+    }
+
+    /**
+     * @param  list<string|int>|array<int, string|int>  $deviceIds
+     */
+    public function syncInternalPhones(array $deviceIds): void
+    {
+        $normalized = collect($deviceIds)
+            ->map(fn ($id): string => trim((string) $id))
+            ->filter(fn (string $id): bool => $id !== '')
+            ->unique()
+            ->values();
+
+        $this->internalPhones()->delete();
+
+        if ($normalized->isEmpty()) {
+            return;
+        }
+
+        $this->internalPhones()->createMany(
+            $normalized->map(fn (string $deviceId): array => [
+                'device_id' => $deviceId,
+            ])->all()
+        );
     }
 
     public function sepidarUser(): BelongsTo
@@ -128,7 +195,7 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    public function activityLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function activityLogs(): HasMany
     {
         return $this->hasMany(UserActivityLog::class);
     }
@@ -152,17 +219,17 @@ class User extends Authenticatable
         return null;
     }
 
-    public function devices(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function devices(): HasMany
     {
         return $this->hasMany(UserDevice::class);
     }
 
-    public function hrRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function hrRecords(): HasMany
     {
         return $this->hasMany(Record::class);
     }
 
-    public function hrDayRecords(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function hrDayRecords(): HasMany
     {
         return $this->hasMany(DayRecord::class);
     }

@@ -4,6 +4,7 @@ use App\Models\Issabel\Cdr;
 use App\Models\Issabel\Device;
 use App\Models\User;
 use App\Models\Voip\Phone;
+use App\Services\Crm\CallConversionStatsService;
 use App\Support\IranPhoneNumberNormalizer;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
@@ -30,6 +31,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     public ?string $directionFilter = null;
 
+    public ?string $dateStart = null;
+
+    public ?string $dateEnd = null;
+
     /**
      * When scoped to a specific user, these are the extension keys used for:
      * - visibility query scope
@@ -46,13 +51,43 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     private const DEVICES_CACHE_KEY = 'crm.issabel_devices_user_to_description';
 
-    private const INTERNAL_USER_PROFILES_BY_EXTENSION_CACHE_KEY = 'crm.users_by_internal_phone_extension_v2';
+    private const INTERNAL_USER_PROFILES_BY_EXTENSION_CACHE_KEY = 'crm.users_by_internal_phone_extension_v3';
 
     private const PHONES_CACHE_TTL_SECONDS = 600;
 
+    protected function queryString(): array
+    {
+        $now = Jalalian::now();
+        $monthStart = $now->getFirstDayOfMonth()->format('Y/m/d');
+        $monthEnd = $now->getEndDayOfMonth()->format('Y/m/d');
+
+        return [
+            'dateStart' => ['except' => $monthStart],
+            'dateEnd' => ['except' => $monthEnd],
+            'userFilter' => ['except' => null],
+            'directionFilter' => ['except' => null],
+        ];
+    }
+
     public function mount(): void
     {
+        if (! request()->hasAny(['dateStart', 'dateEnd'])) {
+            $now = Jalalian::now();
+            $this->dateStart = $now->getFirstDayOfMonth()->format('Y/m/d');
+            $this->dateEnd = $now->getEndDayOfMonth()->format('Y/m/d');
+        }
+
         $this->fetchBatch(true);
+    }
+
+    public function updatedDateStart(): void
+    {
+        unset($this->performanceStats);
+    }
+
+    public function updatedDateEnd(): void
+    {
+        unset($this->performanceStats);
     }
 
     public function loadMore(): void
@@ -68,6 +103,13 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             return;
         }
 
+        if ($this->userFilter === null || $this->userFilter === '' || (int) $this->userFilter <= 0) {
+            $this->userFilter = null;
+        } else {
+            $this->userFilter = (int) $this->userFilter;
+        }
+
+        unset($this->performanceStats);
         $this->resetTimeline();
         $this->fetchBatch(true);
     }
@@ -230,16 +272,16 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     private function applyUserScope(Builder $query, User $user): void
     {
-        $user->loadMissing('internalPhoneDevice');
-        $device = $user->internalPhoneDevice;
-        if ($device === null) {
+        $user->loadMissing('internalPhones');
+        $devices = $user->internalPhoneDevices();
+        if ($devices->isEmpty()) {
             $this->scopedExtensionKeys = [];
             $query->whereRaw('1 = 0');
 
             return;
         }
 
-        $keys = $this->extensionKeysFromDevice($device);
+        $keys = $this->extensionKeysFromDevices($devices);
         if ($keys === []) {
             $this->scopedExtensionKeys = [];
             $query->whereRaw('1 = 0');
@@ -278,10 +320,193 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         }
 
         return User::query()
-            ->whereNotNull('internal_phone_id')
+            ->whereHas('internalPhones')
             ->orderBy('first_name')
             ->orderBy('last_name')
-            ->get(['id', 'first_name', 'last_name', 'internal_phone_id', 'avatar']);
+            ->get(['id', 'first_name', 'last_name', 'avatar']);
+    }
+
+    /**
+     * @return \Illuminate\Support\Collection<int, User>
+     */
+    private function usersForPerformanceStats()
+    {
+        $authUser = auth()->user();
+        if (! $authUser instanceof User) {
+            return collect();
+        }
+
+        if ($this->isAdministrator) {
+            $query = User::query()
+                ->whereHas('internalPhones')
+                ->with('internalPhones')
+                ->orderBy('first_name')
+                ->orderBy('last_name');
+
+            if ($this->userFilter !== null) {
+                $query->whereKey($this->userFilter);
+            }
+
+            return $query->get();
+        }
+
+        $authUser->loadMissing('internalPhones');
+        if ($authUser->internalPhones->isEmpty()) {
+            return collect();
+        }
+
+        return collect([$authUser]);
+    }
+
+    /**
+     * @return array{
+     *     error: ?string,
+     *     totals: array{
+     *         successful_calls: int,
+     *         rejected_calls: int,
+     *         invoices_count: int,
+     *         rejection_rate: ?float,
+     *         conversion_rate: ?float
+     *     },
+     *     rows: list<array{
+     *         user_id: int,
+     *         name: string,
+     *         avatar_url: ?string,
+     *         successful_calls: int,
+     *         rejected_calls: int,
+     *         invoices_count: int,
+     *         rejection_rate: ?float,
+     *         conversion_rate: ?float
+     *     }>
+     * }
+     */
+    #[Computed]
+    public function performanceStats(): array
+    {
+        $empty = [
+            'error' => null,
+            'totals' => [
+                'successful_calls' => 0,
+                'rejected_calls' => 0,
+                'invoices_count' => 0,
+                'rejection_rate' => null,
+                'conversion_rate' => null,
+            ],
+            'rows' => [],
+        ];
+
+        try {
+            $start = $this->dateStart
+                ? Jalalian::fromFormat('Y/m/d', $this->dateStart)->toCarbon()->startOfDay()
+                : Jalalian::now()->getFirstDayOfMonth()->toCarbon()->startOfDay();
+            $end = $this->dateEnd
+                ? Jalalian::fromFormat('Y/m/d', $this->dateEnd)->toCarbon()->endOfDay()
+                : Jalalian::now()->getEndDayOfMonth()->toCarbon()->endOfDay();
+        } catch (\Throwable) {
+            $empty['error'] = __('app.call_performance_stats_load_failed');
+
+            return $empty;
+        }
+
+        try {
+            $stats = app(CallConversionStatsService::class)
+                ->forUsers($this->usersForPerformanceStats(), $start, $end);
+
+            return [
+                'error' => null,
+                'totals' => $stats['totals'],
+                'rows' => $stats['rows'],
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+            $empty['error'] = __('app.call_performance_stats_load_failed');
+
+            return $empty;
+        }
+    }
+
+    /**
+     * نرخ تبدیل به مشتری — بالاتر بهتر است.
+     *
+     * @return 'emerald'|'amber'|'rose'|'zinc'
+     */
+    public function conversionBadgeColor(?float $rate): string
+    {
+        if ($rate === null) {
+            return 'zinc';
+        }
+
+        if ($rate >= 10) {
+            return 'emerald';
+        }
+
+        if ($rate > 0) {
+            return 'amber';
+        }
+
+        return 'rose';
+    }
+
+    /**
+     * نرخ رد تماس — بالاتر بدتر است.
+     *
+     * @return 'emerald'|'amber'|'rose'|'zinc'
+     */
+    public function rejectionBadgeColor(?float $rate): string
+    {
+        if ($rate === null) {
+            return 'zinc';
+        }
+
+        if ($rate >= 50) {
+            return 'rose';
+        }
+
+        if ($rate >= 25) {
+            return 'amber';
+        }
+
+        return 'emerald';
+    }
+
+    public function formatPercentRate(?float $rate): string
+    {
+        if ($rate === null) {
+            return '—';
+        }
+
+        return number_format($rate, 1).'٪';
+    }
+
+    /** @deprecated Use formatPercentRate */
+    public function formatConversionRate(?float $rate): string
+    {
+        return $this->formatPercentRate($rate);
+    }
+
+    /**
+     * @return array{card: string, text: string}
+     */
+    public function rateHeroClasses(string $color): array
+    {
+        return match ($color) {
+            'emerald' => [
+                'card' => 'border-emerald-200 dark:border-emerald-800 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/40 dark:to-zinc-900',
+                'text' => 'text-emerald-600 dark:text-emerald-400',
+            ],
+            'amber' => [
+                'card' => 'border-amber-200 dark:border-amber-800 bg-gradient-to-br from-amber-50 to-white dark:from-amber-950/40 dark:to-zinc-900',
+                'text' => 'text-amber-600 dark:text-amber-400',
+            ],
+            'rose' => [
+                'card' => 'border-rose-200 dark:border-rose-800 bg-gradient-to-br from-rose-50 to-white dark:from-rose-950/40 dark:to-zinc-900',
+                'text' => 'text-rose-600 dark:text-rose-400',
+            ],
+            default => [
+                'card' => 'border-zinc-200 dark:border-zinc-700 bg-gradient-to-br from-zinc-50 to-white dark:from-zinc-900 dark:to-zinc-950',
+                'text' => 'text-zinc-600 dark:text-zinc-300',
+            ],
+        };
     }
 
     /**
@@ -337,7 +562,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     }
 
     /**
-     * پروفایل کاربر CRM برای داخلی متصل به users.internal_phone_id → Issabel devices.
+     * پروفایل کاربر CRM برای داخلی‌های متصل از طریق user_internal_phones → Issabel devices.
      *
      * @return array<string, array{name: string, avatar_url: ?string}>
      */
@@ -349,13 +574,13 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             function (): array {
                 $map = [];
                 $users = User::query()
-                    ->whereNotNull('internal_phone_id')
-                    ->with('internalPhoneDevice')
+                    ->whereHas('internalPhones')
+                    ->with('internalPhones')
                     ->get();
 
                 foreach ($users as $user) {
-                    $device = $user->internalPhoneDevice;
-                    if ($device === null) {
+                    $devices = $user->internalPhoneDevices();
+                    if ($devices->isEmpty()) {
                         continue;
                     }
 
@@ -364,7 +589,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                         'avatar_url' => $user->getAvatarUrl(),
                     ];
 
-                    foreach ($this->extensionKeysFromDevice($device) as $key) {
+                    foreach ($this->extensionKeysFromDevices($devices) as $key) {
                         $map[$key] = $profile;
                     }
                 }
@@ -377,24 +602,27 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     /**
      * همان کلیدهای قابل جستجو برای devices.user / dial تا با partyLookupKeys در CDR هم‌خوان باشد.
      *
+     * @param  \Illuminate\Support\Collection<int, Device>  $devices
      * @return list<string>
      */
-    private function extensionKeysFromDevice(Device $device): array
+    private function extensionKeysFromDevices($devices): array
     {
         $keys = [];
-        foreach ([trim((string) $device->user), trim((string) $device->dial)] as $col) {
-            if ($col === '') {
-                continue;
-            }
+        foreach ($devices as $device) {
+            foreach ([trim((string) $device->user), trim((string) $device->dial)] as $col) {
+                if ($col === '') {
+                    continue;
+                }
 
-            $keys[] = $col;
-            $digits = preg_replace('/\D+/', '', $col) ?? '';
-            if ($digits !== '') {
-                $keys[] = $digits;
-                if (strlen($digits) <= 5) {
-                    $stripped = ltrim($digits, '0');
-                    if ($stripped !== '' && $stripped !== $digits) {
-                        $keys[] = $stripped;
+                $keys[] = $col;
+                $digits = preg_replace('/\D+/', '', $col) ?? '';
+                if ($digits !== '') {
+                    $keys[] = $digits;
+                    if (strlen($digits) <= 5) {
+                        $stripped = ltrim($digits, '0');
+                        if ($stripped !== '' && $stripped !== $digits) {
+                            $keys[] = $stripped;
+                        }
                     }
                 }
             }
@@ -930,6 +1158,185 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             />
         </flux:tooltip>
     </div>
+
+    @php
+        $stats = $this->performanceStats;
+        $totals = $stats['totals'];
+        $conversionColor = $this->conversionBadgeColor($totals['conversion_rate']);
+        $rejectionColor = $this->rejectionBadgeColor($totals['rejection_rate']);
+        $conversionHero = $this->rateHeroClasses($conversionColor);
+        $rejectionHero = $this->rateHeroClasses($rejectionColor);
+        $scopedToOneUser = $this->isAdministrator && $this->userFilter !== null;
+    @endphp
+
+    <flux:card class="panel-filter-card">
+        <div @class([
+            'grid grid-cols-1 gap-3 items-end',
+            'md:grid-cols-3' => $this->isAdministrator,
+            'md:grid-cols-2' => ! $this->isAdministrator,
+        ])>
+            <div wire:key="crm-stats-date-range-{{ $dateStart ?? 'all' }}-{{ $dateEnd ?? 'all' }}">
+                <x-jalali-date-range
+                    :label="__('app.date_range')"
+                    :start="$dateStart"
+                    :end="$dateEnd"
+                    wire:model.start="dateStart"
+                    wire:model.end="dateEnd"
+                />
+            </div>
+            @if ($this->isAdministrator)
+                <flux:select
+                    wire:model.live="userFilter"
+                    searchable
+                    :label="__('app.filter_report_by_user')"
+                    placeholder="{{ __('app.filter_report_by_user') }}"
+                >
+                    <flux:select.option value="">{{ __('app.all_users') }}</flux:select.option>
+                    @foreach ($this->usersForFilter as $user)
+                        <flux:select.option value="{{ $user->id }}">{{ $user->name }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            @endif
+            <div class="space-y-1 pb-1 text-xs text-zinc-500 dark:text-zinc-400">
+                <div>{{ __('app.conversion_rate_formula_hint') }}</div>
+                <div>{{ __('app.rejection_rate_formula_hint') }}</div>
+            </div>
+        </div>
+    </flux:card>
+
+    @if ($stats['error'])
+        <flux:callout variant="danger" icon="exclamation-triangle">
+            {{ $stats['error'] }}
+        </flux:callout>
+    @endif
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <flux:card class="{{ $conversionHero['card'] }}">
+            <div class="flex flex-col gap-2">
+                <flux:text class="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                    @if ($scopedToOneUser)
+                        {{ __('app.conversion_rate') }}
+                    @elseif ($this->isAdministrator)
+                        {{ __('app.team_conversion_rate') }}
+                    @else
+                        {{ __('app.conversion_rate') }}
+                    @endif
+                </flux:text>
+                <span class="text-5xl font-bold tabular-nums tracking-tight {{ $conversionHero['text'] }}">
+                    {{ $this->formatPercentRate($totals['conversion_rate']) }}
+                </span>
+                <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">
+                    {{ __('app.conversion_rate_to_customer_hint') }}
+                </flux:text>
+            </div>
+        </flux:card>
+
+        <flux:card class="{{ $rejectionHero['card'] }}">
+            <div class="flex flex-col gap-2">
+                <flux:text class="text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                    @if ($scopedToOneUser)
+                        {{ __('app.rejection_rate') }}
+                    @elseif ($this->isAdministrator)
+                        {{ __('app.team_rejection_rate') }}
+                    @else
+                        {{ __('app.rejection_rate') }}
+                    @endif
+                </flux:text>
+                <span class="text-5xl font-bold tabular-nums tracking-tight {{ $rejectionHero['text'] }}">
+                    {{ $this->formatPercentRate($totals['rejection_rate']) }}
+                </span>
+                <flux:text class="text-xs text-zinc-500 dark:text-zinc-400">
+                    {{ __('app.rejection_rate_formula_hint') }}
+                </flux:text>
+            </div>
+        </flux:card>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <flux:card>
+            <div class="space-y-1">
+                <flux:text class="text-sm text-zinc-500">{{ __('app.successful_calls') }}</flux:text>
+                <flux:heading size="xl" class="tabular-nums text-green-600 dark:text-green-400">
+                    {{ number_format($totals['successful_calls']) }}
+                </flux:heading>
+            </div>
+        </flux:card>
+        <flux:card>
+            <div class="space-y-1">
+                <flux:text class="text-sm text-zinc-500">{{ __('app.rejected_calls') }}</flux:text>
+                <flux:heading size="xl" class="tabular-nums text-rose-600 dark:text-rose-400">
+                    {{ number_format($totals['rejected_calls']) }}
+                </flux:heading>
+            </div>
+        </flux:card>
+        <flux:card>
+            <div class="space-y-1">
+                <flux:text class="text-sm text-zinc-500">{{ __('app.invoices_count') }}</flux:text>
+                <flux:heading size="xl" class="tabular-nums text-teal-600 dark:text-teal-400">
+                    {{ number_format($totals['invoices_count']) }}
+                </flux:heading>
+            </div>
+        </flux:card>
+    </div>
+
+    <flux:card>
+        <flux:heading size="sm" class="mb-4">{{ __('app.call_performance_by_user') }}</flux:heading>
+        <flux:table>
+            <flux:table.columns>
+                <flux:table.column>{{ __('app.user') }}</flux:table.column>
+                <flux:table.column class="text-end">{{ __('app.successful_calls') }}</flux:table.column>
+                <flux:table.column class="text-end">{{ __('app.rejected_calls') }}</flux:table.column>
+                <flux:table.column class="text-end">{{ __('app.rejection_rate') }}</flux:table.column>
+                <flux:table.column class="text-end">{{ __('app.invoices_count') }}</flux:table.column>
+                <flux:table.column class="text-end">{{ __('app.conversion_rate') }}</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
+                @forelse ($stats['rows'] as $row)
+                    <flux:table.row :key="'perf-'.$row['user_id']">
+                        <flux:table.cell>
+                            <div class="flex items-center gap-2 min-w-0">
+                                @if ($row['avatar_url'])
+                                    <flux:avatar src="{{ $row['avatar_url'] }}" size="xs" />
+                                @else
+                                    <flux:avatar name="{{ $row['name'] }}" color="auto" size="xs" />
+                                @endif
+                                <span class="truncate font-medium">{{ $row['name'] }}</span>
+                            </div>
+                        </flux:table.cell>
+                        <flux:table.cell class="text-end tabular-nums text-green-600 dark:text-green-400">
+                            {{ number_format($row['successful_calls']) }}
+                        </flux:table.cell>
+                        <flux:table.cell class="text-end tabular-nums text-rose-600 dark:text-rose-400">
+                            {{ number_format($row['rejected_calls']) }}
+                        </flux:table.cell>
+                        <flux:table.cell class="text-end">
+                            <flux:badge size="sm" :color="$this->rejectionBadgeColor($row['rejection_rate'])" class="text-base font-semibold tabular-nums">
+                                {{ $this->formatPercentRate($row['rejection_rate']) }}
+                            </flux:badge>
+                        </flux:table.cell>
+                        <flux:table.cell class="text-end tabular-nums text-teal-600 dark:text-teal-400">
+                            {{ number_format($row['invoices_count']) }}
+                        </flux:table.cell>
+                        <flux:table.cell class="text-end">
+                            <flux:badge size="sm" :color="$this->conversionBadgeColor($row['conversion_rate'])" class="text-base font-semibold tabular-nums">
+                                {{ $this->formatPercentRate($row['conversion_rate']) }}
+                            </flux:badge>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @empty
+                    <flux:table.row>
+                        <flux:table.cell colspan="6">
+                            <flux:text class="text-zinc-500">{{ __('app.call_performance_empty') }}</flux:text>
+                        </flux:table.cell>
+                    </flux:table.row>
+                @endforelse
+            </flux:table.rows>
+        </flux:table>
+    </flux:card>
+
+    <flux:separator variant="subtle" />
+
+    <flux:heading size="md">{{ __('app.call_history_timeline') }}</flux:heading>
 
     @if ($this->isAdministrator)
         <flux:card class="panel-filter-card" x-show="showFilters" x-cloak>

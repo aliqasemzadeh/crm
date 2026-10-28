@@ -40,7 +40,8 @@ class Edit extends Component
 
     public $photos = [];
 
-    public ?string $internal_phone_id = null;
+    /** @var list<string> */
+    public array $internal_phone_ids = [];
 
     public string $internal_phone_search = '';
 
@@ -69,7 +70,7 @@ class Edit extends Component
         $this->password_confirmation = '';
         $this->photo = null;
         $this->photos = [];
-        $this->internal_phone_id = $this->user->internal_phone_id;
+        $this->internal_phone_ids = $this->user->internalPhoneDeviceIds();
         $this->internal_phone_search = '';
         $this->bale_code = (string) ($this->user->bale_code ?? '');
         $this->personnel_code = (string) ($this->user->personnel_code ?? '');
@@ -81,7 +82,7 @@ class Edit extends Component
     }
 
     /**
-     * گزینه‌های شمارهٔ داخلی (Issabel devices) برای combobox با جستجوی سمت سرور.
+     * گزینه‌های شمارهٔ داخلی (Issabel devices) برای pillbox با جستجوی سمت سرور.
      *
      * @return Collection<int, Device>
      */
@@ -90,6 +91,11 @@ class Edit extends Component
     {
         try {
             $term = trim($this->internal_phone_search);
+            $selectedIds = collect($this->internal_phone_ids)
+                ->map(fn ($id): string => (string) $id)
+                ->filter(fn (string $id): bool => $id !== '')
+                ->unique()
+                ->values();
 
             $query = Device::query()
                 ->whereNotNull('user')
@@ -106,11 +112,16 @@ class Edit extends Component
 
             $results = $query->get();
 
-            if ($this->internal_phone_id !== null && $this->internal_phone_id !== ''
-                && ! $results->contains(fn (Device $d): bool => (string) $d->id === (string) $this->internal_phone_id)) {
-                $extra = Device::query()->find($this->internal_phone_id);
-                if ($extra) {
-                    $results = $results->prepend($extra)->take(25)->values();
+            if ($selectedIds->isNotEmpty()) {
+                $missingIds = $selectedIds
+                    ->reject(fn (string $id): bool => $results->contains(
+                        fn (Device $d): bool => (string) $d->id === $id
+                    ))
+                    ->values();
+
+                if ($missingIds->isNotEmpty()) {
+                    $extras = Device::query()->whereIn('id', $missingIds->all())->get();
+                    $results = $extras->concat($results)->unique('id')->values();
                 }
             }
 
@@ -181,7 +192,8 @@ class Edit extends Component
             'password_confirmation' => ['nullable', 'string'],
             'photo' => ['nullable', 'image', 'max:2048'],
             'photos.*' => ['nullable', 'image', 'max:10240'],
-            'internal_phone_id' => ['nullable', 'string', 'max:255'],
+            'internal_phone_ids' => ['nullable', 'array'],
+            'internal_phone_ids.*' => ['string', 'max:255'],
             'bale_code' => ['nullable', 'string', 'max:255'],
             'personnel_code' => ['nullable', 'string', 'max:255'],
             'timex_code' => ['nullable', 'string', 'max:255'],
@@ -212,9 +224,6 @@ class Edit extends Component
         $this->user->mobile = $validated['mobile'];
         $this->user->email = $email === '' ? null : $email;
 
-        $internalId = trim((string) ($validated['internal_phone_id'] ?? ''));
-        $this->user->internal_phone_id = $internalId === '' ? null : $internalId;
-
         $bale = trim((string) ($validated['bale_code'] ?? ''));
         $this->user->bale_code = $bale === '' ? null : $bale;
 
@@ -233,6 +242,7 @@ class Edit extends Component
         }
 
         $this->user->save();
+        $this->user->syncInternalPhones($validated['internal_phone_ids'] ?? []);
 
         Flux::toast(__('app.user_updated_successfully'));
         $this->dispatch('panels.administrator.user-management.user.index.render');

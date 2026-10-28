@@ -89,34 +89,34 @@
             <flux:accordion transition>
                 <flux:accordion.item
                     :heading="__('app.user_hr_extra_section')"
-                    :expanded="filled($internal_phone_id) || filled($bale_code) || filled($personnel_code) || filled($timex_code) || filled($sepidar_user_id)"
+                    :expanded="count($internal_phone_ids) > 0 || filled($bale_code) || filled($personnel_code) || filled($timex_code) || filled($sepidar_user_id)"
                 >
                     <div class="space-y-4 pt-2">
                         <flux:field>
-                            <flux:label>{{ __('app.internal_phone') }}</flux:label>
-                            <flux:select
-                                wire:model="internal_phone_id"
+                            <flux:label>{{ __('app.internal_phones') }}</flux:label>
+                            <flux:pillbox
+                                wire:model="internal_phone_ids"
                                 variant="combobox"
+                                multiple
                                 :filter="false"
                                 placeholder="{{ __('app.internal_phone_placeholder') }}"
                             >
                                 <x-slot name="input">
-                                    <flux:select.input
+                                    <flux:pillbox.input
                                         wire:model.live.debounce.300ms="internal_phone_search"
                                         placeholder="{{ __('app.search_internal_phone') }}"
                                     />
                                 </x-slot>
-                                <flux:select.option value="">{{ __('app.internal_phone_none') }}</flux:select.option>
                                 @foreach ($this->internalPhoneDevices as $device)
-                                    <flux:select.option value="{{ $device->id }}" wire:key="device-{{ $device->id }}">
+                                    <flux:pillbox.option value="{{ $device->id }}" wire:key="device-{{ $device->id }}">
                                         {{ trim((string) $device->user) }}
                                         @if(filled($device->description))
                                             — {{ $device->description }}
                                         @endif
-                                    </flux:select.option>
+                                    </flux:pillbox.option>
                                 @endforeach
-                            </flux:select>
-                            <flux:error name="internal_phone_id" />
+                            </flux:pillbox>
+                            <flux:error name="internal_phone_ids" />
                         </flux:field>
 
                         <flux:field>
