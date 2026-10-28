@@ -537,6 +537,139 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     }
 
     /**
+     * @return array{0: \Carbon\Carbon, 1: \Carbon\Carbon}|null
+     */
+    private function reportDateRange(): ?array
+    {
+        try {
+            $start = $this->dateStart
+                ? Jalalian::fromFormat('Y/m/d', $this->dateStart)->toCarbon()->startOfDay()
+                : Jalalian::now()->getFirstDayOfMonth()->toCarbon()->startOfDay();
+            $end = $this->dateEnd
+                ? Jalalian::fromFormat('Y/m/d', $this->dateEnd)->toCarbon()->endOfDay()
+                : Jalalian::now()->getEndDayOfMonth()->toCarbon()->endOfDay();
+
+            return [$start, $end];
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+
+    /**
+     * @return list<array{hour: string, total: int, missed: int}>
+     */
+    #[Computed]
+    public function hourlyPeakChart(): array
+    {
+        $range = $this->reportDateRange();
+        if ($range === null) {
+            return [];
+        }
+
+        [$start, $end] = $range;
+
+        try {
+            return app(HourlyCallPeakService::class)
+                ->forUsers($this->usersForPerformanceStats(), $start, $end);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return [];
+        }
+    }
+
+    public function analyzeMissedCalls(): void
+    {
+        $this->aiLoading = true;
+        $this->aiError = null;
+
+        try {
+            $range = $this->reportDateRange();
+            if ($range === null) {
+                $this->aiError = __('app.missed_call_ai_invalid_range');
+                Flux::toast(__('app.missed_call_ai_invalid_range'), variant: 'danger');
+
+                return;
+            }
+
+            [$start, $end] = $range;
+            $users = $this->usersForPerformanceStats();
+            if ($users->isEmpty()) {
+                $this->aiError = __('app.missed_call_ai_no_users');
+                Flux::toast(__('app.missed_call_ai_no_users'), variant: 'danger');
+
+                return;
+            }
+
+            $export = app(MissedCallCsvExporter::class)->export($users, $start, $end);
+            if ($export['row_count'] === 0) {
+                $this->aiReport = [
+                    'summary' => __('app.missed_call_ai_empty_summary'),
+                    'repeat_callers' => [],
+                    'peak_insight' => __('app.missed_call_ai_empty_peak'),
+                    'sms_draft' => '',
+                    'row_count' => 0,
+                    'truncated' => false,
+                ];
+                Flux::toast(__('app.missed_call_ai_empty_toast'));
+
+                return;
+            }
+
+            $prompt = __('app.missed_call_ai_prompt', [
+                'from' => $this->dateStart ?? '',
+                'to' => $this->dateEnd ?? '',
+                'count' => $export['row_count'],
+            ]);
+
+            $response = (new MissedCallAnalyst)->prompt(
+                $prompt,
+                attachments: [
+                    Document::fromString($export['csv'], 'text/csv'),
+                ],
+                timeout: 120,
+            );
+
+            $repeatCallers = collect($response['repeat_callers'] ?? [])
+                ->map(fn ($row): array => [
+                    'phone' => (string) ($row['phone'] ?? ''),
+                    'count' => (int) ($row['count'] ?? 0),
+                    'note' => (string) ($row['note'] ?? ''),
+                ])
+                ->filter(fn (array $row): bool => $row['phone'] !== '')
+                ->values()
+                ->all();
+
+            $this->aiReport = [
+                'summary' => (string) ($response['summary'] ?? ''),
+                'repeat_callers' => $repeatCallers,
+                'peak_insight' => (string) ($response['peak_insight'] ?? ''),
+                'sms_draft' => (string) ($response['sms_draft'] ?? ''),
+                'row_count' => $export['row_count'],
+                'truncated' => $export['truncated'],
+            ];
+
+            Flux::toast(__('app.missed_call_ai_success'));
+        } catch (\Throwable $e) {
+            report($e);
+            $this->aiReport = null;
+            $this->aiError = __('app.missed_call_ai_failed');
+            Flux::toast(__('app.missed_call_ai_failed'), variant: 'danger');
+        } finally {
+            $this->aiLoading = false;
+        }
+    }
+
+    public function copySmsDraft(): void
+    {
+        if (blank($this->aiReport['sms_draft'] ?? null)) {
+            return;
+        }
+
+        Flux::toast(__('app.missed_call_ai_sms_copied'));
+    }
+
+    /**
      * @return array<string, string>
      */
     private function phoneNumberToNameMap(): array
@@ -1224,9 +1357,25 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                     @endforeach
                 </flux:select>
             @endif
-            <div class="space-y-1 pb-1 text-xs text-zinc-500 dark:text-zinc-400">
-                <div>{{ __('app.conversion_rate_formula_hint') }}</div>
-                <div>{{ __('app.rejection_rate_formula_hint') }}</div>
+            <div class="flex flex-col gap-2">
+                <flux:button
+                    type="button"
+                    variant="primary"
+                    color="violet"
+                    icon="sparkles"
+                    icon:variant="outline"
+                    wire:click="analyzeMissedCalls"
+                    wire:loading.attr="disabled"
+                    wire:target="analyzeMissedCalls"
+                    class="w-full"
+                >
+                    <span wire:loading.remove wire:target="analyzeMissedCalls">{{ __('app.missed_call_ai_analyze') }}</span>
+                    <span wire:loading wire:target="analyzeMissedCalls">{{ __('app.missed_call_ai_analyzing') }}</span>
+                </flux:button>
+                <div class="space-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    <div>{{ __('app.conversion_rate_formula_hint') }}</div>
+                    <div>{{ __('app.rejection_rate_formula_hint') }}</div>
+                </div>
             </div>
         </div>
     </flux:card>
