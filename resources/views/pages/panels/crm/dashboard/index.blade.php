@@ -1516,6 +1516,138 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         </div>
     </flux:card>
 
+    @php $hourlyPeak = $this->hourlyPeakChart; @endphp
+
+    <flux:card>
+        <flux:heading size="sm" class="mb-1">{{ __('app.call_peak_hours_chart') }}</flux:heading>
+        <flux:text class="mb-4 text-sm text-zinc-500 dark:text-zinc-400">{{ __('app.call_peak_hours_chart_hint') }}</flux:text>
+
+        <flux:chart :value="$hourlyPeak" class="h-80">
+            <flux:chart.viewport class="min-h-[20rem]">
+                <flux:chart.svg>
+                    <flux:chart.area field="total" class="text-sky-500/20" curve="smooth" />
+                    <flux:chart.line field="total" class="text-sky-500" curve="smooth" />
+                    <flux:chart.line field="missed" class="text-rose-500" curve="smooth" />
+
+                    <flux:chart.axis axis="x" field="hour">
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
+
+                    <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                        <flux:chart.axis.grid />
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
+
+                    <flux:chart.cursor type="area" />
+                </flux:chart.svg>
+            </flux:chart.viewport>
+
+            <div class="flex justify-center gap-6 pt-4">
+                <flux:chart.legend :label="__('app.call_peak_total')">
+                    <flux:chart.legend.indicator class="bg-sky-500" />
+                </flux:chart.legend>
+                <flux:chart.legend :label="__('app.call_peak_missed')">
+                    <flux:chart.legend.indicator class="bg-rose-500" />
+                </flux:chart.legend>
+            </div>
+
+            <flux:chart.tooltip>
+                <flux:chart.tooltip.heading field="hour" />
+                <flux:chart.tooltip.value field="total" :label="__('app.call_peak_total')" :format="['useGrouping' => true]" />
+                <flux:chart.tooltip.value field="missed" :label="__('app.call_peak_missed')" :format="['useGrouping' => true]" />
+            </flux:chart.tooltip>
+        </flux:chart>
+    </flux:card>
+
+    @if ($aiError)
+        <flux:callout variant="danger" icon="exclamation-triangle">
+            {{ $aiError }}
+        </flux:callout>
+    @endif
+
+    @if ($aiReport)
+        <flux:card>
+            <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+                <div>
+                    <flux:heading size="sm">{{ __('app.missed_call_ai_report_title') }}</flux:heading>
+                    <flux:text class="text-sm text-zinc-500 dark:text-zinc-400">
+                        {{ __('app.missed_call_ai_report_meta', ['count' => $aiReport['row_count']]) }}
+                        @if ($aiReport['truncated'])
+                            — {{ __('app.missed_call_ai_truncated') }}
+                        @endif
+                    </flux:text>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div>
+                    <flux:text class="mb-1 text-sm font-medium text-zinc-600 dark:text-zinc-300">{{ __('app.missed_call_ai_summary') }}</flux:text>
+                    <flux:text class="whitespace-pre-line text-sm leading-7">{{ $aiReport['summary'] }}</flux:text>
+                </div>
+
+                <div>
+                    <flux:text class="mb-1 text-sm font-medium text-zinc-600 dark:text-zinc-300">{{ __('app.missed_call_ai_peak_insight') }}</flux:text>
+                    <flux:text class="whitespace-pre-line text-sm leading-7">{{ $aiReport['peak_insight'] }}</flux:text>
+                </div>
+
+                @if (count($aiReport['repeat_callers']) > 0)
+                    <div>
+                        <flux:text class="mb-2 text-sm font-medium text-zinc-600 dark:text-zinc-300">{{ __('app.missed_call_ai_repeat_callers') }}</flux:text>
+                        <div class="overflow-x-auto">
+                            <flux:table>
+                                <flux:table.columns>
+                                    <flux:table.column class="whitespace-nowrap">{{ __('app.phone') }}</flux:table.column>
+                                    <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.missed_call_ai_repeat_count') }}</flux:table.column>
+                                    <flux:table.column>{{ __('app.note') }}</flux:table.column>
+                                </flux:table.columns>
+                                <flux:table.rows>
+                                    @foreach ($aiReport['repeat_callers'] as $caller)
+                                        <flux:table.row wire:key="ai-caller-{{ $loop->index }}-{{ $caller['phone'] }}">
+                                            <flux:table.cell class="whitespace-nowrap tabular-nums" dir="ltr">{{ $caller['phone'] }}</flux:table.cell>
+                                            <flux:table.cell align="end" class="whitespace-nowrap tabular-nums">{{ number_format($caller['count']) }}</flux:table.cell>
+                                            <flux:table.cell>{{ $caller['note'] }}</flux:table.cell>
+                                        </flux:table.row>
+                                    @endforeach
+                                </flux:table.rows>
+                            </flux:table>
+                        </div>
+                    </div>
+                @endif
+
+                @if (filled($aiReport['sms_draft']))
+                    <div
+                        x-data="{
+                            draft: @js($aiReport['sms_draft']),
+                            async copy() {
+                                try {
+                                    await navigator.clipboard.writeText(this.draft);
+                                    $wire.copySmsDraft();
+                                } catch (e) {}
+                            }
+                        }"
+                        class="rounded-xl border border-violet-200 bg-violet-50/60 p-4 dark:border-violet-900 dark:bg-violet-950/30"
+                    >
+                        <div class="mb-2 flex items-center justify-between gap-2">
+                            <flux:text class="text-sm font-medium text-violet-800 dark:text-violet-200">{{ __('app.missed_call_ai_sms_draft') }}</flux:text>
+                            <flux:tooltip content="{{ __('app.copy') }}">
+                                <flux:button
+                                    type="button"
+                                    size="xs"
+                                    variant="primary"
+                                    color="violet"
+                                    icon="copy"
+                                    icon:variant="outline"
+                                    x-on:click="copy()"
+                                />
+                            </flux:tooltip>
+                        </div>
+                        <flux:text class="whitespace-pre-line text-sm leading-7 text-violet-950 dark:text-violet-100">{{ $aiReport['sms_draft'] }}</flux:text>
+                    </div>
+                @endif
+            </div>
+        </flux:card>
+    @endif
+
     <flux:separator variant="subtle" />
 
     <flux:heading size="md">{{ __('app.call_history_timeline') }}</flux:heading>
