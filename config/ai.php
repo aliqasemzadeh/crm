@@ -20,7 +20,7 @@ return [
     'default_for_embeddings' => 'openai',
     'default_for_reranking' => 'cohere',
     'default_for_classification' => 'typesafe',
-    'default_model' => env('AI_DEFAULT_MODEL', env('GAP_MODEL', 'gpt-4o-mini')),
+    'default_model' => env('AI_DEFAULT_MODEL') ?: env('GAP_MODEL', 'gpt-4o-mini'),
 
     /*
     |--------------------------------------------------------------------------

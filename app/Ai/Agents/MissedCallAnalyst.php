@@ -40,10 +40,10 @@ PROMPT;
             'summary' => $schema->string()->required(),
             'repeat_callers' => $schema->array()
                 ->items(
-                    $schema->object([
-                        'phone' => $schema->string()->required(),
-                        'count' => $schema->integer()->required(),
-                        'note' => $schema->string()->required(),
+                    $schema->object(fn (JsonSchema $object): array => [
+                        'phone' => $object->string()->required(),
+                        'count' => $object->integer()->required(),
+                        'note' => $object->string()->required(),
                     ])
                 )
                 ->required(),

@@ -627,6 +627,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 attachments: [
                     Document::fromString($export['csv'], 'text/csv'),
                 ],
+                model: config('ai.default_model'),
                 timeout: 120,
             );
 
