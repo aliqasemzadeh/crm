@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('AI_DEFAULT_PROVIDER', 'openai-compatible'),
+    'default' => env('AI_DEFAULT_PROVIDER', 'gap'),
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
@@ -99,6 +99,17 @@ return [
         'eleven' => [
             'driver' => 'eleven',
             'key' => env('ELEVENLABS_API_KEY'),
+        ],
+
+        'gap' => [
+            'driver' => 'openai-compatible',
+            'url' => env('GAP_BASE_URL', 'https://api.gapgpt.app/v1'),
+            'key' => env('GAP_API_KEY'),
+            'models' => [
+                'text' => [
+                    'default' => env('GAP_MODEL', 'gpt-6-sol'),
+                ],
+            ],
         ],
 
         'gemini' => [
