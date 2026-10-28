@@ -1281,57 +1281,63 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     <flux:card>
         <flux:heading size="sm" class="mb-4">{{ __('app.call_performance_by_user') }}</flux:heading>
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>{{ __('app.user') }}</flux:table.column>
-                <flux:table.column class="text-end">{{ __('app.successful_calls') }}</flux:table.column>
-                <flux:table.column class="text-end">{{ __('app.rejected_calls') }}</flux:table.column>
-                <flux:table.column class="text-end">{{ __('app.rejection_rate') }}</flux:table.column>
-                <flux:table.column class="text-end">{{ __('app.invoices_count') }}</flux:table.column>
-                <flux:table.column class="text-end">{{ __('app.conversion_rate') }}</flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @forelse ($stats['rows'] as $row)
-                    <flux:table.row :key="'perf-'.$row['user_id']">
-                        <flux:table.cell>
-                            <div class="flex items-center gap-2 min-w-0">
-                                @if ($row['avatar_url'])
-                                    <flux:avatar src="{{ $row['avatar_url'] }}" size="xs" />
-                                @else
-                                    <flux:avatar name="{{ $row['name'] }}" color="auto" size="xs" />
-                                @endif
-                                <span class="truncate font-medium">{{ $row['name'] }}</span>
-                            </div>
-                        </flux:table.cell>
-                        <flux:table.cell class="text-end tabular-nums text-green-600 dark:text-green-400">
-                            {{ number_format($row['successful_calls']) }}
-                        </flux:table.cell>
-                        <flux:table.cell class="text-end tabular-nums text-rose-600 dark:text-rose-400">
-                            {{ number_format($row['rejected_calls']) }}
-                        </flux:table.cell>
-                        <flux:table.cell class="text-end">
-                            <flux:badge size="sm" :color="$this->rejectionBadgeColor($row['rejection_rate'])" class="text-base font-semibold tabular-nums">
-                                {{ $this->formatPercentRate($row['rejection_rate']) }}
-                            </flux:badge>
-                        </flux:table.cell>
-                        <flux:table.cell class="text-end tabular-nums text-teal-600 dark:text-teal-400">
-                            {{ number_format($row['invoices_count']) }}
-                        </flux:table.cell>
-                        <flux:table.cell class="text-end">
-                            <flux:badge size="sm" :color="$this->conversionBadgeColor($row['conversion_rate'])" class="text-base font-semibold tabular-nums">
-                                {{ $this->formatPercentRate($row['conversion_rate']) }}
-                            </flux:badge>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @empty
-                    <flux:table.row>
-                        <flux:table.cell colspan="6">
-                            <flux:text class="text-zinc-500">{{ __('app.call_performance_empty') }}</flux:text>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforelse
-            </flux:table.rows>
-        </flux:table>
+        <div class="overflow-x-auto -mx-1 px-1">
+            <flux:table>
+                <flux:table.columns>
+                    <flux:table.column class="min-w-44 whitespace-nowrap">{{ __('app.user') }}</flux:table.column>
+                    <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.successful_calls') }}</flux:table.column>
+                    <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.rejected_calls') }}</flux:table.column>
+                    <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.rejection_rate') }}</flux:table.column>
+                    <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.invoice_count') }}</flux:table.column>
+                    <flux:table.column align="end" class="whitespace-nowrap">{{ __('app.conversion_rate') }}</flux:table.column>
+                </flux:table.columns>
+                <flux:table.rows>
+                    @forelse ($stats['rows'] as $row)
+                        <flux:table.row wire:key="perf-{{ $row['user_id'] }}">
+                            <flux:table.cell class="whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    @if ($row['avatar_url'])
+                                        <flux:avatar src="{{ $row['avatar_url'] }}" size="xs" class="shrink-0" />
+                                    @else
+                                        <flux:avatar name="{{ $row['name'] }}" color="auto" size="xs" class="shrink-0" />
+                                    @endif
+                                    <span class="font-medium">{{ $row['name'] }}</span>
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell align="end" class="whitespace-nowrap tabular-nums text-green-600 dark:text-green-400">
+                                {{ number_format($row['successful_calls']) }}
+                            </flux:table.cell>
+                            <flux:table.cell align="end" class="whitespace-nowrap tabular-nums text-rose-600 dark:text-rose-400">
+                                {{ number_format($row['rejected_calls']) }}
+                            </flux:table.cell>
+                            <flux:table.cell align="end" class="whitespace-nowrap">
+                                <div class="inline-flex justify-end">
+                                    <flux:badge size="sm" :color="$this->rejectionBadgeColor($row['rejection_rate'])" class="font-semibold tabular-nums">
+                                        {{ $this->formatPercentRate($row['rejection_rate']) }}
+                                    </flux:badge>
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell align="end" class="whitespace-nowrap tabular-nums text-teal-600 dark:text-teal-400">
+                                {{ number_format($row['invoices_count']) }}
+                            </flux:table.cell>
+                            <flux:table.cell align="end" class="whitespace-nowrap">
+                                <div class="inline-flex justify-end">
+                                    <flux:badge size="sm" :color="$this->conversionBadgeColor($row['conversion_rate'])" class="font-semibold tabular-nums">
+                                        {{ $this->formatPercentRate($row['conversion_rate']) }}
+                                    </flux:badge>
+                                </div>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @empty
+                        <flux:table.row>
+                            <flux:table.cell colspan="6">
+                                <flux:text class="text-zinc-500">{{ __('app.call_performance_empty') }}</flux:text>
+                            </flux:table.cell>
+                        </flux:table.row>
+                    @endforelse
+                </flux:table.rows>
+            </flux:table>
+        </div>
     </flux:card>
 
     <flux:separator variant="subtle" />
