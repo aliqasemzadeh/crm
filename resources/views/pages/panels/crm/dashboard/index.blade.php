@@ -1,13 +1,18 @@
 <?php
 
+use App\Ai\Agents\MissedCallAnalyst;
 use App\Models\Issabel\Cdr;
 use App\Models\Issabel\Device;
 use App\Models\User;
 use App\Models\Voip\Phone;
 use App\Services\Crm\CallConversionStatsService;
+use App\Services\Crm\HourlyCallPeakService;
+use App\Services\Crm\MissedCallCsvExporter;
 use App\Support\IranPhoneNumberNormalizer;
+use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
+use Laravel\Ai\Files\Document;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -34,6 +39,22 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     public ?string $dateStart = null;
 
     public ?string $dateEnd = null;
+
+    /**
+     * @var array{
+     *     summary: string,
+     *     repeat_callers: list<array{phone: string, count: int, note: string}>,
+     *     peak_insight: string,
+     *     sms_draft: string,
+     *     row_count: int,
+     *     truncated: bool
+     * }|null
+     */
+    public ?array $aiReport = null;
+
+    public ?string $aiError = null;
+
+    public bool $aiLoading = false;
 
     /**
      * When scoped to a specific user, these are the extension keys used for:
@@ -82,12 +103,16 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
     public function updatedDateStart(): void
     {
-        unset($this->performanceStats);
+        unset($this->performanceStats, $this->hourlyPeakChart);
+        $this->aiReport = null;
+        $this->aiError = null;
     }
 
     public function updatedDateEnd(): void
     {
-        unset($this->performanceStats);
+        unset($this->performanceStats, $this->hourlyPeakChart);
+        $this->aiReport = null;
+        $this->aiError = null;
     }
 
     public function loadMore(): void
@@ -109,7 +134,9 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             $this->userFilter = (int) $this->userFilter;
         }
 
-        unset($this->performanceStats);
+        unset($this->performanceStats, $this->hourlyPeakChart);
+        $this->aiReport = null;
+        $this->aiError = null;
         $this->resetTimeline();
         $this->fetchBatch(true);
     }
