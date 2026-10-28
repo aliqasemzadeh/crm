@@ -13,13 +13,14 @@ return [
     |
     */
 
-    'default' => 'openai',
+    'default' => env('AI_DEFAULT_PROVIDER', 'openai-compatible'),
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
     'default_for_transcription' => 'openai',
     'default_for_embeddings' => 'openai',
     'default_for_reranking' => 'cohere',
     'default_for_classification' => 'typesafe',
+    'default_model' => env('AI_DEFAULT_MODEL', env('GAP_MODEL', 'gpt-4o-mini')),
 
     /*
     |--------------------------------------------------------------------------
@@ -136,8 +137,8 @@ return [
 
         'openai-compatible' => [
             'driver' => 'openai-compatible',
-            'url' => env('OPENAI_COMPATIBLE_URL'),
-            'key' => env('OPENAI_COMPATIBLE_API_KEY'),
+            'url' => env('OPENAI_COMPATIBLE_URL', env('GAP_BASE_URL', 'https://api.gapgpt.app/v1')),
+            'key' => env('OPENAI_COMPATIBLE_API_KEY', env('GAP_API_KEY')),
         ],
 
         'openrouter' => [

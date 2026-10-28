@@ -1793,6 +1793,8 @@ return [
     'missed_call_ai_repeat_callers' => 'شماره‌های تکراری (مشتری پیگیر)',
     'missed_call_ai_repeat_count' => 'تعداد زنگ',
     'missed_call_ai_sms_draft' => 'پیش‌نویس پیامک پیگیری',
+    'missed_call_ai_caller_note' => 'یادداشت',
+    'missed_call_ai_copy' => 'کپی',
     'missed_call_ai_sms_copied' => 'متن پیامک کپی شد.',
     'missed_call_ai_success' => 'گزارش هوش مصنوعی آماده شد.',
     'missed_call_ai_failed' => 'خطا در تحلیل هوش مصنوعی. کلید API یا اتصال را بررسی کنید.',
