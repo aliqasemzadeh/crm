@@ -271,52 +271,61 @@ new #[Layout('layouts.panels.crm')] class extends Component
                         </flux:callout>
                     @endif
 
-                    @php($analysis = $party->analysis ?? [])
-                    @if (! empty($analysis['wanted_summary']))
-                        <div class="space-y-2">
-                            <flux:heading size="sm">{{ __('app.call_report_wanted_summary') }}</flux:heading>
-                            <p class="text-sm leading-7 text-zinc-700 dark:text-zinc-200">{{ $analysis['wanted_summary'] }}</p>
-                        </div>
-                    @endif
-
-                    @if (! empty($analysis['key_points']) && is_array($analysis['key_points']))
-                        <div class="space-y-2">
-                            <flux:heading size="sm">{{ __('app.call_report_key_points') }}</flux:heading>
-                            <ul class="list-disc space-y-1 pe-5 text-sm text-zinc-700 dark:text-zinc-200">
-                                @foreach ($analysis['key_points'] as $point)
-                                    <li>{{ $point }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    @if (! empty($analysis['follow_up_suggestion']))
-                        <div class="space-y-1">
-                            <flux:heading size="sm">{{ __('app.call_report_follow_up') }}</flux:heading>
-                            <p class="text-sm text-zinc-600 dark:text-zinc-300">{{ $analysis['follow_up_suggestion'] }}</p>
-                        </div>
-                    @endif
-
-                    @if (! empty($party->transcripts))
-                        <flux:accordion transition>
-                            <flux:accordion.item>
-                                <flux:accordion.heading>{{ __('app.call_report_transcripts') }}</flux:accordion.heading>
-                                <flux:accordion.content>
-                                    <div class="space-y-4">
-                                        @foreach ($party->transcripts as $index => $transcript)
-                                            <div class="rounded-lg border border-zinc-200 p-3 dark:border-zinc-700">
-                                                <div class="mb-2 flex flex-wrap gap-2 text-xs text-zinc-500">
-                                                    <span>{{ __('app.call_report_transcript_n', ['n' => $index + 1]) }}</span>
-                                                    <span dir="ltr">{{ $transcript['calldate'] ?? '' }}</span>
-                                                    <span>{{ ($transcript['billsec'] ?? 0) }}s</span>
-                                                </div>
-                                                <p class="whitespace-pre-wrap text-sm leading-7">{{ $transcript['text'] ?? '' }}</p>
-                                            </div>
-                                        @endforeach
+                    <div class="space-y-3">
+                        <flux:heading size="sm">{{ __('app.call_report_transcripts') }}</flux:heading>
+                        @if (! empty($party->transcripts))
+                            <div class="space-y-3">
+                                @foreach ($party->transcripts as $index => $transcript)
+                                    <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-900/40">
+                                        <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-zinc-500">
+                                            <flux:badge size="sm" color="sky">
+                                                {{ __('app.call_report_transcript_n', ['n' => $index + 1]) }}
+                                            </flux:badge>
+                                            <span dir="ltr" class="font-mono">{{ $transcript['calldate'] ?? '' }}</span>
+                                            <span>{{ __('app.call_duration') }} {{ $transcript['billsec'] ?? 0 }}s</span>
+                                        </div>
+                                        <p class="whitespace-pre-wrap text-sm leading-8 text-zinc-800 dark:text-zinc-100">{{ $transcript['text'] ?? '' }}</p>
                                     </div>
-                                </flux:accordion.content>
-                            </flux:accordion.item>
-                        </flux:accordion>
+                                @endforeach
+                            </div>
+                        @else
+                            <flux:callout icon="info" variant="secondary">
+                                {{ __('app.call_report_no_transcripts') }}
+                            </flux:callout>
+                        @endif
+                    </div>
+
+                    @php($analysis = $party->analysis ?? [])
+                    @if (! empty($analysis['wanted_summary']) || ! empty($analysis['key_points']) || ! empty($analysis['follow_up_suggestion']))
+                        <flux:separator variant="subtle" />
+                        <div class="space-y-4">
+                            <flux:heading size="sm">{{ __('app.call_report_ai_analysis') }}</flux:heading>
+
+                            @if (! empty($analysis['wanted_summary']))
+                                <div class="space-y-2">
+                                    <flux:text class="font-medium">{{ __('app.call_report_wanted_summary') }}</flux:text>
+                                    <p class="text-sm leading-7 text-zinc-700 dark:text-zinc-200">{{ $analysis['wanted_summary'] }}</p>
+                                </div>
+                            @endif
+
+                            @if (! empty($analysis['key_points']) && is_array($analysis['key_points']))
+                                <div class="space-y-2">
+                                    <flux:text class="font-medium">{{ __('app.call_report_key_points') }}</flux:text>
+                                    <ul class="list-disc space-y-1 pe-5 text-sm text-zinc-700 dark:text-zinc-200">
+                                        @foreach ($analysis['key_points'] as $point)
+                                            <li>{{ $point }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+
+                            @if (! empty($analysis['follow_up_suggestion']))
+                                <div class="space-y-1">
+                                    <flux:text class="font-medium">{{ __('app.call_report_follow_up') }}</flux:text>
+                                    <p class="text-sm text-zinc-600 dark:text-zinc-300">{{ $analysis['follow_up_suggestion'] }}</p>
+                                </div>
+                            @endif
+                        </div>
                     @endif
                 </flux:card>
             @empty
