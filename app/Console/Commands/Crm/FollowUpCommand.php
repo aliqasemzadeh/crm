@@ -2,29 +2,18 @@
 
 namespace App\Console\Commands\Crm;
 
+use App\Enums\FollowUpStatusEnum;
 use App\Jobs\Notification\SendSmsMessageJob;
+use App\Models\Crm\FollowUp;
 use App\Models\User;
 use Illuminate\Console\Command;
 
 class FollowUpCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:follow-up-command';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Create follow-ups for CRM users based on configuration';
+    protected $description = 'Create follow-ups for salesperson staff based on their quotas';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         if (! config('main.active_day_check.crm')) {
@@ -33,17 +22,21 @@ class FollowUpCommand extends Command
             return;
         }
 
-        $crmUsers = config('main.crm_users', []);
+        $salespeople = User::query()->withStaffFlag('salesperson')->get();
 
-        if (empty($crmUsers)) {
-            $this->info('No CRM users found in config/main.php');
+        if ($salespeople->isEmpty()) {
+            $this->info('No salesperson staff found (is_salesperson).');
+
             return;
         }
 
+        $crmUsers = $salespeople
+            ->mapWithKeys(fn (User $user): array => [$user->id => $user->crmFollowUpQuota()])
+            ->all();
+
         $totalNeeded = array_sum($crmUsers);
 
-        // Get customer IDs that had a follow-up in the last 30 months
-        $excludedCustomerIds = \App\Models\Crm\FollowUp::where('created_at', '>=', now()->subMonths(30))
+        $excludedCustomerIds = FollowUp::where('created_at', '>=', now()->subMonths(30))
             ->pluck('customer_id')
             ->unique()
             ->toArray();
@@ -52,7 +45,6 @@ class FollowUpCommand extends Command
         $totalToFetch = $totalNeeded * 2;
         $halfNeeded = (int) ceil($totalToFetch / 2);
 
-        // Get customers registered in the last 3 months
         $newCustomers = \App\Models\SetareganCo\User::whereNotIn('Id', $excludedCustomerIds)
             ->where('RegisterDate', '>=', $threeMonthsAgo)
             ->inRandomOrder()
@@ -60,11 +52,10 @@ class FollowUpCommand extends Command
             ->pluck('Id')
             ->toArray();
 
-        // Get older customers
         $oldCustomers = \App\Models\SetareganCo\User::whereNotIn('Id', $excludedCustomerIds)
-            ->where(function($query) use ($threeMonthsAgo) {
+            ->where(function ($query) use ($threeMonthsAgo) {
                 $query->where('RegisterDate', '<', $threeMonthsAgo)
-                      ->orWhereNull('RegisterDate');
+                    ->orWhereNull('RegisterDate');
             })
             ->inRandomOrder()
             ->limit($halfNeeded)
@@ -76,6 +67,7 @@ class FollowUpCommand extends Command
 
         if (empty($customers)) {
             $this->error('No eligible customers found in SetareganCo database.');
+
             return;
         }
 
@@ -84,15 +76,15 @@ class FollowUpCommand extends Command
             $this->info("Creating {$count} follow-ups for agent ID: {$agentId}");
 
             for ($i = 0; $i < $count; $i++) {
-                if (!isset($customers[$customerIndex])) {
+                if (! isset($customers[$customerIndex])) {
                     $this->warn("Ran out of unique customers for agent ID: {$agentId}");
                     break;
                 }
 
-                \App\Models\Crm\FollowUp::create([
+                FollowUp::create([
                     'agent_id' => $agentId,
                     'customer_id' => $customers[$customerIndex],
-                    'status' => \App\Enums\FollowUpStatusEnum::PENDING,
+                    'status' => FollowUpStatusEnum::PENDING,
                     'due_date' => now(),
                 ]);
 
@@ -100,7 +92,7 @@ class FollowUpCommand extends Command
             }
 
             if ($count >= 10) {
-                $user = User::find($agentId);
+                $user = $salespeople->firstWhere('id', $agentId) ?? User::find($agentId);
                 if ($user && $user->mobile) {
                     $message = "در لیست شما {$count} مشتری برای پیگیری ایجاد شده است.";
                     dispatch(new SendSmsMessageJob($user->mobile, $message));

@@ -86,6 +86,45 @@
                 <flux:error name="requires_local_network" />
             </flux:field>
 
+            <flux:fieldset>
+                <flux:legend>{{ __('app.staff_flags_section') }}</flux:legend>
+                <flux:description class="mb-3">{{ __('app.staff_flags_section_description') }}</flux:description>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <flux:field>
+                        <flux:checkbox wire:model.live="is_salesperson" label="{{ __('app.staff_flag_salesperson') }}" />
+                        <flux:error name="is_salesperson" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:checkbox wire:model="is_accountant" label="{{ __('app.staff_flag_accountant') }}" />
+                        <flux:error name="is_accountant" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:checkbox wire:model.live="is_warehouse_staff" label="{{ __('app.staff_flag_warehouse') }}" />
+                        <flux:error name="is_warehouse_staff" />
+                    </flux:field>
+                    <flux:field>
+                        <flux:checkbox wire:model="is_services_staff" label="{{ __('app.staff_flag_services') }}" />
+                        <flux:error name="is_services_staff" />
+                    </flux:field>
+                </div>
+                @if ($is_salesperson)
+                    <flux:field class="mt-3">
+                        <flux:label>{{ __('app.crm_follow_up_quota') }}</flux:label>
+                        <flux:input wire:model="crm_follow_up_quota" type="number" min="1" max="500" placeholder="{{ config('main.defaults.crm_follow_up_quota', 10) }}" />
+                        <flux:description>{{ __('app.crm_follow_up_quota_description') }}</flux:description>
+                        <flux:error name="crm_follow_up_quota" />
+                    </flux:field>
+                @endif
+                @if ($is_warehouse_staff)
+                    <flux:field class="mt-3">
+                        <flux:label>{{ __('app.warehouse_check_quota') }}</flux:label>
+                        <flux:input wire:model="warehouse_check_quota" type="number" min="1" max="500" placeholder="{{ config('main.defaults.warehouse_check_quota', 15) }}" />
+                        <flux:description>{{ __('app.warehouse_check_quota_description') }}</flux:description>
+                        <flux:error name="warehouse_check_quota" />
+                    </flux:field>
+                @endif
+            </flux:fieldset>
+
             <flux:accordion transition>
                 <flux:accordion.item
                     :heading="__('app.user_hr_extra_section')"

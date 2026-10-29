@@ -57,6 +57,18 @@ class Edit extends Component
 
     public bool $requires_local_network = false;
 
+    public bool $is_salesperson = false;
+
+    public bool $is_accountant = false;
+
+    public bool $is_warehouse_staff = false;
+
+    public bool $is_services_staff = false;
+
+    public ?int $crm_follow_up_quota = null;
+
+    public ?int $warehouse_check_quota = null;
+
     #[On('panels.administrator.user-management.user.edit.assign-data')]
     public function assignData($id): void
     {
@@ -78,6 +90,16 @@ class Edit extends Component
         $this->sepidar_user_id = $this->user->sepidar_user_id ? (int) $this->user->sepidar_user_id : null;
         $this->sepidar_user_search = '';
         $this->requires_local_network = (bool) $this->user->requires_local_network;
+        $this->is_salesperson = (bool) $this->user->is_salesperson;
+        $this->is_accountant = (bool) $this->user->is_accountant;
+        $this->is_warehouse_staff = (bool) $this->user->is_warehouse_staff;
+        $this->is_services_staff = (bool) $this->user->is_services_staff;
+        $this->crm_follow_up_quota = $this->user->crm_follow_up_quota !== null
+            ? (int) $this->user->crm_follow_up_quota
+            : null;
+        $this->warehouse_check_quota = $this->user->warehouse_check_quota !== null
+            ? (int) $this->user->warehouse_check_quota
+            : null;
         Flux::modal('panels.administrator.user-management.user.edit.modal')->show();
     }
 
@@ -199,6 +221,12 @@ class Edit extends Component
             'timex_code' => ['nullable', 'string', 'max:255'],
             'sepidar_user_id' => ['nullable', 'integer'],
             'requires_local_network' => ['boolean'],
+            'is_salesperson' => ['boolean'],
+            'is_accountant' => ['boolean'],
+            'is_warehouse_staff' => ['boolean'],
+            'is_services_staff' => ['boolean'],
+            'crm_follow_up_quota' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'warehouse_check_quota' => ['nullable', 'integer', 'min:1', 'max:500'],
         ]);
 
         if ($this->photo) {
@@ -235,6 +263,12 @@ class Edit extends Component
 
         $this->user->sepidar_user_id = $validated['sepidar_user_id'] ?? null;
         $this->user->requires_local_network = (bool) ($validated['requires_local_network'] ?? false);
+        $this->user->is_salesperson = (bool) ($validated['is_salesperson'] ?? false);
+        $this->user->is_accountant = (bool) ($validated['is_accountant'] ?? false);
+        $this->user->is_warehouse_staff = (bool) ($validated['is_warehouse_staff'] ?? false);
+        $this->user->is_services_staff = (bool) ($validated['is_services_staff'] ?? false);
+        $this->user->crm_follow_up_quota = $validated['crm_follow_up_quota'] ?? null;
+        $this->user->warehouse_check_quota = $validated['warehouse_check_quota'] ?? null;
 
         if (! empty($validated['password'] ?? '')) {
             // Will be hashed automatically via the model cast

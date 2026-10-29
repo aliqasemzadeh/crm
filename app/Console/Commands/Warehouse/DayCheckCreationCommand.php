@@ -4,28 +4,19 @@ namespace App\Console\Commands\Warehouse;
 
 use App\Jobs\Notification\SendSmsMessageJob;
 use App\Models\Calender\Day;
+use App\Models\Sepidar\INV\Item;
+use App\Models\Sepidar\INV\ItemStockSummary;
+use App\Models\User;
+use App\Models\Warehouse\DayCheck;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class DayCheckCreationCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'app:day-check-creation-command';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Command description';
+    protected $description = 'Create daily warehouse stock-check tasks for warehouse staff';
 
-    /**
-     * Execute the console command.
-     */
     public function handle()
     {
         Log::info('Command app:day-check-creation-command started.');
@@ -44,12 +35,11 @@ class DayCheckCreationCommand extends Command
             return;
         }
 
-        $warehouseUsers = config('main.warehouse_users', []);
-        $userIds = array_keys($warehouseUsers);
-        $users = \App\Models\User::whereIn('id', $userIds)->get();
+        $users = User::query()->withStaffFlag('warehouse')->get();
 
         if ($users->isEmpty()) {
-            $this->info('No users found in config main.warehouse_users');
+            $this->info('No warehouse staff found (is_warehouse_staff).');
+
             return;
         }
 
@@ -57,10 +47,9 @@ class DayCheckCreationCommand extends Command
         $thirtyDaysAgo = now()->subDays(30);
 
         foreach ($users as $user) {
-            $itemCount = $warehouseUsers[$user->id] ?? 30;
+            $itemCount = $user->warehouseCheckQuota();
 
-            // Get items checked by this user in the last 30 days
-            $recentlyCheckedItemIds = \App\Models\Warehouse\DayCheck::where('user_id', $user->id)
+            $recentlyCheckedItemIds = DayCheck::where('user_id', $user->id)
                 ->where('created_at', '>=', $thirtyDaysAgo)
                 ->get()
                 ->pluck('items')
@@ -68,16 +57,14 @@ class DayCheckCreationCommand extends Command
                 ->unique()
                 ->toArray();
 
-            // Get items in stock that were not recently checked
-            $items = \App\Models\Sepidar\INV\Item::whereInStock($fiscalYearRef)
+            $items = Item::whereInStock($fiscalYearRef)
                 ->whereNotIn('ItemID', $recentlyCheckedItemIds)
                 ->inRandomOrder()
                 ->limit($itemCount)
                 ->get();
 
             if ($items->count() < $itemCount) {
-                // If not enough items, fill with any items in stock (excluding those already selected)
-                $additionalItems = \App\Models\Sepidar\INV\Item::whereInStock($fiscalYearRef)
+                $additionalItems = Item::whereInStock($fiscalYearRef)
                     ->whereNotIn('ItemID', array_merge($recentlyCheckedItemIds, $items->pluck('ItemID')->toArray()))
                     ->inRandomOrder()
                     ->limit($itemCount - $items->count())
@@ -88,6 +75,7 @@ class DayCheckCreationCommand extends Command
 
             if ($items->isEmpty()) {
                 $this->warn("No items found for user: {$user->name}");
+
                 continue;
             }
 
@@ -95,23 +83,22 @@ class DayCheckCreationCommand extends Command
             $itemStocks = [];
 
             foreach ($items as $item) {
-                $quantity = \App\Models\Sepidar\INV\ItemStockSummary::where('ItemRef', $item->ItemID)
+                $quantity = ItemStockSummary::where('ItemRef', $item->ItemID)
                     ->where('FiscalYearRef', $fiscalYearRef)
                     ->sum('Quantity');
                 $itemStocks[$item->ItemID] = (float) $quantity;
             }
 
-            \App\Models\Warehouse\DayCheck::create([
+            DayCheck::create([
                 'user_id' => $user->id,
                 'status' => 'check',
                 'items' => $itemIds,
                 'item_stocks' => $itemStocks,
             ]);
 
-            $this->info("Created DayCheck for user: {$user->name} with " . count($itemIds) . " items.");
+            $this->info("Created DayCheck for user: {$user->name} with ".count($itemIds).' items.');
 
-            // Send SMS notification with link to the warehouse check page
-            if (!empty($user->mobile)) {
+            if (! empty($user->mobile)) {
                 $link = route('panels.warehouse.check.index');
                 $text = __('app.day_check.sms_message', [
                     'website_title' => __('app.website_title'),
@@ -125,6 +112,7 @@ class DayCheckCreationCommand extends Command
                 $this->warn("No mobile number for user: {$user->name}");
             }
         }
+
         Log::info('Command app:day-check-creation-command finished.');
     }
 }

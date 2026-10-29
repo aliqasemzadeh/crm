@@ -9,6 +9,7 @@ use App\Models\Issabel\Device as IssabelDevice;
 use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\Workspace\Task;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +45,12 @@ class User extends Authenticatable
         'timex_code',
         'sepidar_user_id',
         'requires_local_network',
+        'is_salesperson',
+        'is_accountant',
+        'is_warehouse_staff',
+        'is_services_staff',
+        'crm_follow_up_quota',
+        'warehouse_check_quota',
     ];
 
     /**
@@ -72,6 +79,12 @@ class User extends Authenticatable
             'mobile_verified_at' => 'datetime',
             'password' => 'hashed',
             'requires_local_network' => 'boolean',
+            'is_salesperson' => 'boolean',
+            'is_accountant' => 'boolean',
+            'is_warehouse_staff' => 'boolean',
+            'is_services_staff' => 'boolean',
+            'crm_follow_up_quota' => 'integer',
+            'warehouse_check_quota' => 'integer',
         ];
     }
 
@@ -169,6 +182,80 @@ class User extends Authenticatable
     public function resolveSepidarCreatorId(): int
     {
         return (int) ($this->sepidar_user_id ?: config('sepidar.Creator', 1));
+    }
+
+    /**
+     * Staff flags on users table (not Spatie roles — no extra panel permissions).
+     *
+     * @return array<string, string> flag => column
+     */
+    public static function staffFlagColumns(): array
+    {
+        return [
+            'salesperson' => 'is_salesperson',
+            'accountant' => 'is_accountant',
+            'warehouse' => 'is_warehouse_staff',
+            'services' => 'is_services_staff',
+        ];
+    }
+
+    public function hasStaffFlag(string $flag): bool
+    {
+        $column = self::staffFlagColumns()[$flag] ?? null;
+
+        return $column !== null && (bool) $this->getAttribute($column);
+    }
+
+    public function isSalesperson(): bool
+    {
+        return (bool) $this->is_salesperson;
+    }
+
+    public function isAccountant(): bool
+    {
+        return (bool) $this->is_accountant;
+    }
+
+    public function isWarehouseStaff(): bool
+    {
+        return (bool) $this->is_warehouse_staff;
+    }
+
+    public function isServicesStaff(): bool
+    {
+        return (bool) $this->is_services_staff;
+    }
+
+    public function crmFollowUpQuota(): int
+    {
+        $quota = $this->crm_follow_up_quota;
+
+        return $quota !== null && (int) $quota > 0
+            ? (int) $quota
+            : max(1, (int) config('main.defaults.crm_follow_up_quota', 10));
+    }
+
+    public function warehouseCheckQuota(): int
+    {
+        $quota = $this->warehouse_check_quota;
+
+        return $quota !== null && (int) $quota > 0
+            ? (int) $quota
+            : max(1, (int) config('main.defaults.warehouse_check_quota', 15));
+    }
+
+    /**
+     * Restrict query to users with the given staff flag.
+     */
+    public function scopeWithStaffFlag(Builder $query, string $flag): Builder
+    {
+        $column = self::staffFlagColumns()[$flag] ?? null;
+
+        if ($column === null) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where($column, true);
     }
 
     public function tasks(): BelongsToMany

@@ -347,6 +347,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         }
 
         return User::query()
+            ->withStaffFlag('salesperson')
             ->whereHas('internalPhones')
             ->orderBy('first_name')
             ->orderBy('last_name')
@@ -365,6 +366,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
         if ($this->isAdministrator) {
             $query = User::query()
+                ->withStaffFlag('salesperson')
                 ->whereHas('internalPhones')
                 ->with('internalPhones')
                 ->orderBy('first_name')
@@ -375,6 +377,10 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             }
 
             return $query->get();
+        }
+
+        if (! $authUser->isSalesperson()) {
+            return collect();
         }
 
         $authUser->loadMissing('internalPhones');
