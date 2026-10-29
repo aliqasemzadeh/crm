@@ -27,6 +27,7 @@ Route::middleware(['auth', 'local.network'])->group(function () {
     Route::livewire('/panels/crm/cash-back-rule/index', 'pages::panels.crm.cash-back-rule.index')->name('panels.crm.cash-back-rule.index');
     Route::livewire('/panels/crm/cash-back-generator/index', 'pages::panels.crm.cash-back-generator.index')->name('panels.crm.cash-back-generator.index');
     Route::livewire('/panels/crm/return/index', 'pages::panels.crm.return.index')->name('panels.crm.return.index');
+    Route::livewire('/panels/crm/report/index', 'pages::panels.crm.report.index')->name('panels.crm.report.index');
 
     Route::livewire('/', 'pages::panels.user.dashboard.index')->name('home');
     Route::livewire('/panels/user/dashboard/index', 'pages::panels.user.dashboard.index')->name('panels.user.dashboard.index');

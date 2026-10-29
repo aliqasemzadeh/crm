@@ -17,3 +17,4 @@ Schedule::command('app:quick-pricing-in-stock-cluster-command')->hourly()->runIn
 Schedule::command('app:dashboard:cache-bank-month-balances')->dailyAt('01:30')->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:dashboard:cache-bank-month-balances executed successfully.'));
 Schedule::command('app:hr:attendance-alert-command reminder')->dailyAt('08:45')->withoutOverlapping()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:hr:attendance-alert-command reminder executed successfully.'));
 Schedule::command('app:hr:attendance-alert-command absent')->dailyAt('09:15')->withoutOverlapping()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:hr:attendance-alert-command absent executed successfully.'));
+Schedule::command('app:crm:analyze-daily-call-report')->dailyAt('04:00')->withoutOverlapping()->runInBackground()->onSuccess(fn () => Log::info('Scheduled app:crm:analyze-daily-call-report executed successfully.'));

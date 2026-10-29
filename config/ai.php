@@ -16,7 +16,7 @@ return [
     'default' => env('AI_DEFAULT_PROVIDER', 'gap'),
     'default_for_images' => 'gemini',
     'default_for_audio' => 'openai',
-    'default_for_transcription' => 'openai',
+    'default_for_transcription' => env('AI_DEFAULT_FOR_TRANSCRIPTION', 'gap'),
     'default_for_embeddings' => 'openai',
     'default_for_reranking' => 'cohere',
     'default_for_classification' => 'typesafe',
@@ -108,6 +108,9 @@ return [
             'models' => [
                 'text' => [
                     'default' => env('GAP_MODEL', 'gapgpt-gemma-26b-a4b'),
+                ],
+                'transcription' => [
+                    'default' => env('GAP_TRANSCRIPTION_MODEL', 'whisper-1'),
                 ],
             ],
         ],

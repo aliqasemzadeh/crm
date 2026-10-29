@@ -129,6 +129,8 @@ return [
 
         'crm_return_index' => 'جستجوی مشتریان',
         'crm_return_generate' => 'ارسال کد تخفیف از جستجوی مشتریان',
+
+        'crm_report_index' => 'گزارش تماس‌های روزانه',
     ],
 
     'service_center' => [

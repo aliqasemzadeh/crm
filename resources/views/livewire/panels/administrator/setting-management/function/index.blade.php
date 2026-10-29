@@ -194,6 +194,16 @@
                 >
                     {{ __('app.run_paid_order_bale_notification') }}
                 </flux:button>
+                <flux:button
+                    variant="primary"
+                    color="lime"
+                    icon="phone"
+                    wire:click="runDailyCallReport"
+                    wire:confirm="{{ __('app.confirm_action') }}"
+                    class="w-full"
+                >
+                    {{ __('app.run_daily_call_report') }}
+                </flux:button>
             </div>
         </flux:card>
 

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Panels\Administrator\SettingManagement\Function;
 
+use App\Jobs\Crm\AnalyzeDailyCallReportJob;
 use App\Jobs\Notification\BaleSendMessageJob;
 use App\Jobs\System\UpdateProjectJob;
 use App\Models\SystemActionLog;
@@ -161,6 +162,25 @@ class Index extends Component
             ['app:setaregan-co:send-paid-order-bale-notification'],
             __('app.paid_order_bale_notification_executed')
         );
+    }
+
+    public function runDailyCallReport(): void
+    {
+        $date = now('Asia/Tehran')->subDay()->toDateString();
+
+        AnalyzeDailyCallReportJob::dispatch($date);
+
+        $message = __('app.call_report_command_executed');
+        $this->commandOutput = $message.' ('.$date.')';
+
+        SystemActionLog::create([
+            'command' => 'app:crm:analyze-daily-call-report '.$date,
+            'output' => $this->commandOutput,
+            'status' => 'success',
+        ]);
+
+        Flux::toast($message);
+        unset($this->actionLogs);
     }
 
     public function runArtisanCommand(string $command): void
