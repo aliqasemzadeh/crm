@@ -169,7 +169,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
 
             $query = Cdr::query()
                 ->validCalldate()
-                ->excludeInternalTwoDigitExtensions();
+                ->onlyExternalCalls();
 
             $this->applyVisibilityScope($query);
 

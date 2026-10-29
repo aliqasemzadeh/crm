@@ -40,7 +40,7 @@ class MissedCallCsvExporter
         try {
             $rows = Cdr::query()
                 ->validCalldate()
-                ->excludeInternalTwoDigitExtensions()
+                ->onlyExternalCalls()
                 ->where('calldate', '>=', $start->copy()->startOfDay()->format('Y-m-d H:i:s'))
                 ->where('calldate', '<=', $end->copy()->endOfDay()->format('Y-m-d H:i:s'))
                 ->where(function ($q) use ($keys): void {

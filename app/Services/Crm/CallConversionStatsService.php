@@ -40,7 +40,7 @@ class CallConversionStatsService
     {
         $userIds = $users->pluck('id')->sort()->values()->all();
         $cacheKey = sprintf(
-            'crm.call_conversion_stats.v2.%s.%s.%s',
+            'crm.call_conversion_stats.v3.%s.%s.%s',
             $start->format('Y-m-d'),
             $end->format('Y-m-d'),
             md5(implode(',', $userIds))
@@ -218,7 +218,7 @@ class CallConversionStatsService
         try {
             $row = Cdr::query()
                 ->validCalldate()
-                ->excludeInternalTwoDigitExtensions()
+                ->onlyExternalCalls()
                 ->where('calldate', '>=', $start->copy()->startOfDay()->format('Y-m-d H:i:s'))
                 ->where('calldate', '<=', $end->copy()->endOfDay()->format('Y-m-d H:i:s'))
                 ->where(function ($q) use ($keys): void {
