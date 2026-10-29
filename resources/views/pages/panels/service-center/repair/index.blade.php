@@ -137,9 +137,21 @@ new #[Layout('layouts.panels.service-center')] class extends Component {
                 <flux:subheading size="lg" class="mb-6">{{ __('app.repairs_description') }}</flux:subheading>
             </div>
             @can('service_center_repair_create')
-            <flux:modal.trigger name="panels.service-center.repair.admission.modal">
-                <flux:button variant="primary">{{ __('app.admission') }}</flux:button>
-            </flux:modal.trigger>
+            <div class="flex flex-wrap items-center gap-2">
+                <flux:button
+                    variant="primary"
+                    color="violet"
+                    icon="sparkles"
+                    wire:click="$dispatch('panels.service-center.repair.admission.open-ai')"
+                >
+                    {{ __('app.repair_ai_admission') }}
+                </flux:button>
+                <flux:modal.trigger name="panels.service-center.repair.admission.modal">
+                    <flux:button variant="primary" wire:click="$dispatch('panels.service-center.repair.admission.open-manual')">
+                        {{ __('app.admission') }}
+                    </flux:button>
+                </flux:modal.trigger>
+            </div>
             @endcan
         </div>
 

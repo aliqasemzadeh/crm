@@ -178,6 +178,10 @@
                     @endif
                 </div>
             </div>
+
+            @include('livewire.panels.service-center.repair.partials.media-gallery', [
+                'repair' => $this->repair,
+            ])
         </div>
     @endisset
 </flux:modal>

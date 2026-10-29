@@ -40,6 +40,10 @@
                         </span>
                     </div>
                 @endif
+
+                @include('livewire.panels.service-center.repair.partials.media-gallery', [
+                    'repair' => $this->repair,
+                ])
             </div>
         </div>
     @endisset

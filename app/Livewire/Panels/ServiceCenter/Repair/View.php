@@ -18,7 +18,7 @@ class View extends Component
     {
         $this->authorize('service_center_repair_view');
 
-        $this->repair = Repair::findOrFail($id);
+        $this->repair = Repair::with('media')->findOrFail($id);
         $this->id = $this->repair->id;
 
         Flux::modal('panels.service-center.repair.view.modal')->show();
