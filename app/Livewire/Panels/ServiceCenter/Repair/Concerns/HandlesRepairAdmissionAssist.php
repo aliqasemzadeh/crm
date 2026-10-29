@@ -283,6 +283,7 @@ trait HandlesRepairAdmissionAssist
 
             $repair->addMedia($photo->getRealPath())
                 ->usingFileName($photo->getClientOriginalName())
+                ->preservingOriginal()
                 ->toMediaCollection('device_photos');
         }
 
@@ -293,6 +294,7 @@ trait HandlesRepairAdmissionAssist
 
             $repair->addMedia($file->getRealPath())
                 ->usingFileName($file->getClientOriginalName())
+                ->preservingOriginal()
                 ->toMediaCollection('attachments');
         }
 
