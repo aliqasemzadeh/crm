@@ -722,7 +722,6 @@ return [
     'repair_ai_working' => 'در حال پردازش…',
     'repair_switch_to_manual' => 'ادامه به‌صورت دستی',
     'repair_uploading' => 'در حال بارگذاری…',
-    'update' => 'به‌روزرسانی',
     'products_description' => 'مدیریت و مشاهده محصولات.',
     'create_product' => 'ایجاد محصول',
     'create_product_description' => 'برای ایجاد محصول جدید، اطلاعات زیر را تکمیل کنید.',
