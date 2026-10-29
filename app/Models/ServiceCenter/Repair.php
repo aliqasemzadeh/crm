@@ -8,9 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Morilog\Jalali\Jalalian;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
-class Repair extends Model
+class Repair extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     use SoftDeletes;
 
     protected $table = 'service_center_repairs';
@@ -68,6 +72,23 @@ class Repair extends Model
     public function logs(): HasMany
     {
         return $this->hasMany(RepairLog::class);
+    }
+
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('device_photos')
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif']);
+
+        $this->addMediaCollection('attachments');
+    }
+
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->addMediaConversion('thumb')
+            ->width(300)
+            ->height(300)
+            ->nonQueued()
+            ->performOnCollections('device_photos', 'attachments');
     }
 
     /**
