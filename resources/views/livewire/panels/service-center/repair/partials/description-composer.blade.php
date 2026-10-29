@@ -47,8 +47,9 @@
                         size="sm"
                         variant="filled"
                         icon="microphone"
-                        ::class="recording ? 'ring-2 ring-red-500 text-red-600' : ''"
-                        x-bind:disabled="$wire.isTranscribing"
+                        x-bind:class="recording ? 'ring-2 ring-red-500 text-red-600' : ''"
+                        wire:loading.attr="disabled"
+                        wire:target="transcribeAudio"
                         @click="toggle()"
                     />
                 </flux:tooltip>
