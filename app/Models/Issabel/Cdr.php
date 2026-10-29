@@ -34,6 +34,30 @@ class Cdr extends Model
         );
     }
 
+    /**
+     * تماس داخلی بین دو داخلی کوتاه (تا ۵ رقم، مثل ۱۵↔۲۵ یا ۱۲۰↔۳۴۵) را حذف می‌کند.
+     */
+    public function scopeExcludeInternalExtensionCalls(Builder $query): Builder
+    {
+        return $query->whereRaw(
+            "NOT (TRIM(src) REGEXP '^[0-9]{1,5}$' AND TRIM(dst) REGEXP '^[0-9]{1,5}$')"
+        );
+    }
+
+    /**
+     * فقط تماس‌های اصلی/خارجی: حداقل یک طرف شماره واقعی (≥۸ رقم) باشد، نه داخلی↔داخلی.
+     */
+    public function scopeOnlyExternalCalls(Builder $query): Builder
+    {
+        return $query
+            ->excludeInternalExtensionCalls()
+            ->where(function (Builder $q): void {
+                $q->whereRaw("(TRIM(src) REGEXP '^[0-9]+$' AND CHAR_LENGTH(TRIM(src)) >= 8)")
+                    ->orWhereRaw("(TRIM(dst) REGEXP '^[0-9]+$' AND CHAR_LENGTH(TRIM(dst)) >= 8)")
+                    ->orWhereRaw("(TRIM(IFNULL(cnum, '')) REGEXP '^[0-9]+$' AND CHAR_LENGTH(TRIM(cnum)) >= 8)");
+            });
+    }
+
     public function scopeValidCalldate(Builder $query): Builder
     {
         return $query->where('calldate', '>', '1971-01-01 00:00:00');
