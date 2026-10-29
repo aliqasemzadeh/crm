@@ -107,7 +107,7 @@ return [
             'key' => env('GAP_API_KEY'),
             'models' => [
                 'text' => [
-                    'default' => env('GAP_MODEL', 'gpt-6-sol'),
+                    'default' => env('GAP_MODEL', 'gapgpt-gemma-26b-a4b'),
                 ],
             ],
         ],

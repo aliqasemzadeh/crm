@@ -12,7 +12,6 @@ use App\Support\IranPhoneNumberNormalizer;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
-use Laravel\Ai\Files\Document;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -616,17 +615,16 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                 return;
             }
 
+            // Gap/OpenAiCompatible only supports image attachments — send CSV inline in the prompt.
             $prompt = __('app.missed_call_ai_prompt', [
                 'from' => $this->dateStart ?? '',
                 'to' => $this->dateEnd ?? '',
                 'count' => $export['row_count'],
-            ]);
+            ])."\n\n```csv\n".$export['csv']."\n```";
 
             $response = (new MissedCallAnalyst)->prompt(
                 $prompt,
-                attachments: [
-                    Document::fromString($export['csv'], 'text/csv'),
-                ],
+                provider: 'gap',
                 model: config('ai.default_model'),
                 timeout: 120,
             );
