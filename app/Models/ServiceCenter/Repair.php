@@ -88,7 +88,7 @@ class Repair extends Model implements HasMedia
             ->width(300)
             ->height(300)
             ->nonQueued()
-            ->performOnCollections('device_photos', 'attachments');
+            ->performOnCollections('device_photos');
     }
 
     /**

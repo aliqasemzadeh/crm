@@ -79,6 +79,14 @@ trait HandlesRepairAdmissionAssist
         if (! in_array($mediaId, $this->removedMediaIds, true)) {
             $this->removedMediaIds[] = $mediaId;
         }
+
+        if (method_exists($this, 'existingDevicePhotos')) {
+            unset($this->existingDevicePhotos);
+        }
+
+        if (method_exists($this, 'existingAttachments')) {
+            unset($this->existingAttachments);
+        }
     }
 
     public function undoRemoveExistingMedia(int $mediaId): void
@@ -87,6 +95,14 @@ trait HandlesRepairAdmissionAssist
             $this->removedMediaIds,
             fn (int $id): bool => $id !== $mediaId
         ));
+
+        if (method_exists($this, 'existingDevicePhotos')) {
+            unset($this->existingDevicePhotos);
+        }
+
+        if (method_exists($this, 'existingAttachments')) {
+            unset($this->existingAttachments);
+        }
     }
 
     public function transcribeAudio(?string $field = null): void

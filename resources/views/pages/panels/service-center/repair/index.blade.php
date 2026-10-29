@@ -146,11 +146,12 @@ new #[Layout('layouts.panels.service-center')] class extends Component {
                 >
                     {{ __('app.repair_ai_admission') }}
                 </flux:button>
-                <flux:modal.trigger name="panels.service-center.repair.admission.modal">
-                    <flux:button variant="primary" wire:click="$dispatch('panels.service-center.repair.admission.open-manual')">
-                        {{ __('app.admission') }}
-                    </flux:button>
-                </flux:modal.trigger>
+                <flux:button
+                    variant="primary"
+                    wire:click="$dispatch('panels.service-center.repair.admission.open-manual')"
+                >
+                    {{ __('app.admission') }}
+                </flux:button>
             </div>
             @endcan
         </div>
