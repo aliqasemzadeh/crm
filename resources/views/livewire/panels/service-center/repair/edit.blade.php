@@ -1,15 +1,14 @@
-<flux:modal name="panels.service-center.repair.edit.modal" class="md:w-2/3" flyout position="right">
-    <div class="space-y-6">
+@include('livewire.panels.service-center.repair.partials.voice-recorder-script')
+
+<flux:modal name="panels.service-center.repair.edit.modal" class="w-full md:w-2/3" flyout position="right">
+    <div class="space-y-6 pb-20">
         <div>
             <flux:heading size="lg">{{ __('app.edit_repair') }}</flux:heading>
             <flux:text class="mt-2">{{ __('app.edit_repair_description') }}</flux:text>
         </div>
 
-        <!-- Modal body -->
         <form wire:submit="update" method="post" class="space-y-6">
-            <!-- First row: Owner / Device info -->
             <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <!-- Owner column -->
                 <div class="space-y-4">
                     <flux:heading size="sm">{{ __('app.owner_information') }}</flux:heading>
 
@@ -58,13 +57,12 @@
                     </flux:field>
                 </div>
 
-                <!-- Device column -->
                 <div class="space-y-4">
                     <flux:heading size="sm">{{ __('app.device_information') }}</flux:heading>
 
                     <flux:field>
                         <flux:label>{{ __('app.device_type') }}</flux:label>
-                        <flux:autocomplete wire:model="device_type" size="sm">
+                        <flux:autocomplete wire:model="device_type" size="sm" type="text">
                             @foreach($this->types as $type)
                                 <flux:autocomplete.item @click="$wire.fillDeviceType('{{ $type }}')">{{ $type }}</flux:autocomplete.item>
                             @endforeach
@@ -74,7 +72,7 @@
 
                     <flux:field>
                         <flux:label>{{ __('app.device_brand') }}</flux:label>
-                        <flux:autocomplete wire:model="device_brand" size="sm">
+                        <flux:autocomplete wire:model="device_brand" size="sm" type="text">
                             @foreach($this->brands as $brand)
                                 <flux:autocomplete.item @click="$wire.fillDeviceBrand('{{ $brand }}')">{{ $brand }}</flux:autocomplete.item>
                             @endforeach
@@ -86,7 +84,7 @@
                         <flux:label>{{ __('app.device_model') }}</flux:label>
                         <flux:autocomplete wire:model="device_model" size="sm" type="text">
                             @foreach($this->models as $model)
-                                <flux:autocomplete.item @click="$wire.fillDeviceModel('{{ $model }}')">{{ $model }}</flux:autocomplete.item>
+                                <flux:autocomplete.item>{{ $model }}</flux:autocomplete.item>
                             @endforeach
                         </flux:autocomplete>
                         <flux:error name="device_model" />
@@ -100,7 +98,7 @@
 
                     <flux:field>
                         <flux:label>{{ __('app.warranty_type') }}</flux:label>
-                        <flux:select wire:model="warranty_type" placeholder="{{ __('app.select_warranty_status') }}" size="sm">
+                        <flux:select wire:model="warranty_type" placeholder="{{ __('app.select_warranty_status') }}" size="sm" searchable>
                             <flux:select.option value="no">{{ __('app.warranty_no') }}</flux:select.option>
                             <flux:select.option value="yes">{{ __('app.warranty_yes') }}</flux:select.option>
                         </flux:select>
@@ -115,142 +113,88 @@
                 </div>
             </div>
 
-            <!-- Second row: Problem / Accessories / Description -->
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                <flux:field>
-                    <flux:label>{{ __('app.device_problem') }}</flux:label>
-                    <flux:textarea wire:model="device_problem" rows="3" size="sm" />
-                    <flux:error name="device_problem" />
+            @include('livewire.panels.service-center.repair.partials.device-photos', [
+                'existing' => $this->existingDevicePhotos,
+            ])
 
-                    <!-- Whiteboard -->
-                    <div
-                        x-data="{
-                                isOpen: false,
-                                drawing: false,
-                                ctx: null,
-                                color: '#111827',
-                                size: 3,
-                                lastX: 0,
-                                lastY: 0,
-                                openBoard() { this.isOpen = true; this.$nextTick(() => this.initCanvas()); },
-                                closeBoard() { this.isOpen = false; },
-                                clearBoard() { const c = this.$refs.board; this.ctx.clearRect(0,0,c.width,c.height); },
-                                saveBoard() {
-                                    const c = this.$refs.board;
-                                    const data = c.toDataURL('image/png');
-                                    this.$wire.set('device_problem_file', data);
-                                    this.isOpen = false;
-                                },
-                                initCanvas() {
-                                    const canvas = this.$refs.board;
-                                    const parent = canvas.parentElement;
-                                    const dpr = window.devicePixelRatio || 1;
-                                    const rect = parent.getBoundingClientRect();
-                                    canvas.width = Math.floor(rect.width * dpr);
-                                    canvas.height = Math.floor((rect.height - 48) * dpr);
-                                    canvas.style.width = rect.width + 'px';
-                                    canvas.style.height = (rect.height - 48) + 'px';
-                                    this.ctx = canvas.getContext('2d');
-                                    this.ctx.scale(dpr, dpr);
-                                    this.ctx.lineCap = 'round';
-                                    this.ctx.lineJoin = 'round';
-                                    this.ctx.strokeStyle = this.color;
-                                    this.ctx.lineWidth = this.size;
-                                },
-                                pointerDown(e) {
-                                    this.drawing = true;
-                                    const p = this.point(e);
-                                    this.lastX = p.x; this.lastY = p.y;
-                                },
-                                pointerMove(e) {
-                                    if (!this.drawing) { return; }
-                                    const p = this.point(e);
-                                    this.ctx.strokeStyle = this.color;
-                                    this.ctx.lineWidth = this.size;
-                                    this.ctx.beginPath();
-                                    this.ctx.moveTo(this.lastX, this.lastY);
-                                    this.ctx.lineTo(p.x, p.y);
-                                    this.ctx.stroke();
-                                    this.lastX = p.x; this.lastY = p.y;
-                                },
-                                pointerUp() { this.drawing = false; },
-                                point(e) {
-                                    const canvas = this.$refs.board;
-                                    const rect = canvas.getBoundingClientRect();
-                                    const touch = e.touches ? e.touches[0] : null;
-                                    const clientX = touch ? touch.clientX : e.clientX;
-                                    const clientY = touch ? touch.clientY : e.clientY;
-                                    return { x: clientX - rect.left, y: clientY - rect.top };
-                                }
-                            }"
-                        x-cloak
-                        class="relative"
+            @include('livewire.panels.service-center.repair.partials.existing-attachments', [
+                'existing' => $this->existingAttachments,
+            ])
+
+            <div class="space-y-4">
+                <flux:heading size="sm">{{ __('app.repair_more_details') }}</flux:heading>
+
+                <div class="space-y-2">
+                    <flux:composer
+                        wire:model="device_problem"
+                        :label="__('app.device_problem')"
+                        rows="3"
+                        max-rows="8"
+                        variant="input"
+                        :placeholder="__('app.device_problem')"
                     >
-                        <input type="hidden" wire:model="device_problem_file" />
-                        <div class="mt-2">
-                            <flux:button type="button" size="xs" variant="outline" @click="openBoard()">
-                                {{ __('app.open_whiteboard') }}
-                            </flux:button>
-                        </div>
-
-                        <!-- Overlay -->
-                        <div x-show="isOpen" wire:ignore class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                            <div class="w-full max-w-3xl rounded-lg bg-white p-3 shadow-xl dark:bg-neutral-900">
-                                <div class="mb-2 flex items-center justify-between gap-3">
-                                    <div class="flex items-center gap-2">
-                                        <flux:label class="!mb-0">{{ __('app.color') }}</flux:label>
-                                        <input type="color" x-model="color" class="h-6 w-10 cursor-pointer appearance-none border-0 bg-transparent p-0" />
-                                        <flux:label class="!mb-0">{{ __('app.thickness') }}</flux:label>
-                                        <input type="range" min="1" max="20" x-model.number="size" class="w-32" />
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <flux:button type="button" size="xs" variant="filled" @click="clearBoard()">{{ __('app.clear') }}</flux:button>
-                                        <flux:button type="button" size="xs" variant="primary" @click="saveBoard()">{{ __('app.save') }}</flux:button>
-                                        <flux:button type="button" size="xs" variant="ghost" @click="closeBoard()">{{ __('app.close') }}</flux:button>
-                                    </div>
-                                </div>
-                                <div class="h-[60vh] w-full overflow-hidden rounded border border-black/10 dark:border-white/10">
-                                    <canvas
-                                        x-ref="board"
-                                        @mousedown.prevent="pointerDown($event)"
-                                        @mousemove.prevent="pointerMove($event)"
-                                        @mouseup.prevent="pointerUp()"
-                                        @mouseleave.prevent="pointerUp()"
-                                        @touchstart.passive="pointerDown($event)"
-                                        @touchmove.passive="pointerMove($event)"
-                                        @touchend.passive="pointerUp()"
-                                    ></canvas>
-                                </div>
+                        <x-slot name="actionsLeading">
+                            <flux:tooltip content="{{ __('app.repair_attach_files') }}">
+                                <flux:button
+                                    type="button"
+                                    size="sm"
+                                    variant="subtle"
+                                    icon="paper-clip"
+                                    wire:click="$upload('attachments', { accept: 'image/*,audio/*,.pdf,.doc,.docx,.zip', multiple: true })"
+                                />
+                            </flux:tooltip>
+                            @include('livewire.panels.service-center.repair.partials.whiteboard')
+                        </x-slot>
+                        <x-slot name="actionsTrailing">
+                            <div x-data="repairVoiceRecorder('device_problem')" class="inline-flex">
+                                <flux:tooltip content="{{ __('app.repair_voice_to_text') }}">
+                                    <flux:button
+                                        type="button"
+                                        size="sm"
+                                        variant="filled"
+                                        icon="microphone"
+                                        ::class="recording ? 'ring-2 ring-red-500 text-red-600' : ''"
+                                        x-bind:disabled="$wire.isTranscribing"
+                                        @click="toggle()"
+                                    />
+                                </flux:tooltip>
                             </div>
-                        </div>
-                    </div>
-                </flux:field>
+                        </x-slot>
+                    </flux:composer>
+                    <flux:error name="device_problem" />
+                </div>
 
-                <flux:field>
-                    <flux:label>{{ __('app.device_accessories') }}</flux:label>
-                    <flux:textarea wire:model="device_accessories" rows="3" size="sm" />
-                    <flux:error name="device_accessories" />
-                </flux:field>
+                @include('livewire.panels.service-center.repair.partials.description-composer', [
+                    'field' => 'device_accessories',
+                    'label' => __('app.device_accessories'),
+                ])
 
-                <flux:field>
-                    <flux:label>{{ __('app.device_description') }}</flux:label>
-                    <flux:textarea wire:model="device_description" rows="3" size="sm" />
-                    <flux:error name="device_description" />
-                </flux:field>
+                @include('livewire.panels.service-center.repair.partials.description-composer', [
+                    'field' => 'device_description',
+                    'label' => __('app.device_description'),
+                ])
+
+                @include('livewire.panels.service-center.repair.partials.description-composer', [
+                    'field' => 'admission_description',
+                    'label' => __('app.admission_description_label'),
+                ])
             </div>
 
-            <!-- Admission description (optional) -->
-            <div>
-                <flux:field>
-                    <flux:label>{{ __('app.admission_description_label') }}</flux:label>
-                    <flux:textarea wire:model="admission_description" rows="3" size="sm" />
-                    <flux:error name="admission_description" />
-                </flux:field>
+            @include('livewire.panels.service-center.repair.partials.pending-files')
+
+            <div
+                wire:loading
+                wire:target="transcribeAudio,devicePhotos,attachments"
+                class="text-sm text-zinc-500"
+            >
+                {{ __('app.repair_uploading') }}
             </div>
 
-            <flux:button type="submit" class="w-full" variant="primary">
-                {{ __('app.update') }}
-            </flux:button>
+            <div class="sticky bottom-0 z-10 -mx-2 border-t border-zinc-200 bg-white p-3 dark:border-zinc-700 dark:bg-zinc-900 md:static md:border-0 md:bg-transparent md:p-0 dark:md:bg-transparent">
+                <flux:button type="submit" class="w-full" variant="primary" color="orange" wire:loading.attr="disabled">
+                    {{ __('app.update') }}
+                </flux:button>
+            </div>
         </form>
     </div>
 </flux:modal>
