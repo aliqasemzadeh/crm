@@ -2,8 +2,10 @@
 
 namespace App\Support;
 
+use App\Console\Commands\Voip\ImportPhoneFromSepidarCommand;
+
 /**
- * Canonical VoIP / CRM phone keys (matches {@see \App\Console\Commands\Voip\ImportPhoneFromSepidarCommand}).
+ * Canonical VoIP / CRM phone keys (matches {@see ImportPhoneFromSepidarCommand}).
  */
 final class IranPhoneNumberNormalizer
 {
@@ -100,9 +102,60 @@ final class IranPhoneNumberNormalizer
                     }
                 }
             }
+
+            // Landline (Shiraz 071…): 07136489347 = 7136489347 = 36489347
+            foreach (self::landlineKeyVariants($norm) as $k) {
+                if ($k !== '' && ! in_array($k, $keys, true)) {
+                    $keys[] = $k;
+                }
+            }
+        }
+
+        $strippedDigits = self::stripIranCountryCodePrefix($digits);
+        foreach (self::landlineKeyVariants($strippedDigits) as $k) {
+            if ($k !== '' && ! in_array($k, $keys, true)) {
+                $keys[] = $k;
+            }
         }
 
         return $keys;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function landlineKeyVariants(string $digits): array
+    {
+        $digits = preg_replace('/\D+/', '', $digits) ?? '';
+        if ($digits === '') {
+            return [];
+        }
+
+        $digits = self::stripIranCountryCodePrefix($digits);
+        $out = [];
+
+        // 071XXXXXXXX (11) → 71XXXXXXXX + local 8
+        if (str_starts_with($digits, '071') && strlen($digits) === 11) {
+            $out[] = $digits;
+            $out[] = substr($digits, 1);
+            $out[] = substr($digits, 3);
+        }
+
+        // 71XXXXXXXX (10, not mobile 9…) → 071… + local 8
+        if (str_starts_with($digits, '71') && strlen($digits) === 10 && ($digits[2] ?? '') !== '9') {
+            $out[] = $digits;
+            $out[] = '0'.$digits;
+            $out[] = substr($digits, 2);
+        }
+
+        // Local 8-digit landline (not mobile-shaped)
+        if (strlen($digits) === 8 && ! str_starts_with($digits, '9')) {
+            $out[] = $digits;
+            $out[] = '71'.$digits;
+            $out[] = '071'.$digits;
+        }
+
+        return array_values(array_unique(array_filter($out)));
     }
 
     private static function stripIranCountryCodePrefix(string $digits): string

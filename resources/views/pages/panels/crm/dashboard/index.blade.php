@@ -8,6 +8,7 @@ use App\Models\Voip\Phone;
 use App\Services\Crm\CallConversionStatsService;
 use App\Services\Crm\HourlyCallPeakService;
 use App\Services\Crm\MissedCallCsvExporter;
+use App\Services\Crm\PhoneDirectoryService;
 use App\Support\IranPhoneNumberNormalizer;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Builder;
@@ -67,7 +68,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
     private const PAGE_SIZE = 50;
 
     /** Cache key for VoIP phone book labels (clear after linking numbers). */
-    public const VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY = 'crm.voip_phones_number_to_name';
+    public const VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY = PhoneDirectoryService::CACHE_KEY;
 
     private const DEVICES_CACHE_KEY = 'crm.issabel_devices_user_to_description';
 
@@ -673,11 +674,7 @@ return new #[Layout('layouts.panels.crm')] class extends Component
      */
     private function phoneNumberToNameMap(): array
     {
-        return Cache::remember(
-            self::VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY,
-            self::PHONES_CACHE_TTL_SECONDS,
-            fn (): array => Phone::query()->pluck('name', 'number')->all()
-        );
+        return app(PhoneDirectoryService::class)->numberToNameMap();
     }
 
     /**
@@ -844,12 +841,12 @@ return new #[Layout('layouts.panels.crm')] class extends Component
         $phoneDisplay = $this->resolvePartyLabel($trim, $deviceMap, $phoneMap);
         $partyMeta = $this->partyPresentation($trim, $phoneDisplay, $internalProfiles);
         $normalizedVoip = IranPhoneNumberNormalizer::normalize($trim);
-        $matchedVoip = $normalizedVoip !== null && isset($phoneMap[$normalizedVoip]);
+        $matchedDirectory = app(PhoneDirectoryService::class)->resolveName($trim, $phoneMap) !== null;
 
         $can = ! $partyMeta['is_internal_user']
             && $normalizedVoip !== null
             && strlen($normalizedVoip) >= 8
-            && ! $matchedVoip;
+            && ! $matchedDirectory;
 
         return ['can' => $can, 'display' => $partyMeta['display']];
     }
@@ -1097,10 +1094,9 @@ return new #[Layout('layouts.panels.crm')] class extends Component
             }
         }
 
-        foreach ($this->partyLookupKeys($trim) as $key) {
-            if (isset($phoneMap[$key])) {
-                return $phoneMap[$key];
-            }
+        $resolved = app(PhoneDirectoryService::class)->resolveName($trim, $phoneMap);
+        if ($resolved !== null) {
+            return $resolved;
         }
 
         $readable = $this->normalizeExtensionCandidate($trim);
@@ -1780,6 +1776,22 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                         </flux:heading>
                                     @endif
                                 </div>
+                                @if (! empty($call['can_link_unknown_phone']))
+                                    <div class="ms-auto shrink-0">
+                                        <flux:tooltip content="{{ __('app.link_unknown_phone_tooltip') }}">
+                                            <flux:button
+                                                size="sm"
+                                                variant="primary"
+                                                color="teal"
+                                                icon="user-plus"
+                                                icon:variant="outline"
+                                                wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $call['link_unknown_raw'] ?? $call['heading_raw'], 'name' => $call['link_unknown_display_name'] ?? '']) }})"
+                                            >
+                                                {{ __('app.link_unknown_phone_button') }}
+                                            </flux:button>
+                                        </flux:tooltip>
+                                    </div>
+                                @endif
                             </div>
 
                             <div class="flex items-center gap-1.5 text-sm text-zinc-500 dark:text-zinc-400">
@@ -1828,18 +1840,6 @@ return new #[Layout('layouts.panels.crm')] class extends Component
                                             icon="message-square-text"
                                             icon:variant="outline"
                                             wire:click="$dispatch('panels.crm.dashboard.index.send-sms', { phone: '{{ $phone }}', name: '{{ $recipientName }}' })"
-                                        />
-                                    </flux:tooltip>
-                                @endif
-                                @if (! empty($call['can_link_unknown_phone']))
-                                    <flux:tooltip content="{{ __('app.link_unknown_phone_tooltip') }}">
-                                        <flux:button
-                                            size="xs"
-                                            variant="primary"
-                                            color="teal"
-                                            icon="link"
-                                            icon:variant="outline"
-                                            wire:click="$dispatch('panels.crm.dashboard.index.link-phone', {{ \Illuminate\Support\Js::from(['raw' => $call['link_unknown_raw'] ?? $call['heading_raw'], 'name' => $call['link_unknown_display_name'] ?? '']) }})"
                                         />
                                     </flux:tooltip>
                                 @endif

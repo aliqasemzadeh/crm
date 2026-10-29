@@ -4,6 +4,7 @@ use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyPhone;
 use App\Models\Sepidar\GNR\PartyRelated;
 use App\Models\Voip\Phone;
+use App\Services\Crm\PhoneDirectoryService;
 use App\Support\IranPhoneNumberNormalizer;
 use App\Support\PersianFinglishConverter;
 use Flux\Flux;
@@ -16,8 +17,6 @@ use Livewire\Component;
 
 new class extends Component
 {
-    /** Must match `VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY` on the CRM dashboard page. */
-    private const VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY = 'crm.voip_phones_number_to_name';
 
     public string $headingRaw = '';
 
@@ -224,7 +223,7 @@ new class extends Component
 
             $this->forgetCachedPartyPhoneLookups($normalized, $sepidarPhone);
 
-            Cache::forget(self::VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY);
+            app(PhoneDirectoryService::class)->forgetCache();
 
             $this->modal('crm-link-phone-modal')->close();
             Flux::toast(__('app.phone_linked_to_party_success'));
@@ -263,7 +262,7 @@ new class extends Component
                 ]
             );
 
-            Cache::forget(self::VOIP_PHONES_NUMBER_TO_NAME_CACHE_KEY);
+            app(PhoneDirectoryService::class)->forgetCache();
 
             $this->modal('crm-link-phone-modal')->close();
             Flux::toast(__('app.manual_phone_saved_success'));
