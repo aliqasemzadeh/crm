@@ -1,6 +1,6 @@
-@include('livewire.panels.service-center.repair.partials.voice-recorder-script')
-
 <flux:modal name="panels.service-center.repair.admission.modal" class="w-full md:w-2/3" flyout position="right">
+    @include('livewire.panels.service-center.repair.partials.voice-recorder-script')
+
     <div class="space-y-6 pb-20">
         <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -15,7 +15,14 @@
             <div class="flex gap-2">
                 @if ($mode === 'manual')
                     <flux:tooltip content="{{ __('app.repair_ai_admission') }}">
-                        <flux:button type="button" size="sm" variant="primary" color="violet" icon="sparkles" wire:click="switchToAiMode" />
+                        <flux:button
+                            type="button"
+                            size="sm"
+                            variant="primary"
+                            color="violet"
+                            icon="sparkles"
+                            wire:click="$dispatch('panels.service-center.repair.admission.switch-to-ai')"
+                        />
                     </flux:tooltip>
                 @endif
             </div>

@@ -223,11 +223,13 @@ class Create extends Component
         Flux::modal('panels.service-center.repair.admission.modal')->show();
     }
 
+    #[On('panels.service-center.repair.admission.switch-to-manual')]
     public function switchToManualMode(): void
     {
         $this->mode = 'manual';
     }
 
+    #[On('panels.service-center.repair.admission.switch-to-ai')]
     public function switchToAiMode(): void
     {
         $this->mode = 'ai';

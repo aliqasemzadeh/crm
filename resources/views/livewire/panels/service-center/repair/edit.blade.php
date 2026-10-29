@@ -1,6 +1,6 @@
-@include('livewire.panels.service-center.repair.partials.voice-recorder-script')
-
 <flux:modal name="panels.service-center.repair.edit.modal" class="w-full md:w-2/3" flyout position="right">
+    @include('livewire.panels.service-center.repair.partials.voice-recorder-script')
+
     <div class="space-y-6 pb-20">
         <div>
             <flux:heading size="lg">{{ __('app.edit_repair') }}</flux:heading>

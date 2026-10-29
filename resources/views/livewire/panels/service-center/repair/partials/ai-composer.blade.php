@@ -65,7 +65,13 @@
 
     @include('livewire.panels.service-center.repair.partials.pending-files')
 
-    <flux:button type="button" variant="ghost" size="sm" wire:click="switchToManualMode" class="w-full">
+    <flux:button
+        type="button"
+        variant="ghost"
+        size="sm"
+        class="w-full"
+        wire:click="$dispatch('panels.service-center.repair.admission.switch-to-manual')"
+    >
         {{ __('app.repair_switch_to_manual') }}
     </flux:button>
 </div>
