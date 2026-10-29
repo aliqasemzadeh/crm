@@ -8,7 +8,6 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
-use Throwable;
 
 new #[Layout('layouts.panels.crm')] class extends Component
 {
@@ -112,7 +111,7 @@ new #[Layout('layouts.panels.crm')] class extends Component
             $this->autoQueued = true;
             unset($this->report);
             Flux::toast(__('app.call_report_auto_queued'));
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             report($e);
         }
     }
@@ -125,7 +124,7 @@ new #[Layout('layouts.panels.crm')] class extends Component
 
         try {
             return Jalalian::fromFormat('Y/m/d', $this->reportDate)->toCarbon()->toDateString();
-        } catch (Throwable) {
+        } catch (\Throwable) {
             return null;
         }
     }
