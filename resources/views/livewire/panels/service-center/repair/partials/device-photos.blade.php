@@ -26,7 +26,7 @@
                         type="button"
                         class="absolute end-1 top-1 rounded-full bg-zinc-900/70 p-0.5 text-white"
                         wire:click="removeExistingMedia({{ $media->id }})"
-                        wire:confirm="{{ __('common.are_you_sure') }}"
+                        wire:confirm="{{ __('app.are_you_sure') }}"
                     >
                         <flux:icon name="x-mark" variant="micro" />
                     </button>

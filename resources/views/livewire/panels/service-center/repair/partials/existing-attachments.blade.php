@@ -24,7 +24,7 @@
                     <button
                         type="button"
                         wire:click="removeExistingMedia({{ $media->id }})"
-                        wire:confirm="{{ __('common.are_you_sure') }}"
+                        wire:confirm="{{ __('app.are_you_sure') }}"
                         class="text-zinc-500 hover:text-red-500"
                     >
                         <flux:icon name="x-mark" variant="micro" />
