@@ -14,7 +14,12 @@
         <flux:sidebar.item icon="gauge" href="{{ route('panels.service-center.dashboard.index') }}" wire:navigate>{{ __('app.dashboard') }}</flux:sidebar.item>
         @endcan
         @can('service_center_assembly_index')
-        <flux:sidebar.item icon="pc-case" badge="12" href="{{ route('panels.service-center.assembly.index') }}" wire:navigate>{{ __('app.assemblies') }}</flux:sidebar.item>
+        <flux:sidebar.item
+            icon="pc-case"
+            badge="{{ \App\Models\ServiceCenter\Assembly::query()->whereIn('status', ['pending', 'in_progress'])->count() }}"
+            href="{{ route('panels.service-center.assembly.index') }}"
+            wire:navigate
+        >{{ __('app.assemblies') }}</flux:sidebar.item>
         @endcan
         @can('service_center_repair_index')
         <flux:sidebar.item icon="toolbox" href="{{ route('panels.service-center.repair.index') }}" wire:navigate>{{ __('app.repairs') }}</flux:sidebar.item>
@@ -38,14 +43,13 @@
 </flux:main>
 
 @role('administrator')
-<div class="fixed bottom-4 left-4 z-50">
-    <flux:tooltip content="{{ __('app.route_logs.title') }}">
-        <flux:button icon="history" variant="ghost" x-on:click="$dispatch('modal-show', { name: 'user-route-logs' })" />
-    </flux:tooltip>
-</div>
-<livewire:user-route-logs />
+    @persist('toast')
+        <flux:toast />
+    @endpersist
+@else
+    @persist('toast')
+        <flux:toast />
+    @endpersist
 @endrole
-
-@include('partials.foot')
 </body>
 </html>

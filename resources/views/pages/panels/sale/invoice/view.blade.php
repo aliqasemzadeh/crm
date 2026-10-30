@@ -37,6 +37,10 @@ new #[Layout('layouts.panels.sale')] class extends Component
 </x-slot>
 
 <div>
+    @can('sales_assembly_convert')
+        <livewire:panels.sale.assembly.convert />
+    @endcan
+
     <div class="relative mb-6 w-full">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
@@ -45,6 +49,16 @@ new #[Layout('layouts.panels.sale')] class extends Component
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
+                @can('sales_assembly_convert')
+                    <flux:button
+                        variant="primary"
+                        color="teal"
+                        icon="pc-case"
+                        wire:click="$dispatch('panels.sale.assembly.convert.assign-data', { invoiceId: {{ $invoice->InvoiceId }} })"
+                    >
+                        {{ __('app.convert_to_assembly_order') }}
+                    </flux:button>
+                @endcan
                 @can('sales_invoice_edit')
                     <flux:button
                         variant="primary"

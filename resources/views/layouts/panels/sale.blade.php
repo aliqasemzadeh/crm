@@ -32,6 +32,17 @@
             </flux:sidebar.item>
         @endcan
 
+        @can('sales_assembly_index')
+            <flux:sidebar.item
+                icon="pc-case"
+                href="{{ route('panels.sale.assembly.index') }}"
+                :current="request()->routeIs('panels.sale.assembly.*')"
+                wire:navigate
+            >
+                {{ __('app.assembly_orders') }}
+            </flux:sidebar.item>
+        @endcan
+
         @can('sales_item_index')
             <flux:sidebar.item
                 icon="package"

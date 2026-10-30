@@ -9,6 +9,7 @@ use App\Models\Sepidar\FMK\User;
 use App\Models\Sepidar\GNR\DeliveryLocation;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyAddress;
+use App\Models\ServiceCenter\AssemblyOrder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -176,5 +177,17 @@ class Invoice extends Model
     public function review(): HasOne
     {
         return $this->hasOne(InvoiceReview::class, 'sepidar_invoice_id', 'InvoiceId');
+    }
+
+    public function assemblyOrders(): HasMany
+    {
+        return $this->hasMany(AssemblyOrder::class, 'sepidar_invoice_id', 'InvoiceId');
+    }
+
+    public function assemblyOrder(): HasOne
+    {
+        return $this->hasOne(AssemblyOrder::class, 'sepidar_invoice_id', 'InvoiceId')
+            ->where('status', '!=', 'cancelled')
+            ->latestOfMany();
     }
 }

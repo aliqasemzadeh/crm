@@ -138,6 +138,11 @@ return [
 
         'service_center_dashboard_index' => 'داشبرد مرکز خدمات',
         'service_center_assembly_index' => 'اسمبل مرکز خدمات',
+        'service_center_assembly_view' => 'مشاهده اسمبل مرکز خدمات',
+        'service_center_assembly_work' => 'اجرای اسمبل مرکز خدمات',
+        'service_center_assembly_logs' => 'لاگ اسمبل مرکز خدمات',
+        'service_center_assembly_edit' => 'ویرایش اسمبل مرکز خدمات',
+        'service_center_assembly_stats' => 'آمار اسمبل مرکز خدمات',
         'service_center_repair_index' => 'تعمیرات مرکز خدمات',
         'service_center_repair_create' => 'پذیرش تعمیرات مرکز خدمات',
         'service_center_repair_services' => 'خدمات (هزینه ها) تعمیرات مرکز خدمات',
@@ -272,6 +277,11 @@ return [
         'sales_invoice_view' => 'مشاهده فاکتور فروش',
         'sales_invoice_print' => 'چاپ فاکتور فروش',
         'sales_invoice_delete' => 'حذف فاکتور فروش',
+
+        'sales_assembly_index' => 'فهرست دستور ساخت فروش',
+        'sales_assembly_convert' => 'تبدیل فاکتور به دستور ساخت',
+        'sales_assembly_view' => 'مشاهده دستور ساخت فروش',
+        'sales_assembly_stats' => 'آمار اسمبل فروش',
 
         'sales_item_index' => 'فهرست کالاهای فروش',
         'sales_item_view' => 'مشاهده کالای فروش',

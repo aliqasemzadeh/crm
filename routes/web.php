@@ -47,7 +47,7 @@ Route::middleware(['auth', 'local.network'])->group(function () {
     Route::livewire('/panels/administrator/item-day-check/index', 'pages::panels.administrator.item-day-check.index')->name('panels.administrator.item-day-check.index');
 
     Route::livewire('/panels/service-center/dashboard/index', 'pages::panels.service-center.dashboard.index')->name('panels.service-center.dashboard.index');
-    Route::livewire('/panels/service-center/assembly/index', App\Livewire\Panels\ServiceCenter\Assembly\Index::class)->name('panels.service-center.assembly.index');
+    Route::livewire('/panels/service-center/assembly/index', 'pages::panels.service-center.assembly.index')->name('panels.service-center.assembly.index');
     Route::livewire('/panels/service-center/repair/index', 'pages::panels.service-center.repair.index')->name('panels.service-center.repair.index');
 
     Route::livewire('/panels/warehouse/dashboard/index', 'pages::panels.warehouse.dashboard.index')->name('panels.warehouse.dashboard.index');
@@ -100,6 +100,7 @@ Route::middleware(['auth', 'local.network'])->group(function () {
     Route::livewire('/panels/sale/invoice/edit/{invoice}', 'pages::panels.sale.invoice.edit')->name('panels.sale.invoice.edit');
     Route::livewire('/panels/sale/invoice/view/{invoice}', 'pages::panels.sale.invoice.view')->name('panels.sale.invoice.view');
     Route::livewire('/panels/sale/invoice/print/{invoice}', 'pages::panels.sale.invoice.print')->name('panels.sale.invoice.print');
+    Route::livewire('/panels/sale/assembly/index', 'pages::panels.sale.assembly.index')->name('panels.sale.assembly.index');
     Route::livewire('/panels/sale/item/index', 'pages::panels.sale.item.index')->name('panels.sale.item.index');
     Route::livewire('/panels/sale/item/{item}', 'pages::panels.sale.item.view')->name('panels.sale.item.view');
     Route::livewire('/panels/sale/item-price/index/{groupingId?}', 'pages::panels.sale.item-price.index')->name('panels.sale.item-price.index');
