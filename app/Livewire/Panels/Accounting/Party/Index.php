@@ -4,9 +4,9 @@ namespace App\Livewire\Panels\Accounting\Party;
 
 use App\Models\Sepidar\FMK\FiscalYear;
 use App\Models\Sepidar\GNR\Party;
-use App\Models\Sepidar\SLS\Invoice;
 use App\Support\Accounting\CustomerSegment;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -62,7 +62,7 @@ class Index extends Component
             $this->sortBy = 'CreationDate';
             $this->sortDirection = 'desc';
         } else {
-            $this->sortBy = 'total_amount';
+            $this->sortBy = 'total_profit';
             $this->sortDirection = 'desc';
         }
 
@@ -115,15 +115,33 @@ class Index extends Component
         if (CustomerSegment::isValuable($this->customerSegment)) {
             [$start, $end] = $this->periodBounds();
 
-            $rangeAgg = Invoice::query()
-                ->selectRaw('CustomerPartyRef, COUNT(*) as invoice_count, SUM(NetPrice) as total_amount')
-                ->where('State', '<>', 2)
-                ->when($start, fn ($q) => $q->where('Date', '>=', $start))
-                ->when($end, fn ($q) => $q->where('Date', '<=', $end))
-                ->groupBy('CustomerPartyRef');
+            if (! $start || ! $end) {
+                return Party::query()->whereRaw('1 = 0')->paginate(100);
+            }
+
+            $latestFeeIds = DB::connection('sqlsrv')
+                ->table('INV.InventoryReceiptItem')
+                ->selectRaw('MAX(InventoryReceiptItemID) as InventoryReceiptItemID')
+                ->groupBy('ItemRef');
+
+            $latestFees = DB::connection('sqlsrv')
+                ->table('INV.InventoryReceiptItem as iri')
+                ->joinSub($latestFeeIds, 'latest', 'latest.InventoryReceiptItemID', '=', 'iri.InventoryReceiptItemID')
+                ->select(['iri.ItemRef', 'iri.Fee']);
+
+            $profitAgg = DB::connection('sqlsrv')
+                ->table('SLS.InvoiceItem as ii')
+                ->join('SLS.Invoice as i', 'ii.InvoiceRef', '=', 'i.InvoiceId')
+                ->leftJoinSub($latestFees, 'fee', 'fee.ItemRef', '=', 'ii.ItemRef')
+                ->where('i.State', '<>', 2)
+                ->where('i.FiscalYearRef', $this->fiscalYearRef)
+                ->whereBetween('i.Date', [$start, $end])
+                ->where('ii.Quantity', '>', 0)
+                ->groupBy('i.CustomerPartyRef')
+                ->selectRaw('i.CustomerPartyRef, COUNT(DISTINCT i.InvoiceId) as invoice_count, SUM(ii.NetPrice - ISNULL(fee.Fee, 0) * ii.Quantity) as total_profit');
 
             $query
-                ->joinSub($rangeAgg, 'agg', 'agg.CustomerPartyRef', '=', 'p.PartyId')
+                ->joinSub($profitAgg, 'agg', 'agg.CustomerPartyRef', '=', 'p.PartyId')
                 ->select([
                     'p.PartyId',
                     'p.Name',
@@ -132,13 +150,13 @@ class Index extends Component
                     'p.IdentificationCode',
                     'p.CreationDate',
                     'agg.invoice_count',
-                    'agg.total_amount',
+                    'agg.total_profit',
                 ]);
 
             $sortColumn = match ($this->sortBy) {
                 'LastName' => 'p.LastName',
-                'total_amount' => 'agg.total_amount',
-                default => 'agg.total_amount',
+                'total_profit' => 'agg.total_profit',
+                default => 'agg.total_profit',
             };
 
             return $query
@@ -156,7 +174,7 @@ class Index extends Component
                 'p.CreationDate',
             ])
             ->tap(function ($query) {
-                if ($this->sortBy && $this->sortBy !== 'total_amount') {
+                if ($this->sortBy && $this->sortBy !== 'total_profit') {
                     $query->orderBy('p.'.$this->sortBy, $this->sortDirection);
                 } else {
                     $query->orderBy('p.CreationDate', 'desc');

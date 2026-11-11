@@ -81,8 +81,8 @@
             <flux:table.column>{{ __('app.economic_code') }}</flux:table.column>
             <flux:table.column>{{ __('app.identification_code') }}</flux:table.column>
             @if (CustomerSegment::isValuable($customerSegment))
-                <flux:table.column sortable :sorted="$sortBy === 'total_amount'" :direction="$sortDirection"
-                                   wire:click="sort('total_amount')">{{ __('app.customer_period_purchase_amount') }}</flux:table.column>
+                <flux:table.column sortable :sorted="$sortBy === 'total_profit'" :direction="$sortDirection"
+                                   wire:click="sort('total_profit')">{{ __('app.customer_period_profit') }}</flux:table.column>
                 <flux:table.column>{{ __('app.invoice_count') }}</flux:table.column>
             @endif
         </flux:table.columns>
@@ -115,7 +115,7 @@
                 </flux:table.cell>
                 @if (CustomerSegment::isValuable($customerSegment))
                     <flux:table.cell class="tabular-nums whitespace-nowrap">
-                        {{ number_format((float) $customer->total_amount) }}
+                        {{ number_format((float) $customer->total_profit) }}
                     </flux:table.cell>
                     <flux:table.cell class="tabular-nums">
                         {{ number_format((int) $customer->invoice_count) }}
