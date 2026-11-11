@@ -9,6 +9,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+
 new #[Layout('layouts.panels.accounting')] class extends Component
 {
     use WithPagination;
@@ -203,8 +204,8 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         <flux:card class="mb-6" wire:loading.class="opacity-60" wire:target="fiscalYearRef,selectedMonth,search">
             <flux:heading size="lg" class="mb-4">{{ __('app.sales_expert_comparison_chart') }}</flux:heading>
 
-            <flux:chart :value="$this->comparisonChart" class="h-80">
-                <flux:chart.viewport class="min-h-[20rem]">
+            <flux:chart :value="$this->comparisonChart" horizontal class="h-96">
+                <flux:chart.viewport class="min-h-[24rem]">
                     <flux:chart.svg>
                         <flux:chart.bar field="invoices" class="text-sky-500" radius="4" width="70%" />
 

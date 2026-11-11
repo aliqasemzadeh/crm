@@ -109,7 +109,7 @@ class Invoice extends Model
         $fiscalYearRef = config('sepidar.FiscalYearRef');
         Cache::forget("accounting_user_invoice_stats_{$creatorId}_{$fiscalYearRef}");
 
-        SalesExpertPerformanceService::clearCache($fiscalYearRef);
+        SalesExpertPerformanceService::clearCache($fiscalYearRef, $creatorId);
     }
 
     public function customer(): BelongsTo

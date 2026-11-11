@@ -75,7 +75,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     {
         $this->selectedMonth = $this->selectedMonth === $month ? 0 : $month;
         $this->resetPage();
-        unset($this->invoiceStats, $this->selectedMonthInvoiceIds, $this->invoices, $this->performanceMetrics);
+        unset($this->invoiceStats, $this->invoices, $this->performanceMetrics);
     }
 
     public function updatedFiscalYearRef(): void
@@ -84,7 +84,6 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         $this->resetPage();
         unset(
             $this->invoiceStats,
-            $this->selectedMonthInvoiceIds,
             $this->invoices,
             $this->performanceMetrics,
             $this->monthlyTrend,
@@ -96,7 +95,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     {
         $this->selectedMonth = max(0, min(12, (int) $this->selectedMonth));
         $this->resetPage();
-        unset($this->invoiceStats, $this->selectedMonthInvoiceIds, $this->invoices, $this->performanceMetrics);
+        unset($this->invoiceStats, $this->invoices, $this->performanceMetrics);
     }
 
     public function clearFilters(): void
@@ -107,7 +106,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         $this->startDate = '';
         $this->endDate = '';
         $this->resetPage();
-        unset($this->invoiceStats, $this->selectedMonthInvoiceIds, $this->invoices, $this->performanceMetrics);
+        unset($this->invoiceStats, $this->invoices, $this->performanceMetrics);
     }
 
     protected function monthFilter(): ?int
@@ -183,23 +182,6 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     }
 
     #[Computed]
-    public function selectedMonthInvoiceIds(): array
-    {
-        if ($this->selectedMonth <= 0) {
-            return [];
-        }
-
-        return $this->baseInvoiceQuery()
-            ->whereNotNull('Date')
-            ->get(['InvoiceId', 'Date'])
-            ->filter(function (Invoice $invoice) {
-                return Jalalian::fromDateTime($invoice->Date)->getMonth() === $this->selectedMonth;
-            })
-            ->pluck('InvoiceId')
-            ->all();
-    }
-
-    #[Computed]
     public function fiscalYears()
     {
         return FiscalYear::query()->orderByDesc('FiscalYearID')->get();
@@ -261,12 +243,14 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     #[Computed]
     public function invoices()
     {
-        $monthInvoiceIds = $this->selectedMonthInvoiceIds;
+        $fiscalYearRef = (int) $this->fiscalYearRef;
+        [$monthStart, $monthEnd] = app(SalesExpertPerformanceService::class)
+            ->periodBounds($fiscalYearRef, $this->monthFilter());
 
         return $this->baseInvoiceQuery()
             ->with(['customer'])
-            ->when($this->selectedMonth > 0, function (Builder $query) use ($monthInvoiceIds) {
-                $query->whereIn('InvoiceId', $monthInvoiceIds ?: [0]);
+            ->when($this->selectedMonth > 0 && $monthStart && $monthEnd && $this->startDate === '' && $this->endDate === '', function (Builder $query) use ($monthStart, $monthEnd) {
+                $query->whereBetween('Date', [$monthStart, $monthEnd]);
             })
             ->when($this->search !== '', function (Builder $query) {
                 $search = '%'.$this->search.'%';
