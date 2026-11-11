@@ -26,6 +26,7 @@ class Index extends Component
     {
         $this->selectedMonth = $this->defaultMonthForFiscalYear($this->fiscalYearRef);
         unset($this->stats);
+        unset($this->yearCharts);
     }
 
     public function updatedSelectedMonth(): void
@@ -38,6 +39,7 @@ class Index extends Component
     {
         AccountingDashboardService::clearCache($this->fiscalYearRef);
         unset($this->stats);
+        unset($this->yearCharts);
         Flux::toast(__('app.dashboard_data_reloaded'));
     }
 
@@ -59,6 +61,12 @@ class Index extends Component
             $this->fiscalYearRef,
             $this->selectedMonth
         );
+    }
+
+    #[Computed]
+    public function yearCharts(): array
+    {
+        return app(AccountingDashboardService::class)->yearCharts($this->fiscalYearRef);
     }
 
     private function defaultMonthForFiscalYear(int|string $fiscalYearRef): int

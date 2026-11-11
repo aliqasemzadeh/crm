@@ -22,6 +22,11 @@ class AccountingDashboardService
         return "accounting_dashboard_stats_fiscal_year_{$fiscalYearRef}_month_{$month}";
     }
 
+    public static function yearChartsCacheKey(int|string $fiscalYearRef): string
+    {
+        return "accounting_dashboard_year_charts_{$fiscalYearRef}";
+    }
+
     public static function clearCache(int|string|null $fiscalYearRef = null): void
     {
         $yearIds = $fiscalYearRef !== null
@@ -36,6 +41,7 @@ class AccountingDashboardService
             }
 
             Cache::forget("accounting_dashboard_stats_fiscal_year_{$yearId}");
+            Cache::forget(self::yearChartsCacheKey($yearId));
         }
     }
 
@@ -50,6 +56,7 @@ class AccountingDashboardService
      *     debtorTotal: float,
      *     receivableCheques: float,
      *     transferredCheques: float,
+     *     payableCheques: float,
      *     periodBalance: float,
      *     engagedCapital: float,
      *     previousMonthSales: float,
@@ -90,10 +97,97 @@ class AccountingDashboardService
                 'debtorTotal' => $debtorTotal,
                 'receivableCheques' => $receivableCheques,
                 'transferredCheques' => $transferredCheques,
+                'payableCheques' => $payableCheques,
                 'periodBalance' => $totalSales - $totalPurchases,
                 'engagedCapital' => $inventoryBalance + $bankBalance + $debtorTotal + $receivableCheques - $creditorTotal - $payableCheques,
                 'previousMonthSales' => $previousMonthSales,
                 'previousMonthPurchases' => $previousMonthPurchases,
+            ];
+        });
+    }
+
+    /**
+     * @return array{
+     *     salesChart: list<array{month: string, sales: float}>,
+     *     salesPurchasesChart: list<array{month: string, sales: float, purchases: float}>,
+     *     debtorCreditorChart: list<array{month: string, debtor: float, creditor: float}>,
+     *     minDebtorBalance: float
+     * }
+     */
+    public function yearCharts(int|string $fiscalYearRef): array
+    {
+        return Cache::rememberForever(self::yearChartsCacheKey($fiscalYearRef), function () use ($fiscalYearRef) {
+            $monthlySales = array_fill(1, 12, 0.0);
+            $monthlyPurchases = array_fill(1, 12, 0.0);
+
+            $invoices = Invoice::query()
+                ->where('FiscalYearRef', $fiscalYearRef)
+                ->where('State', '<>', 2)
+                ->select(['Price', 'Date'])
+                ->get();
+
+            foreach ($invoices as $invoice) {
+                if (! $invoice->Date) {
+                    continue;
+                }
+
+                $month = Jalalian::fromDateTime($invoice->Date)->getMonth();
+                $monthlySales[$month] += (float) $invoice->Price;
+            }
+
+            $receipts = InventoryReceipt::query()
+                ->where('FiscalYearRef', $fiscalYearRef)
+                ->select(['TotalPrice', 'Date'])
+                ->get();
+
+            foreach ($receipts as $receipt) {
+                if (! $receipt->Date) {
+                    continue;
+                }
+
+                $month = Jalalian::fromDateTime($receipt->Date)->getMonth();
+                $monthlyPurchases[$month] += (float) $receipt->TotalPrice;
+            }
+
+            $salesChart = [];
+            $salesPurchasesChart = [];
+            $debtorCreditorChart = [];
+            $debtorValues = [];
+
+            for ($i = 1; $i <= 12; $i++) {
+                $monthLabel = __('app.jalali_months.'.$i);
+                $sales = $monthlySales[$i];
+                $purchases = $monthlyPurchases[$i];
+
+                $salesChart[] = [
+                    'month' => $monthLabel,
+                    'sales' => $sales,
+                ];
+
+                $salesPurchasesChart[] = [
+                    'month' => $monthLabel,
+                    'sales' => $sales,
+                    'purchases' => $purchases,
+                ];
+
+                [, $monthEnd] = $this->monthBounds($fiscalYearRef, $i);
+                $splits = $this->partyBalanceSplits($fiscalYearRef, $monthEnd);
+                $debtor = $splits['debtor_total'];
+                $creditor = $splits['creditor_total'];
+                $debtorValues[] = $debtor;
+
+                $debtorCreditorChart[] = [
+                    'month' => $monthLabel,
+                    'debtor' => $debtor,
+                    'creditor' => $creditor,
+                ];
+            }
+
+            return [
+                'salesChart' => $salesChart,
+                'salesPurchasesChart' => $salesPurchasesChart,
+                'debtorCreditorChart' => $debtorCreditorChart,
+                'minDebtorBalance' => $debtorValues === [] ? 0.0 : min($debtorValues),
             ];
         });
     }
