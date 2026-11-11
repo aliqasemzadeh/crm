@@ -10,6 +10,7 @@ use App\Models\Sepidar\GNR\DeliveryLocation;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyAddress;
 use App\Models\ServiceCenter\AssemblyOrder;
+use App\Services\Accounting\SalesExpertPerformanceService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -107,6 +108,8 @@ class Invoice extends Model
 
         $fiscalYearRef = config('sepidar.FiscalYearRef');
         Cache::forget("accounting_user_invoice_stats_{$creatorId}_{$fiscalYearRef}");
+
+        SalesExpertPerformanceService::clearCache($fiscalYearRef);
     }
 
     public function customer(): BelongsTo

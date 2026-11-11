@@ -1,7 +1,9 @@
 <?php
 
+use App\Models\Sepidar\FMK\FiscalYear;
 use App\Models\Sepidar\FMK\User as SepidarUser;
 use App\Models\Sepidar\SLS\Invoice;
+use App\Services\Accounting\SalesExpertPerformanceService;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -19,7 +21,10 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     public string $search = '';
 
     #[Url]
-    public ?int $selectedMonth = null;
+    public int|string $fiscalYearRef = '';
+
+    #[Url]
+    public int $selectedMonth = 0;
 
     #[Url]
     public string $saleType = 'all';
@@ -36,7 +41,8 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
     protected $queryString = [
         'search' => ['except' => ''],
-        'selectedMonth' => ['except' => null],
+        'fiscalYearRef' => ['except' => ''],
+        'selectedMonth' => ['except' => 0],
         'saleType' => ['except' => 'all'],
         'startDate' => ['except' => ''],
         'endDate' => ['except' => ''],
@@ -49,6 +55,10 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         abort_if($sepidarUser->IsDeleted, 404);
 
         $this->sepidarUser = $sepidarUser;
+
+        if ($this->fiscalYearRef === '' || $this->fiscalYearRef === null) {
+            $this->fiscalYearRef = (int) config('sepidar.FiscalYearRef');
+        }
     }
 
     public function sort(string $column): void
@@ -61,20 +71,47 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         }
     }
 
-    public function selectMonth(?int $month): void
+    public function selectMonth(int $month): void
     {
-        $this->selectedMonth = $this->selectedMonth === $month ? null : $month;
+        $this->selectedMonth = $this->selectedMonth === $month ? 0 : $month;
         $this->resetPage();
+        unset($this->invoiceStats, $this->invoices, $this->performanceMetrics);
+    }
+
+    public function updatedFiscalYearRef(): void
+    {
+        $this->selectedMonth = 0;
+        $this->resetPage();
+        unset(
+            $this->invoiceStats,
+            $this->invoices,
+            $this->performanceMetrics,
+            $this->monthlyTrend,
+            $this->fiscalYears
+        );
+    }
+
+    public function updatedSelectedMonth(): void
+    {
+        $this->selectedMonth = max(0, min(12, (int) $this->selectedMonth));
+        $this->resetPage();
+        unset($this->invoiceStats, $this->invoices, $this->performanceMetrics);
     }
 
     public function clearFilters(): void
     {
         $this->search = '';
-        $this->selectedMonth = null;
+        $this->selectedMonth = 0;
         $this->saleType = 'all';
         $this->startDate = '';
         $this->endDate = '';
         $this->resetPage();
+        unset($this->invoiceStats, $this->invoices, $this->performanceMetrics);
+    }
+
+    protected function monthFilter(): ?int
+    {
+        return $this->selectedMonth > 0 ? $this->selectedMonth : null;
     }
 
     public function updatingSearch(): void
@@ -97,7 +134,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
         $this->resetPage();
     }
 
-    protected function gregorianDate(?string $persianDate): ?string
+    public function gregorianDate(?string $persianDate): ?string
     {
         if (! $persianDate) {
             return null;
@@ -112,11 +149,17 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
     protected function baseInvoiceQuery(): Builder
     {
-        $fiscalYearRef = config('sepidar.FiscalYearRef');
+        $fiscalYearRef = (int) $this->fiscalYearRef;
+        [$yearStart, $yearEnd] = app(SalesExpertPerformanceService::class)
+            ->periodBounds($fiscalYearRef, null);
 
         return Invoice::query()
             ->where('FiscalYearRef', $fiscalYearRef)
             ->where('Creator', $this->sepidarUser->UserID)
+            ->where('State', '<>', 2)
+            ->when($yearStart && $yearEnd && $this->startDate === '' && $this->endDate === '', function (Builder $query) use ($yearStart, $yearEnd) {
+                $query->whereBetween('Date', [$yearStart, $yearEnd]);
+            })
             ->when($this->saleType !== 'all', function (Builder $query) {
                 if ($this->saleType === 'official') {
                     $query->where('SaleTypeRef', 1);
@@ -136,6 +179,60 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                     $query->where('Date', '<=', $endDate);
                 }
             });
+    }
+
+    #[Computed]
+    public function selectedMonthInvoiceIds(): array
+    {
+        if ($this->selectedMonth <= 0) {
+            return [];
+        }
+
+        return $this->baseInvoiceQuery()
+            ->whereNotNull('Date')
+            ->get(['InvoiceId', 'Date'])
+            ->filter(function (Invoice $invoice) {
+                return Jalalian::fromDateTime($invoice->Date)->getMonth() === $this->selectedMonth;
+            })
+            ->pluck('InvoiceId')
+            ->all();
+    }
+
+    #[Computed]
+    public function fiscalYears()
+    {
+        return FiscalYear::query()->orderByDesc('FiscalYearID')->get();
+    }
+
+    #[Computed]
+    public function performanceMetrics(): array
+    {
+        $metrics = app(SalesExpertPerformanceService::class)->metricsForCreators(
+            [(int) $this->sepidarUser->UserID],
+            (int) $this->fiscalYearRef,
+            $this->monthFilter(),
+            auth()->user()?->can('accounting_profit_index') ?? false
+        );
+
+        return $metrics[(int) $this->sepidarUser->UserID] ?? [
+            'customer_count' => 0,
+            'invoice_count' => 0,
+            'sold_quantity' => 0,
+            'new_customer_count' => 0,
+            'profit' => null,
+            'proforma_count' => null,
+            'lead_conversion_rate' => null,
+            'buyer_type_frequency' => null,
+        ];
+    }
+
+    #[Computed]
+    public function monthlyTrend(): array
+    {
+        return app(SalesExpertPerformanceService::class)->monthlyTrend(
+            (int) $this->sepidarUser->UserID,
+            (int) $this->fiscalYearRef
+        );
     }
 
     #[Computed]
@@ -161,32 +258,10 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     }
 
     #[Computed]
-    public function selectedMonthInvoiceIds(): array
-    {
-        if (! $this->selectedMonth) {
-            return [];
-        }
-
-        return $this->baseInvoiceQuery()
-            ->whereNotNull('Date')
-            ->get(['InvoiceId', 'Date'])
-            ->filter(function (Invoice $invoice) {
-                return Jalalian::fromDateTime($invoice->Date)->getMonth() === $this->selectedMonth;
-            })
-            ->pluck('InvoiceId')
-            ->all();
-    }
-
-    #[Computed]
     public function invoices()
     {
-        $monthInvoiceIds = $this->selectedMonthInvoiceIds;
-
         return $this->baseInvoiceQuery()
             ->with(['customer'])
-            ->when($this->selectedMonth, function (Builder $query) use ($monthInvoiceIds) {
-                $query->whereIn('InvoiceId', $monthInvoiceIds ?: [0]);
-            })
             ->when($this->search !== '', function (Builder $query) {
                 $search = '%'.$this->search.'%';
                 $query->where(function (Builder $inner) use ($search) {
@@ -222,7 +297,20 @@ new #[Layout('layouts.panels.accounting')] class extends Component
                 <flux:text class="text-zinc-500">{{ __('app.user_invoices_report_description') }}</flux:text>
             </div>
 
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:flex-wrap">
+                <flux:select wire:model.live="selectedMonth" class="w-40">
+                    <flux:select.option value="0">{{ __('app.whole_year') }}</flux:select.option>
+                    @for($i = 1; $i <= 12; $i++)
+                        <flux:select.option value="{{ $i }}">{{ __('app.jalali_months.'.$i) }}</flux:select.option>
+                    @endfor
+                </flux:select>
+
+                <flux:select wire:model.live="fiscalYearRef" class="w-48">
+                    @foreach($this->fiscalYears as $year)
+                        <flux:select.option value="{{ $year->FiscalYearID }}">{{ $year->Title }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+
                 <flux:tabs variant="segmented" wire:model.live="saleType">
                     <flux:tab name="all">{{ __('app.all') }}</flux:tab>
                     <flux:tab name="official">{{ __('app.official') }}</flux:tab>
@@ -243,6 +331,106 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
         <flux:separator variant="subtle" class="mt-6" />
     </div>
+
+    @php $kpi = $this->performanceMetrics; @endphp
+
+    <div class="mb-6" wire:loading.class="opacity-60" wire:target="fiscalYearRef,selectedMonth">
+        <flux:heading size="lg" class="mb-4">{{ __('app.sales_expert_performance_kpis') }}</flux:heading>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <flux:card class="border-t-4 border-sky-500">
+                <flux:text>{{ __('app.sales_expert_customer_count') }}</flux:text>
+                <flux:heading size="xl" class="mt-2 tabular-nums">{{ number_format($kpi['customer_count']) }}</flux:heading>
+            </flux:card>
+
+            <flux:card class="border-t-4 border-zinc-400">
+                <flux:text>{{ __('app.sales_expert_proforma_count') }}</flux:text>
+                <flux:heading size="xl" class="mt-2">
+                    <flux:badge color="zinc" size="sm">{{ __('app.metric_unavailable') }}</flux:badge>
+                </flux:heading>
+            </flux:card>
+
+            <flux:card class="border-t-4 border-teal-500">
+                <flux:text>{{ __('app.sales_expert_invoice_count') }}</flux:text>
+                <flux:heading size="xl" class="mt-2 tabular-nums">{{ number_format($kpi['invoice_count']) }}</flux:heading>
+            </flux:card>
+
+            <flux:card class="border-t-4 border-zinc-400">
+                <flux:text>{{ __('app.sales_expert_lead_conversion_rate') }}</flux:text>
+                <flux:heading size="xl" class="mt-2">
+                    <flux:badge color="zinc" size="sm">{{ __('app.metric_unavailable') }}</flux:badge>
+                </flux:heading>
+            </flux:card>
+
+            <flux:card class="border-t-4 border-emerald-500">
+                <flux:text>{{ __('app.sales_expert_sold_quantity') }}</flux:text>
+                <flux:heading size="xl" class="mt-2 tabular-nums">{{ number_format($kpi['sold_quantity']) }}</flux:heading>
+            </flux:card>
+
+            @can('accounting_profit_index')
+                <flux:card class="border-t-4 border-amber-500">
+                    <flux:text>{{ __('app.sales_expert_profit') }}</flux:text>
+                    <flux:heading size="xl" class="mt-2 tabular-nums">
+                        {{ number_format((float) ($kpi['profit'] ?? 0)) }}
+                        <span class="text-sm font-normal text-zinc-500">{{ __('app.rial') }}</span>
+                    </flux:heading>
+                </flux:card>
+            @endcan
+
+            <flux:card class="border-t-4 border-indigo-500">
+                <flux:text>{{ __('app.sales_expert_new_customers') }}</flux:text>
+                <flux:heading size="xl" class="mt-2 tabular-nums">{{ number_format($kpi['new_customer_count']) }}</flux:heading>
+            </flux:card>
+
+            <flux:card class="border-t-4 border-zinc-400">
+                <flux:text>{{ __('app.sales_expert_buyer_type_frequency') }}</flux:text>
+                <flux:heading size="xl" class="mt-2">
+                    <flux:badge color="zinc" size="sm">{{ __('app.metric_unavailable') }}</flux:badge>
+                </flux:heading>
+            </flux:card>
+        </div>
+    </div>
+
+    <flux:card class="mb-6" wire:loading.class="opacity-60" wire:target="fiscalYearRef">
+        <flux:heading size="lg" class="mb-4">{{ __('app.sales_expert_monthly_trend_chart') }}</flux:heading>
+
+        <flux:chart :value="$this->monthlyTrend" class="h-80">
+            <flux:chart.viewport class="min-h-[20rem]">
+                <flux:chart.svg>
+                    <flux:chart.group>
+                        <flux:chart.bar field="invoices" class="text-sky-500" radius="4" />
+                        <flux:chart.bar field="new_customers" class="text-indigo-500" radius="4" />
+                    </flux:chart.group>
+
+                    <flux:chart.axis axis="x" field="month">
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
+
+                    <flux:chart.axis axis="y" :format="['useGrouping' => true]">
+                        <flux:chart.axis.grid />
+                        <flux:chart.axis.tick />
+                    </flux:chart.axis>
+
+                    <flux:chart.cursor type="area" />
+                </flux:chart.svg>
+            </flux:chart.viewport>
+
+            <div class="flex justify-center gap-4 pt-4">
+                <flux:chart.legend :label="__('app.sales_expert_invoice_count')">
+                    <flux:chart.legend.indicator class="bg-sky-500" />
+                </flux:chart.legend>
+                <flux:chart.legend :label="__('app.sales_expert_new_customers')">
+                    <flux:chart.legend.indicator class="bg-indigo-500" />
+                </flux:chart.legend>
+            </div>
+
+            <flux:chart.tooltip>
+                <flux:chart.tooltip.heading field="month" />
+                <flux:chart.tooltip.value field="invoices" :label="__('app.sales_expert_invoice_count')" :format="['useGrouping' => true]" />
+                <flux:chart.tooltip.value field="new_customers" :label="__('app.sales_expert_new_customers')" :format="['useGrouping' => true]" />
+            </flux:chart.tooltip>
+        </flux:chart>
+    </flux:card>
 
     <flux:card class="panel-filter-card mb-6">
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
@@ -287,7 +475,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
     </flux:card>
 
     <div class="relative">
-        <div wire:loading.delay.longer wire:target="selectedMonth, search, saleType, startDate, endDate, clearFilters" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+        <div wire:loading.delay.longer wire:target="selectedMonth, search, saleType, startDate, endDate, clearFilters, fiscalYearRef" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
             <flux:icon.loader-circle class="animate-spin text-zinc-500 w-10 h-10" />
         </div>
 
