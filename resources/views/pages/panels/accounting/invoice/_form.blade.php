@@ -99,8 +99,6 @@
 
                 <x-date-select wire:model="form.date" :label="__('app.date')" :required="true" />
 
-                <flux:input wire:model="form.description" label="{{ __('app.description') }}" />
-
                 @if ($this->showStockSelector)
                     <div class="space-y-2">
                         <flux:select
@@ -170,6 +168,8 @@
                                 <flux:text class="text-red-500">{{ $message }}</flux:text>
                             @enderror
                         </div>
+
+                        <flux:input wire:model="form.description" label="{{ __('app.description') }}" class="md:col-span-2 lg:col-span-3" />
                     </div>
                 </flux:accordion.item>
             </flux:accordion>
