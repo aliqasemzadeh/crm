@@ -8,6 +8,7 @@ use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Services\Sepidar\InventoryDeliveryService;
+use App\Services\Sepidar\InvoiceCreator;
 use Morilog\Jalali\Jalalian;
 use Tests\Concerns\UsesSepidarSqlsrvTransaction;
 use Tests\TestCase;
@@ -119,6 +120,61 @@ class InventoryDeliveryServiceTest extends TestCase
             (float) $afterDelete->Quantity,
             0.0001
         );
+    }
+
+    public function test_create_from_invoice_links_base_invoice_item_and_updates_stock(): void
+    {
+        [$party, $item, $stockRef, $before] = $this->fixture();
+        $service = app(InventoryDeliveryService::class);
+
+        $invoice = app(InvoiceCreator::class)->create([
+            'customer_party_ref' => (int) $party->PartyId,
+            'sale_type_ref' => 2,
+            'stock_ref' => $stockRef,
+            'date' => Jalalian::now()->format('Y/m/d'),
+            'description' => 'CRM warehouse exit from invoice test',
+            'items' => [[
+                'item_ref' => (int) $item->ItemID,
+                'quantity' => 1,
+                'fee' => 100000,
+                'discount' => 0,
+                'tax' => 0,
+                'stock_ref' => $stockRef,
+            ]],
+        ]);
+
+        $invoiceItem = $invoice->items()->first();
+        $this->assertNotNull($invoiceItem);
+
+        $deliveries = $service->createFromInvoice($invoice->fresh(['items', 'customer']));
+        $this->assertCount(1, $deliveries);
+
+        $deliveryItem = InventoryDeliveryItem::query()
+            ->where('BaseInvoiceItem', $invoiceItem->getKey())
+            ->first();
+
+        $this->assertNotNull($deliveryItem);
+        $this->assertEquals(1.0, (float) $deliveryItem->Quantity);
+
+        $after = ItemStockSummary::query()
+            ->where('ItemRef', $item->ItemID)
+            ->where('StockRef', $stockRef)
+            ->where('FiscalYearRef', config('sepidar.FiscalYearRef'))
+            ->first();
+
+        $this->assertEqualsWithDelta(
+            (float) $before->OutputQuantity + 1,
+            (float) $after->OutputQuantity,
+            0.0001
+        );
+        $this->assertEqualsWithDelta(
+            (float) $before->Quantity - 1,
+            (float) $after->Quantity,
+            0.0001
+        );
+
+        $this->expectException(\InvalidArgumentException::class);
+        $service->createFromInvoice($invoice->fresh(['items', 'customer']));
     }
 
     /**

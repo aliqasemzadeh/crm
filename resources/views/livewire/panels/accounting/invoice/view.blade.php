@@ -12,14 +12,17 @@
 
         @if(isset($invoice))
             @php
-                $partyName = $invoice->customer
-                    ? trim(implode(' ', array_filter([
-                        trim((string) ($invoice->customer->Name ?? '')),
-                        trim((string) ($invoice->customer->LastName ?? '')),
-                    ], static fn (string $part): bool => $part !== '')))
-                    : (string) ($invoice->CustomerRealName ?? '-');
+                $partyName = trim((string) ($invoice->CustomerRealName ?? ''));
                 if ($partyName === '') {
-                    $partyName = (string) ($invoice->CustomerRealName ?? '-');
+                    $partyName = $invoice->customer
+                        ? trim(implode(' ', array_filter([
+                            trim((string) ($invoice->customer->Name ?? '')),
+                            trim((string) ($invoice->customer->LastName ?? '')),
+                        ], static fn (string $part): bool => $part !== '')))
+                        : '-';
+                }
+                if ($partyName === '') {
+                    $partyName = '-';
                 }
             @endphp
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-zinc-50 dark:bg-zinc-800 p-4 rounded-lg border border-zinc-200 dark:border-zinc-700">

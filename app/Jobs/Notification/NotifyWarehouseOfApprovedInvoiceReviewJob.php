@@ -33,7 +33,7 @@ class NotifyWarehouseOfApprovedInvoiceReviewJob implements ShouldQueue
             'reviewed_at' => $review->accounting_reviewed_at
                 ? Jalalian::fromDateTime($review->accounting_reviewed_at)->format('Y/m/d H:i')
                 : '-',
-            'url' => route('panels.accounting.invoice.view', $review->sepidar_invoice_id),
+            'url' => route('panels.warehouse.invoice-delivery.view', $review->sepidar_invoice_id),
         ]);
 
         User::role('warehouse')

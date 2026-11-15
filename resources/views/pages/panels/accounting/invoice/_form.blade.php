@@ -88,6 +88,8 @@
                     @enderror
                 </div>
 
+                <flux:input wire:model="form.customer_real_name" label="{{ __('app.customer_real_name') }}" />
+
                 <div class="space-y-2">
                     <flux:radio.group wire:model.live="form.sale_type_ref" label="{{ __('app.sale_type') }}" variant="segmented">
                         <flux:radio value="1" label="{{ __('app.official') }}" />

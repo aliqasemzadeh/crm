@@ -112,6 +112,10 @@ return [
         'warehouse_inventory_delivery_edit' => 'ویرایش خروج انبار',
         'warehouse_inventory_delivery_delete' => 'حذف خروج انبار',
 
+        'warehouse_invoice_delivery_index' => 'فهرست خروج از فاکتور',
+        'warehouse_invoice_delivery_create' => 'ثبت خروج از فاکتور',
+        'warehouse_invoice_delivery_view' => 'مشاهده فاکتور برای خروج انبار',
+
         'administrator_item_day_check' => 'ادمین بررسی روزانه کالاها',
     ],
 
@@ -265,6 +269,9 @@ return [
         'warehouse_inventory_delivery_create' => 'ثبت خروج انبار',
         'warehouse_inventory_delivery_edit' => 'ویرایش خروج انبار',
         'warehouse_inventory_delivery_delete' => 'حذف خروج انبار',
+        'warehouse_invoice_delivery_index' => 'فهرست خروج از فاکتور',
+        'warehouse_invoice_delivery_create' => 'ثبت خروج از فاکتور',
+        'warehouse_invoice_delivery_view' => 'مشاهده فاکتور برای خروج انبار',
     ],
 
     'sales' => [

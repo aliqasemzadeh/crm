@@ -8,6 +8,8 @@ class InvoiceForm extends Form
 {
     public ?int $customer_party_ref = null;
 
+    public string $customer_real_name = '';
+
     public int $sale_type_ref = 2;
 
     public string $date = '';
@@ -22,6 +24,7 @@ class InvoiceForm extends Form
     {
         return [
             'customer_party_ref' => ['required', 'integer'],
+            'customer_real_name' => ['nullable', 'string', 'max:500'],
             'sale_type_ref' => ['required', 'integer', 'in:1,2'],
             'date' => ['required', 'string'],
             'description' => ['nullable', 'string', 'max:1000'],
@@ -34,6 +37,7 @@ class InvoiceForm extends Form
     {
         return [
             'customer_party_ref' => __('app.customer'),
+            'customer_real_name' => __('app.customer_real_name'),
             'sale_type_ref' => __('app.sale_type'),
             'date' => __('app.date'),
             'description' => __('app.description'),

@@ -21,6 +21,15 @@ new #[Layout('layouts.panels.sale')] class extends Component
     #[Url]
     public string $saleType = 'all';
 
+    #[Url]
+    public string $invoiceStatus = 'all';
+
+    public string $invoiceNumber = '';
+
+    public string $dateFrom = '';
+
+    public string $dateTo = '';
+
     public function mount(): void
     {
         $this->authorize('sales_invoice_index');
@@ -41,14 +50,47 @@ new #[Layout('layouts.panels.sale')] class extends Component
         $this->resetPage();
     }
 
+    public function updatedInvoiceStatus(): void
+    {
+        $this->resetPage();
+    }
+
     public function updatedSearch(): void
     {
+        $this->resetPage();
+    }
+
+    public function updatedInvoiceNumber(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateFrom(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDateTo(): void
+    {
+        $this->resetPage();
+    }
+
+    public function clearFilters(): void
+    {
+        $this->search = '';
+        $this->invoiceNumber = '';
+        $this->dateFrom = '';
+        $this->dateTo = '';
+        $this->invoiceStatus = 'all';
         $this->resetPage();
     }
 
     #[Computed]
     public function invoices()
     {
+        $dateFrom = $this->parseJalaliDate($this->dateFrom, startOfDay: true);
+        $dateTo = $this->parseJalaliDate($this->dateTo, endOfDay: true);
+
         return Invoice::query()
             ->with(['creator'])
             ->when($this->saleType !== 'all', function ($query) {
@@ -58,6 +100,18 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     $query->where('SaleTypeRef', '!=', 1);
                 }
             })
+            ->when($this->invoiceStatus !== 'all', function ($query) {
+                if ($this->invoiceStatus === 'registered') {
+                    $query->where('State', '<>', 2);
+                } elseif ($this->invoiceStatus === 'canceled') {
+                    $query->where('State', 2);
+                }
+            })
+            ->when(trim($this->invoiceNumber) !== '', function ($query) {
+                $query->where('Number', 'like', '%'.trim($this->invoiceNumber).'%');
+            })
+            ->when($dateFrom, fn ($query) => $query->where('Date', '>=', $dateFrom))
+            ->when($dateTo, fn ($query) => $query->where('Date', '<=', $dateTo))
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('CustomerRealName', 'like', '%'.$this->search.'%')
@@ -70,6 +124,29 @@ new #[Layout('layouts.panels.sale')] class extends Component
                 }
             })
             ->paginate(20);
+    }
+
+    private function parseJalaliDate(?string $date, bool $startOfDay = false, bool $endOfDay = false): ?string
+    {
+        if ($date === null || trim($date) === '') {
+            return null;
+        }
+
+        try {
+            $carbon = Jalalian::fromFormat('Y/m/d', trim(str_replace('-', '/', $date)))->toCarbon();
+
+            if ($startOfDay) {
+                $carbon->startOfDay();
+            }
+
+            if ($endOfDay) {
+                $carbon->endOfDay();
+            }
+
+            return $carbon->format('Y-m-d H:i:s');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 };
 ?>
@@ -87,7 +164,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
             </div>
 
             <div class="flex items-center gap-4">
-                <div wire:loading wire:target="saleType">
+                <div wire:loading wire:target="saleType,invoiceStatus,search,invoiceNumber,dateFrom,dateTo">
                     <flux:icon.loader-circle class="animate-spin text-zinc-400" />
                 </div>
 
@@ -116,15 +193,42 @@ new #[Layout('layouts.panels.sale')] class extends Component
         <flux:separator variant="subtle" />
     </div>
 
-    <div class="relative">
-        <div wire:loading.delay.longer wire:target="saleType, search" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
-            <flux:icon.loader-circle class="animate-spin text-zinc-500 w-10 h-10" />
+    <flux:card class="panel-filter-card mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 items-end">
+            <flux:input
+                wire:model.live.debounce.500ms="search"
+                icon="magnifying-glass"
+                :label="__('app.search')"
+                placeholder="{{ __('app.search_placeholder') }}"
+            />
+
+            <flux:input
+                wire:model.live.debounce.500ms="invoiceNumber"
+                icon="hash"
+                :label="__('app.invoice_number')"
+                placeholder="{{ __('app.invoice_number') }}"
+            />
+
+            <flux:select wire:model.live="invoiceStatus" :label="__('app.invoice_status')" searchable>
+                <flux:select.option value="all">{{ __('app.all') }}</flux:select.option>
+                <flux:select.option value="registered">{{ __('app.registered') }}</flux:select.option>
+                <flux:select.option value="canceled">{{ __('app.canceled') }}</flux:select.option>
+            </flux:select>
+
+            <x-date-select wire:model.live="dateFrom" :label="__('app.from_date')" />
+            <x-date-select wire:model.live="dateTo" :label="__('app.to_date')" />
         </div>
 
-        <div class="flex items-center justify-between gap-4 mb-4">
-            <div class="flex-1">
-                <flux:input wire:model.live.debounce.500ms="search" icon="search" placeholder="{{ __('app.search_placeholder') }}" />
-            </div>
+        <div class="mt-3 flex justify-end">
+            <flux:button variant="primary" color="zinc" wire:click="clearFilters" class="w-full sm:w-auto">
+                {{ __('app.clear_all_filters') }}
+            </flux:button>
+        </div>
+    </flux:card>
+
+    <div class="relative">
+        <div wire:loading.delay.longer wire:target="saleType,invoiceStatus,search,invoiceNumber,dateFrom,dateTo" class="absolute inset-0 bg-white/50 dark:bg-zinc-900/50 z-10 flex items-center justify-center backdrop-blur-sm rounded-xl">
+            <flux:icon.loader-circle class="animate-spin text-zinc-500 w-10 h-10" />
         </div>
 
         <flux:table :paginate="$this->invoices">
@@ -134,6 +238,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
                 <flux:table.column sortable :sorted="$sortBy === 'CustomerRealName'" :direction="$sortDirection" wire:click="sort('CustomerRealName')">{{ __('app.name') }}</flux:table.column>
                 <flux:table.column>{{ __('app.creator') }}</flux:table.column>
                 <flux:table.column>{{ __('app.category') }}</flux:table.column>
+                <flux:table.column>{{ __('app.invoice_status') }}</flux:table.column>
                 <flux:table.column>{{ __('app.price') }}</flux:table.column>
                 <flux:table.column sortable :sorted="$sortBy === 'Date'" :direction="$sortDirection" wire:click="sort('Date')">{{ __('app.date') }}</flux:table.column>
             </flux:table.columns>
@@ -188,6 +293,13 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     <flux:table.cell class="whitespace-nowrap">{{ $invoice->creator?->Name ?? '-' }}</flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">
                         {{ (int) $invoice->SaleTypeRef === 1 ? __('app.official') : __('app.unofficial') }}
+                    </flux:table.cell>
+                    <flux:table.cell class="whitespace-nowrap">
+                        @if ((int) $invoice->State === 2)
+                            <flux:badge color="red" size="sm">{{ __('app.canceled') }}</flux:badge>
+                        @else
+                            <flux:badge color="emerald" size="sm">{{ __('app.registered') }}</flux:badge>
+                        @endif
                     </flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">{{ number_format($invoice->Price) }}</flux:table.cell>
                     <flux:table.cell class="whitespace-nowrap">

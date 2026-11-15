@@ -686,6 +686,9 @@ trait HandlesInvoiceForm
 
         return [
             'customer_party_ref' => (int) $this->form->customer_party_ref,
+            'customer_real_name' => $this->form->customer_real_name !== ''
+                ? trim($this->form->customer_real_name)
+                : null,
             'sale_type_ref' => (int) $this->form->sale_type_ref,
             'delivery_location_ref' => (int) ($this->form->delivery_location_ref
                 ?: config('sepidar.DeliveryLocationRef', 1)),

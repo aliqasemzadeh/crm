@@ -41,7 +41,10 @@ class InvoiceUpdater
     public function update(Invoice $invoice, array $data): Invoice
     {
         $party = Party::query()->findOrFail($data['customer_party_ref']);
-        $customerName = $this->partyDisplayName($party);
+        $customerName = trim((string) ($data['customer_real_name'] ?? ''));
+        if ($customerName === '') {
+            $customerName = $this->partyDisplayName($party);
+        }
         $customerNameEn = $this->partyDisplayNameEn($party);
         $addressId = PartyAddress::query()
             ->where('PartyRef', $party->PartyId)

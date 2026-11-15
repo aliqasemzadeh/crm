@@ -5,6 +5,7 @@ namespace App\Services\Sepidar;
 use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\InventoryDelivery;
 use App\Models\Sepidar\INV\InventoryDeliveryItem;
+use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\InvoiceItem;
 use App\Support\Sepidar\NextIdAllocator;
 use Illuminate\Support\Collection;
@@ -27,7 +28,8 @@ class InventoryDeliveryService
      *     items: list<array{
      *         item_ref: int,
      *         quantity: float|int,
-     *         description?: string|null
+     *         description?: string|null,
+     *         base_invoice_item?: int|null
      *     }>
      * }  $data
      */
@@ -40,6 +42,82 @@ class InventoryDeliveryService
             $this->stockSummaryUpdater->refresh($stockKeys);
 
             return $deliveries->first()->fresh(['items', 'items.item']);
+        });
+    }
+
+    /**
+     * Create inventory deliveries linked to invoice items (BaseInvoiceItem).
+     *
+     * @return Collection<int, InventoryDelivery>
+     */
+    public function createFromInvoice(Invoice $invoice): Collection
+    {
+        $invoice->loadMissing(['items', 'customer']);
+
+        if ((int) $invoice->State === 2) {
+            throw new \InvalidArgumentException('Cannot create warehouse delivery for a canceled invoice.');
+        }
+
+        $invoiceItems = $invoice->items
+            ->filter(fn (InvoiceItem $item) => (int) $item->ItemRef > 0 && (float) $item->Quantity > 0)
+            ->values();
+
+        if ($invoiceItems->isEmpty()) {
+            throw new \InvalidArgumentException('Invoice has no deliverable items.');
+        }
+
+        $invoiceItemIds = $invoiceItems->pluck('InvoiceItemID')->all();
+
+        $alreadyDelivered = InventoryDeliveryItem::query()
+            ->whereIn('BaseInvoiceItem', $invoiceItemIds)
+            ->exists();
+
+        if ($alreadyDelivered) {
+            throw new \InvalidArgumentException('Warehouse delivery already exists for this invoice.');
+        }
+
+        $defaultStockRef = (int) config('sepidar.DefaultStockRef', 2);
+        $date = $invoice->Date
+            ? Jalalian::fromDateTime($invoice->Date)->format('Y/m/d')
+            : Jalalian::now()->format('Y/m/d');
+        $description = __('app.warehouse_invoice_delivery_description', [
+            'number' => $invoice->Number,
+        ]);
+
+        $grouped = $invoiceItems->groupBy(function (InvoiceItem $item) use ($defaultStockRef) {
+            $stockRef = (int) ($item->StockRef ?? 0);
+
+            return $stockRef > 0 ? $stockRef : $defaultStockRef;
+        });
+
+        return DB::connection('sqlsrv')->transaction(function () use ($grouped, $invoice, $date, $description) {
+            $allDeliveries = collect();
+
+            foreach ($grouped as $stockRef => $items) {
+                $deliveries = $this->createDeliveries([
+                    'stock_ref' => (int) $stockRef,
+                    'receiver_party_ref' => $invoice->CustomerPartyRef
+                        ? (int) $invoice->CustomerPartyRef
+                        : null,
+                    'date' => $date,
+                    'description' => $description,
+                    'items' => $items->map(fn (InvoiceItem $item) => [
+                        'item_ref' => (int) $item->ItemRef,
+                        'quantity' => (float) $item->Quantity,
+                        'description' => $item->Description,
+                        'base_invoice_item' => (int) $item->InvoiceItemID,
+                    ])->values()->all(),
+                ]);
+
+                $allDeliveries = $allDeliveries->merge($deliveries);
+            }
+
+            $stockKeys = $this->stockKeysFromDeliveries($allDeliveries);
+            $this->stockSummaryUpdater->refresh($stockKeys);
+
+            return $allDeliveries->map(
+                fn (InventoryDelivery $delivery) => $delivery->fresh(['items', 'items.item'])
+            )->values();
         });
     }
 
@@ -155,7 +233,8 @@ class InventoryDeliveryService
      *     items: list<array{
      *         item_ref: int,
      *         quantity: float|int,
-     *         description?: string|null
+     *         description?: string|null,
+     *         base_invoice_item?: int|null
      *     }>
      * }  $data
      * @return Collection<int, InventoryDelivery>
@@ -232,13 +311,16 @@ class InventoryDeliveryService
 
         foreach ($items as $row) {
             $quantity = (float) $row['quantity'];
+            $baseInvoiceItem = isset($row['base_invoice_item']) && (int) $row['base_invoice_item'] > 0
+                ? (int) $row['base_invoice_item']
+                : null;
 
             InventoryDeliveryItem::query()->create([
                 'InventoryDeliveryItemID' => $nextDeliveryItemId++,
                 'InventoryDeliveryRef' => $deliveryId,
                 'IsReturn' => 0,
                 'RowNumber' => $rowNumber++,
-                'BaseInvoiceItem' => null,
+                'BaseInvoiceItem' => $baseInvoiceItem,
                 'BaseInventoryDeliveryItem' => null,
                 'BaseReturnedInvoiceItem' => null,
                 'QuotationItemRef' => null,

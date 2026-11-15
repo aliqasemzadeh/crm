@@ -60,8 +60,10 @@ class NextIdAllocator
     }
 
     /**
-     * Keep SQL Server IDENTITY in sync after manual inserts so Sepidar desktop
-     * does not regenerate an ID that CRM already wrote.
+     * Keep FMK.IDGeneration (Sepidar's app-level ID counter) in sync after manual
+     * inserts so the desktop client does not reuse a PK that CRM already wrote.
+     *
+     * Also reseeds SQL Server IDENTITY when the table has one (most Sepidar tables do not).
      */
     public static function syncIdentity(string $qualifiedTable, string $column, string $connection = 'sqlsrv'): void
     {
@@ -70,15 +72,6 @@ class NextIdAllocator
 
         if (! preg_match('/^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)?$/', $objectName)) {
             throw new InvalidArgumentException("Invalid table name [{$objectName}].");
-        }
-
-        $hasIdentity = DB::connection($connection)->selectOne(
-            "SELECT OBJECTPROPERTY(OBJECT_ID(?), 'TableHasIdentity') AS HasIdentity",
-            [$objectName]
-        );
-
-        if ((int) ($hasIdentity->HasIdentity ?? 0) !== 1) {
-            return;
         }
 
         $quotedColumn = self::quoteIdent($column);
@@ -90,9 +83,49 @@ class NextIdAllocator
 
         $maxId = (int) ($max->MaxId ?? 0);
 
-        DB::connection($connection)->unprepared(
-            "DBCC CHECKIDENT (N'".str_replace("'", "''", $objectName)."', RESEED, {$maxId})"
+        self::syncIdGeneration($objectName, $maxId, $connection);
+
+        $hasIdentity = DB::connection($connection)->selectOne(
+            "SELECT OBJECTPROPERTY(OBJECT_ID(?), 'TableHasIdentity') AS HasIdentity",
+            [$objectName]
         );
+
+        if ((int) ($hasIdentity->HasIdentity ?? 0) === 1) {
+            DB::connection($connection)->unprepared(
+                "DBCC CHECKIDENT (N'".str_replace("'", "''", $objectName)."', RESEED, {$maxId})"
+            );
+        }
+    }
+
+    /**
+     * Bump FMK.IDGeneration.LastId up to $maxId when it has fallen behind.
+     * Never decreases LastId (deleted high IDs must not rewind the counter).
+     */
+    public static function syncIdGeneration(string $qualifiedTable, int $maxId, string $connection = 'sqlsrv'): void
+    {
+        [$schema, $table] = self::splitTable($qualifiedTable);
+        $objectName = $schema !== null ? "{$schema}.{$table}" : $table;
+
+        $updated = DB::connection($connection)->update(
+            'UPDATE [FMK].[IDGeneration] SET [LastId] = ? WHERE [TableName] = ? AND [LastId] < ?',
+            [$maxId, $objectName, $maxId]
+        );
+
+        if ($updated > 0 || $maxId <= 0) {
+            return;
+        }
+
+        $exists = DB::connection($connection)->selectOne(
+            'SELECT [LastId] FROM [FMK].[IDGeneration] WHERE [TableName] = ?',
+            [$objectName]
+        );
+
+        if ($exists === null) {
+            DB::connection($connection)->insert(
+                'INSERT INTO [FMK].[IDGeneration] ([TableName], [LastId]) VALUES (?, ?)',
+                [$objectName, $maxId]
+            );
+        }
     }
 
     /**

@@ -148,6 +148,7 @@ return [
     'invoice_details' => 'جزئیات فاکتور',
     'invoice_number' => 'شماره فاکتور',
     'customer' => 'مشتری',
+    'customer_real_name' => 'نام واقعی مشتری',
     'total_price' => 'مبلغ کل',
     'item_name' => 'نام کالا',
     'total' => 'جمع کل',
@@ -2132,6 +2133,16 @@ return [
     'warehouse_delivery_create_failed' => 'ثبت خروج انبار با خطا مواجه شد.',
     'warehouse_delivery_update_failed' => 'به‌روزرسانی خروج انبار با خطا مواجه شد.',
     'warehouse_delivery_delete_failed' => 'حذف خروج انبار با خطا مواجه شد.',
+
+    'warehouse_invoice_delivery_nav' => 'خروج از فاکتور',
+    'warehouse_invoice_deliveries' => 'فاکتورهای در انتظار خروج انبار',
+    'warehouse_invoice_deliveries_description' => 'فاکتورهای تاییدشده حسابداری که هنوز خروج انبار نخورده‌اند.',
+    'warehouse_invoice_delivery_description' => 'خروج انبار بابت فاکتور شماره :number',
+    'warehouse_invoice_delivery_created' => 'خروج انبار برای فاکتور ثبت شد (شماره: :number).',
+    'warehouse_invoice_delivery_failed' => 'ثبت خروج انبار برای فاکتور با خطا مواجه شد.',
+    'warehouse_invoice_delivery_unavailable' => 'این فاکتور برای خروج انبار در دسترس نیست.',
+    'warehouse_invoice_delivery_invoice_missing' => 'فاکتور مربوطه یافت نشد.',
+    'warehouse_invoice_delivery_status_delivered' => 'خروج انبار ثبت شده',
 
     'route_logs' => [
         'title' => 'لاگ‌های دسترسی به این صفحه',

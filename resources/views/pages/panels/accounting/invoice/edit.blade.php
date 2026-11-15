@@ -32,6 +32,7 @@ new #[Layout('layouts.panels.accounting')] class extends Component
             ? Jalalian::fromDateTime($this->invoice->Date)->format('Y/m/d')
             : Jalalian::now()->format('Y/m/d');
         $this->form->description = (string) ($this->invoice->Description ?? '');
+        $this->form->customer_real_name = (string) ($this->invoice->CustomerRealName ?? '');
         $this->syncTaxPercentFromSaleType();
         $this->items = $this->invoice->items->map(function ($item) {
             return [
