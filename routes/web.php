@@ -41,7 +41,7 @@ Route::middleware(['auth', 'local.network'])->group(function () {
     Route::livewire('/panels/administrator/user-management/role/index', 'pages::panels.administrator.user-management.role.index')->name('panels.administrator.user-management.role.index');
     Route::livewire('/panels/administrator/user-management/permission/index', 'pages::panels.administrator.user-management.permission.index')->name('panels.administrator.user-management.permission.index');
     Route::livewire('/panels/administrator/setting-management/function/index', App\Livewire\Panels\Administrator\SettingManagement\Function\Index::class)->name('panels.administrator.setting-management.function.index');
-    Route::livewire('/panels/administrator/setting-management/option/index', App\Livewire\Panels\Administrator\SettingManagement\Option\Index::class)->name('panels.administrator.setting-management.option.index');
+    Route::livewire('/panels/administrator/setting-management/option/index', 'pages::panels.administrator.setting-management.option.index')->name('panels.administrator.setting-management.option.index');
     Route::livewire('/panels/administrator/announcement/index', Index::class)->name('panels.administrator.announcement.index');
     Route::livewire('/panels/administrator/calender/index', 'pages::panels.administrator.calender.index')->name('panels.administrator.calender.index');
     Route::livewire('/panels/administrator/item-day-check/index', 'pages::panels.administrator.item-day-check.index')->name('panels.administrator.item-day-check.index');

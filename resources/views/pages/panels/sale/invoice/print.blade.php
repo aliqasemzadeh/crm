@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Sepidar\SLS\Invoice;
+use App\Settings\InvoiceSettings;
+use App\Support\Sepidar\StockOptions;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
@@ -28,6 +30,18 @@ new #[Layout('layouts.panels.sale')] class extends Component
             trim((string) ($party->Name ?? '')),
             trim((string) ($party->LastName ?? '')),
         ], static fn (string $part): bool => $part !== ''))) ?: (string) ($this->invoice->CustomerRealName ?? '-');
+    }
+
+    public function showStock(): bool
+    {
+        return app(InvoiceSettings::class)->show_stock_selector;
+    }
+
+    public function stockLabel(): string
+    {
+        $stockRef = (int) ($this->invoice->items->firstWhere(fn ($item) => (int) ($item->StockRef ?? 0) > 0)?->StockRef ?? 0);
+
+        return StockOptions::labelFor($stockRef > 0 ? $stockRef : null);
     }
 };
 ?>
@@ -64,6 +78,12 @@ new #[Layout('layouts.panels.sale')] class extends Component
                 <div class="text-zinc-500">{{ __('app.customer') }}</div>
                 <div class="font-semibold">{{ $this->partyName() }}</div>
             </div>
+            @if ($this->showStock())
+                <div>
+                    <div class="text-zinc-500">{{ __('app.warehouse_stock') }}</div>
+                    <div class="font-semibold">{{ $this->stockLabel() }}</div>
+                </div>
+            @endif
             @if (filled($invoice->Description))
                 <div>
                     <div class="text-zinc-500">{{ __('app.description') }}</div>

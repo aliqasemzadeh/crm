@@ -98,6 +98,26 @@
                 <x-date-select wire:model="form.date" :label="__('app.date')" :required="true" />
 
                 <flux:input wire:model="form.description" label="{{ __('app.description') }}" />
+
+                @if ($this->showStockSelector)
+                    <div class="space-y-2">
+                        <flux:select
+                            wire:model="form.stock_ref"
+                            searchable
+                            label="{{ __('app.warehouse_stock') }}"
+                            placeholder="{{ __('app.warehouse_stock') }}"
+                        >
+                            @foreach ($this->stocks as $stockId => $stockTitle)
+                                <flux:select.option value="{{ $stockId }}" wire:key="invoice-stock-{{ $stockId }}">
+                                    {{ $stockTitle }}
+                                </flux:select.option>
+                            @endforeach
+                        </flux:select>
+                        @error('form.stock_ref')
+                            <flux:text class="text-red-500">{{ $message }}</flux:text>
+                        @enderror
+                    </div>
+                @endif
             </div>
 
             <flux:accordion transition>

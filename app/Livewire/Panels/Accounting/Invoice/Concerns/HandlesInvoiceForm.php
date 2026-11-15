@@ -8,7 +8,10 @@ use App\Models\Sepidar\INV\Item;
 use App\Models\Sepidar\INV\ItemStockSummary;
 use App\Services\Sepidar\PartyBalance;
 use App\Services\Sepidar\PartyCreator;
+use App\Settings\InvoiceSettings;
+use App\Support\Sepidar\StockOptions;
 use Flux\Flux;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
@@ -130,7 +133,29 @@ trait HandlesInvoiceForm
             $this->form->delivery_location_ref = (int) config('sepidar.DeliveryLocationRef', 1);
         }
 
+        if (! $this->form->stock_ref) {
+            $this->form->stock_ref = $this->invoiceSettings()->resolvedDefaultStockRef();
+        }
+
         $this->syncTaxPercentFromSaleType();
+    }
+
+    protected function invoiceSettings(): InvoiceSettings
+    {
+        return app(InvoiceSettings::class);
+    }
+
+    protected function resolveStockRefFromInvoiceItems(iterable $items): int
+    {
+        foreach ($items as $item) {
+            $stockRef = (int) ($item->StockRef ?? 0);
+
+            if ($stockRef > 0) {
+                return $stockRef;
+            }
+        }
+
+        return $this->invoiceSettings()->resolvedDefaultStockRef();
     }
 
     protected function invoiceUiPrefix(): string
@@ -551,6 +576,23 @@ trait HandlesInvoiceForm
             ->get();
     }
 
+    #[Computed]
+    public function showStockSelector(): bool
+    {
+        return $this->invoiceSettings()->show_stock_selector;
+    }
+
+    /**
+     * @return Collection<int, string>
+     */
+    #[Computed]
+    public function stocks(): Collection
+    {
+        return StockOptions::labels(
+            (int) ($this->form->stock_ref ?: $this->invoiceSettings()->resolvedDefaultStockRef())
+        );
+    }
+
     public function formatInvoiceNumber(float|int|string|null $value): string
     {
         $number = (float) str_replace(',', '', (string) ($value ?? 0));
@@ -639,14 +681,18 @@ trait HandlesInvoiceForm
     {
         $this->normalizeMoneyFields();
 
+        $stockRef = (int) ($this->form->stock_ref
+            ?: $this->invoiceSettings()->resolvedDefaultStockRef());
+
         return [
             'customer_party_ref' => (int) $this->form->customer_party_ref,
             'sale_type_ref' => (int) $this->form->sale_type_ref,
             'delivery_location_ref' => (int) ($this->form->delivery_location_ref
                 ?: config('sepidar.DeliveryLocationRef', 1)),
+            'stock_ref' => $stockRef,
             'date' => $this->form->date,
             'description' => $this->form->description !== '' ? $this->form->description : null,
-            'items' => collect($this->items)->map(function (array $row) {
+            'items' => collect($this->items)->map(function (array $row) use ($stockRef) {
                 return [
                     'item_ref' => (int) $row['item_ref'],
                     'quantity' => (float) $row['quantity'],
@@ -654,6 +700,7 @@ trait HandlesInvoiceForm
                     'discount' => (float) ($row['discount'] ?? 0),
                     'tax' => (float) ($row['tax'] ?? 0),
                     'description' => ($row['description'] ?? '') !== '' ? $row['description'] : null,
+                    'stock_ref' => $stockRef,
                 ];
             })->all(),
         ];

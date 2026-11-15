@@ -16,6 +16,8 @@ class InvoiceForm extends Form
 
     public ?int $delivery_location_ref = null;
 
+    public ?int $stock_ref = null;
+
     public function rules(): array
     {
         return [
@@ -24,6 +26,7 @@ class InvoiceForm extends Form
             'date' => ['required', 'string'],
             'description' => ['nullable', 'string', 'max:1000'],
             'delivery_location_ref' => ['required', 'integer'],
+            'stock_ref' => ['required', 'integer', 'min:1'],
         ];
     }
 
@@ -35,6 +38,7 @@ class InvoiceForm extends Form
             'date' => __('app.date'),
             'description' => __('app.description'),
             'delivery_location_ref' => __('app.delivery_location'),
+            'stock_ref' => __('app.warehouse_stock'),
         ];
     }
 }

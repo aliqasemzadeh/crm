@@ -32,6 +32,7 @@ new #[Layout('layouts.panels.sale')] class extends Component
         $this->form->sale_type_ref = (int) $this->invoice->SaleTypeRef;
         $this->form->delivery_location_ref = (int) ($this->invoice->DeliveryLocationRef
             ?: config('sepidar.DeliveryLocationRef', 1));
+        $this->form->stock_ref = $this->resolveStockRefFromInvoiceItems($this->invoice->items);
         $this->form->date = $this->invoice->Date
             ? Jalalian::fromDateTime($this->invoice->Date)->format('Y/m/d')
             : Jalalian::now()->format('Y/m/d');

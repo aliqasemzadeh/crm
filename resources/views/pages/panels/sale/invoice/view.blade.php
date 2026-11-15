@@ -1,6 +1,8 @@
 <?php
 
 use App\Models\Sepidar\SLS\Invoice;
+use App\Settings\InvoiceSettings;
+use App\Support\Sepidar\StockOptions;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Morilog\Jalali\Jalalian;
@@ -28,6 +30,18 @@ new #[Layout('layouts.panels.sale')] class extends Component
             trim((string) ($party->Name ?? '')),
             trim((string) ($party->LastName ?? '')),
         ], static fn (string $part): bool => $part !== ''))) ?: (string) ($this->invoice->CustomerRealName ?? '-');
+    }
+
+    public function showStock(): bool
+    {
+        return app(InvoiceSettings::class)->show_stock_selector;
+    }
+
+    public function stockLabel(): string
+    {
+        $stockRef = (int) ($this->invoice->items->firstWhere(fn ($item) => (int) ($item->StockRef ?? 0) > 0)?->StockRef ?? 0);
+
+        return StockOptions::labelFor($stockRef > 0 ? $stockRef : null);
     }
 };
 ?>
@@ -125,6 +139,12 @@ new #[Layout('layouts.panels.sale')] class extends Component
                     <flux:text size="sm">{{ __('app.last_modifier') }}</flux:text>
                     <flux:heading size="sm">{{ $invoice->modifier?->Name ?? '-' }}</flux:heading>
                 </div>
+                @if ($this->showStock())
+                    <div>
+                        <flux:text size="sm">{{ __('app.warehouse_stock') }}</flux:text>
+                        <flux:heading size="sm">{{ $this->stockLabel() }}</flux:heading>
+                    </div>
+                @endif
                 @if (filled($invoice->Description))
                     <div class="md:col-span-3">
                         <flux:text size="sm">{{ __('app.description') }}</flux:text>

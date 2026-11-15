@@ -6,6 +6,7 @@ use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\GNR\PartyAddress;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\InvoiceItem;
+use App\Settings\InvoiceSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Morilog\Jalali\Jalalian;
@@ -21,6 +22,7 @@ class InvoiceCreator
      *     customer_party_ref: int,
      *     sale_type_ref: int,
      *     delivery_location_ref?: int,
+     *     stock_ref?: int,
      *     date: string,
      *     description?: string|null,
      *     items: list<array{
@@ -29,7 +31,8 @@ class InvoiceCreator
      *         fee: float|int,
      *         discount?: float|int,
      *         tax?: float|int,
-     *         description?: string|null
+     *         description?: string|null,
+     *         stock_ref?: int
      *     }>
      * }  $data
      */
@@ -49,6 +52,7 @@ class InvoiceCreator
         $creator = (int) (auth()->user()?->resolveSepidarCreatorId() ?? config('sepidar.Creator', 1));
         $fiscalYearRef = (int) config('sepidar.FiscalYearRef');
         $saleTypeRef = (int) $data['sale_type_ref'];
+        $defaultStockRef = (int) ($data['stock_ref'] ?? $this->defaultStockRef());
 
         $linePayloads = [];
         $totals = [
@@ -69,12 +73,13 @@ class InvoiceCreator
             $duty = 0;
             $addition = 0;
             $netPrice = $price - $discount + $addition + $tax + $duty;
+            $stockRef = (int) ($row['stock_ref'] ?? $defaultStockRef);
 
             $linePayloads[] = [
                 'RowID' => $index + 1,
                 'ItemRef' => (int) $row['item_ref'],
                 'TracingRef' => null,
-                'StockRef' => null,
+                'StockRef' => $stockRef > 0 ? $stockRef : $defaultStockRef,
                 'Quantity' => $quantity,
                 'SecondaryQuantity' => $quantity,
                 'Fee' => $fee,
@@ -240,4 +245,12 @@ class InvoiceCreator
         ], static fn (string $part): bool => $part !== '')));
     }
 
+    private function defaultStockRef(): int
+    {
+        try {
+            return app(InvoiceSettings::class)->resolvedDefaultStockRef();
+        } catch (\Throwable) {
+            return (int) config('sepidar.DefaultStockRef', 2);
+        }
+    }
 }

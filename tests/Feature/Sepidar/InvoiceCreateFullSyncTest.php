@@ -59,7 +59,7 @@ class InvoiceCreateFullSyncTest extends TestCase
         $this->assertSame(1, $invoice->items()->count());
 
         $invoiceItem = $invoice->items()->first();
-        $this->assertNull($invoiceItem->StockRef);
+        $this->assertSame($stockRef, (int) $invoiceItem->StockRef);
 
         $this->assertNull(
             InventoryDeliveryItem::query()
