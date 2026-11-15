@@ -18,16 +18,21 @@ new #[Layout('layouts.panels.accounting')] class extends Component
 
     public function partyName(): string
     {
+        $realName = trim((string) ($this->invoice->CustomerRealName ?? ''));
+        if ($realName !== '') {
+            return $realName;
+        }
+
         $party = $this->invoice->customer;
 
         if (! $party) {
-            return (string) ($this->invoice->CustomerRealName ?? '-');
+            return '-';
         }
 
         return trim(implode(' ', array_filter([
             trim((string) ($party->Name ?? '')),
             trim((string) ($party->LastName ?? '')),
-        ], static fn (string $part): bool => $part !== ''))) ?: (string) ($this->invoice->CustomerRealName ?? '-');
+        ], static fn (string $part): bool => $part !== ''))) ?: '-';
     }
 };
 ?>
