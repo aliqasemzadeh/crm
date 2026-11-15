@@ -7,6 +7,7 @@ use App\Models\Sepidar\GNR\PartyAddress;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\InvoiceItem;
 use App\Settings\InvoiceSettings;
+use App\Support\Sepidar\NextIdAllocator;
 use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
 
@@ -174,7 +175,7 @@ class InvoiceUpdater
 
             InvoiceItem::query()->where('InvoiceRef', $invoice->InvoiceId)->delete();
 
-            $nextItemId = ((int) InvoiceItem::query()->max('InvoiceItemID')) + 1;
+            $nextItemId = NextIdAllocator::nextRange('SLS.InvoiceItem', 'InvoiceItemID', count($linePayloads));
 
             foreach ($linePayloads as $payload) {
                 InvoiceItem::query()->create(array_merge($payload, [
@@ -182,6 +183,8 @@ class InvoiceUpdater
                     'InvoiceRef' => $invoice->InvoiceId,
                 ]));
             }
+
+            NextIdAllocator::syncIdentity('SLS.InvoiceItem', 'InvoiceItemID');
 
             $invoice = $invoice->fresh(['items', 'customer']);
 

@@ -6,6 +6,7 @@ use App\Models\Sepidar\ACC\Voucher;
 use App\Models\Sepidar\ACC\VoucherItem;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\SaleType;
+use App\Support\Sepidar\NextIdAllocator;
 use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class InvoiceVoucherSync
             );
         }
 
-        $nextItemId = $this->nextVoucherItemId();
+        $nextItemId = NextIdAllocator::nextRange('ACC.VoucherItem', 'VoucherItemId', count($lines));
         $issuerEntityName = (string) config('sepidar.InvoiceIssuerEntityName');
 
         foreach ($lines as $index => $line) {
@@ -81,6 +82,9 @@ class InvoiceVoucherSync
                 'Version' => 1,
             ]);
         }
+
+        NextIdAllocator::syncIdentity('ACC.Voucher', 'VoucherId');
+        NextIdAllocator::syncIdentity('ACC.VoucherItem', 'VoucherItemId');
 
         return $voucher->fresh(['items']);
     }
@@ -215,11 +219,7 @@ class InvoiceVoucherSync
 
     private function nextVoucherId(): int
     {
-        $row = DB::connection('sqlsrv')->selectOne(
-            'SELECT ISNULL(MAX(VoucherId), 0) AS MaxId FROM ACC.Voucher WITH (UPDLOCK, HOLDLOCK)'
-        );
-
-        return ((int) ($row->MaxId ?? 0)) + 1;
+        return NextIdAllocator::next('ACC.Voucher', 'VoucherId');
     }
 
     private function nextVoucherNumber(int $fiscalYearRef): int
@@ -254,15 +254,6 @@ class InvoiceVoucherSync
         );
 
         return ((int) ($row->MaxDaily ?? 0)) + 1;
-    }
-
-    private function nextVoucherItemId(): int
-    {
-        $row = DB::connection('sqlsrv')->selectOne(
-            'SELECT ISNULL(MAX(VoucherItemId), 0) AS MaxId FROM ACC.VoucherItem WITH (UPDLOCK, HOLDLOCK)'
-        );
-
-        return ((int) ($row->MaxId ?? 0)) + 1;
     }
 
     private function isUniqueConstraintViolation(QueryException $e): bool

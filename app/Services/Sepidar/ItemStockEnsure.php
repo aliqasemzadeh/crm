@@ -3,6 +3,7 @@
 namespace App\Services\Sepidar;
 
 use App\Models\Sepidar\INV\ItemStock;
+use App\Support\Sepidar\NextIdAllocator;
 
 class ItemStockEnsure
 {
@@ -31,7 +32,8 @@ class ItemStockEnsure
             return;
         }
 
-        $nextId = ((int) ItemStock::query()->max('ItemStockID')) + 1;
+        $nextId = NextIdAllocator::nextRange('INV.ItemStock', 'ItemStockID', count($unique));
+        $created = false;
 
         foreach ($unique as $pair) {
             $exists = ItemStock::query()
@@ -49,6 +51,11 @@ class ItemStockEnsure
                 'StockRef' => $pair['stock_ref'],
                 'Version' => 1,
             ]);
+            $created = true;
+        }
+
+        if ($created) {
+            NextIdAllocator::syncIdentity('INV.ItemStock', 'ItemStockID');
         }
     }
 }

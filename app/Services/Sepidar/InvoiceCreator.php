@@ -7,6 +7,7 @@ use App\Models\Sepidar\GNR\PartyAddress;
 use App\Models\Sepidar\SLS\Invoice;
 use App\Models\Sepidar\SLS\InvoiceItem;
 use App\Settings\InvoiceSettings;
+use App\Support\Sepidar\NextIdAllocator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Morilog\Jalali\Jalalian;
@@ -144,7 +145,7 @@ class InvoiceCreator
             $linePayloads,
             $totals
         ) {
-            $invoiceId = ((int) Invoice::query()->max('InvoiceId')) + 1;
+            $invoiceId = NextIdAllocator::next('SLS.Invoice', 'InvoiceId');
             $number = ((int) Invoice::query()
                 ->where('FiscalYearRef', $fiscalYearRef)
                 ->where('SaleTypeRef', $saleTypeRef)
@@ -198,7 +199,7 @@ class InvoiceCreator
                 'SignatureRef' => null,
             ]);
 
-            $nextItemId = ((int) InvoiceItem::query()->max('InvoiceItemID')) + 1;
+            $nextItemId = NextIdAllocator::nextRange('SLS.InvoiceItem', 'InvoiceItemID', count($linePayloads));
 
             foreach ($linePayloads as $payload) {
                 InvoiceItem::query()->create(array_merge($payload, [
@@ -206,6 +207,9 @@ class InvoiceCreator
                     'InvoiceRef' => $invoiceId,
                 ]));
             }
+
+            NextIdAllocator::syncIdentity('SLS.Invoice', 'InvoiceId');
+            NextIdAllocator::syncIdentity('SLS.InvoiceItem', 'InvoiceItemID');
 
             $invoice = $invoice->fresh(['items', 'customer']);
 

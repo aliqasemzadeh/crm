@@ -2,6 +2,7 @@
 
 namespace App\Models\Sepidar\INV;
 
+use App\Support\Sepidar\NextIdAllocator;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +42,7 @@ class ItemImage extends Model
                 return;
             }
 
-            $nextId = ((int) static::query()->max('ItemImageID')) + 1;
+            $nextId = NextIdAllocator::next('INV.ItemImage', 'ItemImageID');
 
             $stmt = static::pdo()->prepare(
                 "INSERT INTO [INV].[ItemImage] ([ItemImageID], [ItemRef], [Image], [Thumbnail], [Version]) VALUES (?, ?, {$imageSql}, {$thumbnailSql}, ?)"
@@ -50,6 +51,8 @@ class ItemImage extends Model
             $stmt->bindValue(2, $itemRef, PDO::PARAM_INT);
             $stmt->bindValue(3, 1, PDO::PARAM_INT);
             $stmt->execute();
+
+            NextIdAllocator::syncIdentity('INV.ItemImage', 'ItemImageID');
         });
 
         Cache::forget("item_image_{$itemRef}");

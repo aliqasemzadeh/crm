@@ -6,6 +6,7 @@ use App\Models\Sepidar\GNR\Party;
 use App\Models\Sepidar\INV\InventoryDelivery;
 use App\Models\Sepidar\INV\InventoryDeliveryItem;
 use App\Models\Sepidar\SLS\InvoiceItem;
+use App\Support\Sepidar\NextIdAllocator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
@@ -193,8 +194,12 @@ class InventoryDeliveryService
         $date = $this->parseDate((string) $data['date']);
         $description = $data['description'] ?? null;
 
-        $nextDeliveryId = ((int) InventoryDelivery::query()->max('InventoryDeliveryID')) + 1;
-        $nextDeliveryItemId = ((int) InventoryDeliveryItem::query()->max('InventoryDeliveryItemID')) + 1;
+        $nextDeliveryId = NextIdAllocator::next('INV.InventoryDelivery', 'InventoryDeliveryID');
+        $nextDeliveryItemId = NextIdAllocator::nextRange(
+            'INV.InventoryDeliveryItem',
+            'InventoryDeliveryItemID',
+            max(1, count($items))
+        );
         $nextNumber = ((int) InventoryDelivery::query()
             ->where('FiscalYearRef', $fiscalYearRef)
             ->where('IsReturn', 0)
@@ -255,6 +260,9 @@ class InventoryDeliveryService
                 'ItemDescription' => null,
             ]);
         }
+
+        NextIdAllocator::syncIdentity('INV.InventoryDelivery', 'InventoryDeliveryID');
+        NextIdAllocator::syncIdentity('INV.InventoryDeliveryItem', 'InventoryDeliveryItemID');
 
         return collect([InventoryDelivery::query()->findOrFail($deliveryId)]);
     }
