@@ -116,6 +116,11 @@ return [
         'warehouse_invoice_delivery_create' => 'ثبت خروج از فاکتور',
         'warehouse_invoice_delivery_view' => 'مشاهده فاکتور برای خروج انبار',
 
+        'warehouse_warranty_shipment_index' => 'فهرست ارسال به گارانتی انبار',
+        'warehouse_warranty_shipment_create' => 'ثبت ارسال به گارانتی انبار',
+        'warehouse_warranty_shipment_edit' => 'ویرایش ارسال به گارانتی انبار',
+        'warehouse_warranty_shipment_delete' => 'حذف ارسال به گارانتی انبار',
+
         'administrator_item_day_check' => 'ادمین بررسی روزانه کالاها',
     ],
 
@@ -272,6 +277,10 @@ return [
         'warehouse_invoice_delivery_index' => 'فهرست خروج از فاکتور',
         'warehouse_invoice_delivery_create' => 'ثبت خروج از فاکتور',
         'warehouse_invoice_delivery_view' => 'مشاهده فاکتور برای خروج انبار',
+        'warehouse_warranty_shipment_index' => 'فهرست ارسال به گارانتی انبار',
+        'warehouse_warranty_shipment_create' => 'ثبت ارسال به گارانتی انبار',
+        'warehouse_warranty_shipment_edit' => 'ویرایش ارسال به گارانتی انبار',
+        'warehouse_warranty_shipment_delete' => 'حذف ارسال به گارانتی انبار',
     ],
 
     'sales' => [

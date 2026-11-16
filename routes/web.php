@@ -57,6 +57,7 @@ Route::middleware(['auth', 'local.network'])->group(function () {
     Route::livewire('/panels/warehouse/invoice-delivery/index', 'pages::panels.warehouse.invoice-delivery.index')->name('panels.warehouse.invoice-delivery.index');
     Route::livewire('/panels/warehouse/invoice-delivery/view/{invoice}', 'pages::panels.warehouse.invoice-delivery.view')->name('panels.warehouse.invoice-delivery.view');
     Route::livewire('/panels/warehouse/check/index', 'pages::panels.warehouse.check.index')->name('panels.warehouse.check.index');
+    Route::livewire('/panels/warehouse/warranty-shipment/index', 'pages::panels.warehouse.warranty-shipment.index')->name('panels.warehouse.warranty-shipment.index');
 
     Route::livewire('/panels/workspace/dashboard/index', App\Livewire\Panels\Workspace\Dashboard\Index::class)->name('panels.workspace.dashboard.index');
     Route::livewire('/panels/workspace/task/index', App\Livewire\Panels\Workspace\Task\Index::class)->name('panels.workspace.task.index');

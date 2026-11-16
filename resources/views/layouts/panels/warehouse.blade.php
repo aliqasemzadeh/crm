@@ -26,6 +26,9 @@
         @can('warehouse_item_day_check')
             <flux:sidebar.item icon="clipboard-check" href="{{ route('panels.warehouse.check.index') }}" :current="request()->routeIs('panels.warehouse.check.*')" wire:navigate>{{ __('app.day_check.title') }}</flux:sidebar.item>
         @endcan
+        @can('warehouse_warranty_shipment_index')
+            <flux:sidebar.item icon="shield" href="{{ route('panels.warehouse.warranty-shipment.index') }}" :current="request()->routeIs('panels.warehouse.warranty-shipment.*')" wire:navigate>{{ __('app.warehouse_warranty_shipment_nav') }}</flux:sidebar.item>
+        @endcan
     </flux:sidebar.nav>
 
     <flux:sidebar.spacer />
