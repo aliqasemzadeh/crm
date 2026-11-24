@@ -12,14 +12,22 @@ class ShortLinkService
 
     public function create(string $destination, ?CarbonInterface $expiresAt = null): string
     {
+        return $this->urlForCode($this->createLink($destination, $expiresAt)->code);
+    }
+
+    public function createLink(string $destination, ?CarbonInterface $expiresAt = null): ShortLink
+    {
         $code = $this->generateUniqueCode();
 
-        ShortLink::query()->create([
+        return ShortLink::query()->create([
             'code' => $code,
             'destination' => $destination,
             'expires_at' => $expiresAt,
         ]);
+    }
 
+    public function urlForCode(string $code): string
+    {
         return rtrim((string) config('shortlink.base_url'), '/').'/i/'.$code;
     }
 

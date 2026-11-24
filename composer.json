@@ -9,6 +9,8 @@
         "php": "^8.3",
         "aliqasemzadeh/fluxui-persian-date-picker": "dev-main",
         "ammont/fa-slugify": "dev-master",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "endroid/qr-code": "^6.1",
         "erag/laravel-pwa": "^2.1",
         "getartisanflow/wireflow": "^0.1.2@alpha",
         "khody2012/laravel-ami-toolkit": "@dev",

@@ -11,6 +11,10 @@ class WarrantyShipmentForm extends Form
 {
     public string $item_title = '';
 
+    public int|string $quantity = 1;
+
+    public string $serial_number = '';
+
     public string $warranty_company = '';
 
     public string $sent_at = '';
@@ -30,12 +34,18 @@ class WarrantyShipmentForm extends Form
         if ($this->status === '') {
             $this->status = WarehouseWarrantyShipmentStatusEnum::Sent->value;
         }
+
+        if ($this->quantity === '' || (int) $this->quantity < 1) {
+            $this->quantity = 1;
+        }
     }
 
     public function rules(): array
     {
         return [
             'item_title' => ['required', 'string', 'max:255'],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'serial_number' => ['nullable', 'string', 'max:255'],
             'warranty_company' => ['required', 'string', 'max:255'],
             'sent_at' => [
                 'required',
@@ -79,6 +89,8 @@ class WarrantyShipmentForm extends Form
     {
         return [
             'item_title' => __('app.warehouse_warranty_item_title'),
+            'quantity' => __('app.warehouse_warranty_quantity'),
+            'serial_number' => __('app.warehouse_warranty_serial_number'),
             'warranty_company' => __('app.warehouse_warranty_company'),
             'sent_at' => __('app.warehouse_warranty_sent_at'),
             'received_at' => __('app.warehouse_warranty_received_at'),
@@ -90,6 +102,8 @@ class WarrantyShipmentForm extends Form
     /**
      * @return array{
      *     item_title: string,
+     *     quantity: int,
+     *     serial_number: string|null,
      *     warranty_company: string,
      *     sent_at: string,
      *     received_at: string|null,
@@ -103,6 +117,8 @@ class WarrantyShipmentForm extends Form
 
         return [
             'item_title' => trim($this->item_title),
+            'quantity' => (int) $this->quantity,
+            'serial_number' => $this->serial_number !== '' ? trim($this->serial_number) : null,
             'warranty_company' => trim($this->warranty_company),
             'sent_at' => Jalalian::fromFormat('Y/m/d', $this->sent_at)->toCarbon()->toDateString(),
             'received_at' => $this->received_at !== ''

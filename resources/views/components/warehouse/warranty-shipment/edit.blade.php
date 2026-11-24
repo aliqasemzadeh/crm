@@ -35,6 +35,8 @@ new class extends Component
 
         $this->shipmentId = $shipment->id;
         $this->form->item_title = (string) $shipment->item_title;
+        $this->form->quantity = (int) ($shipment->quantity ?: 1);
+        $this->form->serial_number = (string) ($shipment->serial_number ?? '');
         $this->form->warranty_company = (string) $shipment->warranty_company;
         $this->form->sent_at = $shipment->sent_at
             ? Jalalian::fromDateTime($shipment->sent_at)->format('Y/m/d')
@@ -80,6 +82,20 @@ new class extends Component
                 label="{{ __('app.warehouse_warranty_item_title') }}"
             />
             <flux:error name="form.item_title" />
+
+            <flux:input
+                type="number"
+                min="1"
+                wire:model="form.quantity"
+                label="{{ __('app.warehouse_warranty_quantity') }}"
+            />
+            <flux:error name="form.quantity" />
+
+            <flux:input
+                wire:model="form.serial_number"
+                label="{{ __('app.warehouse_warranty_serial_number') }}"
+            />
+            <flux:error name="form.serial_number" />
 
             <flux:input
                 wire:model="form.warranty_company"

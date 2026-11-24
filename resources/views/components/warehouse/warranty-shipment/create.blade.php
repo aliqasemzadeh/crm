@@ -57,6 +57,20 @@ new class extends Component
             <flux:error name="form.item_title" />
 
             <flux:input
+                type="number"
+                min="1"
+                wire:model="form.quantity"
+                label="{{ __('app.warehouse_warranty_quantity') }}"
+            />
+            <flux:error name="form.quantity" />
+
+            <flux:input
+                wire:model="form.serial_number"
+                label="{{ __('app.warehouse_warranty_serial_number') }}"
+            />
+            <flux:error name="form.serial_number" />
+
+            <flux:input
                 wire:model="form.warranty_company"
                 label="{{ __('app.warehouse_warranty_company') }}"
             />

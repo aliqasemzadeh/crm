@@ -7,7 +7,7 @@
 ])
 
 @php
-$classes = Flux::classes('shrink-0')
+$classes = Flux::classes('shrink-0 rtl:-scale-x-100')
     ->add(match($variant) {
         'outline' => '[:where(&)]:size-6',
         'solid' => '[:where(&)]:size-6',

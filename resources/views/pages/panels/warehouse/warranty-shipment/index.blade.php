@@ -49,6 +49,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
 
                 $query->where(function ($q) use ($search) {
                     $q->where('item_title', 'like', "%{$search}%")
+                        ->orWhere('serial_number', 'like', "%{$search}%")
                         ->orWhere('warranty_company', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 });
@@ -131,6 +132,8 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
     <flux:table :paginate="$this->shipments">
         <flux:table.columns>
             <flux:table.column>{{ __('app.warehouse_warranty_item_title') }}</flux:table.column>
+            <flux:table.column>{{ __('app.warehouse_warranty_quantity') }}</flux:table.column>
+            <flux:table.column>{{ __('app.warehouse_warranty_serial_number') }}</flux:table.column>
             <flux:table.column>{{ __('app.warehouse_warranty_company') }}</flux:table.column>
             <flux:table.column>{{ __('app.warehouse_warranty_sent_at') }}</flux:table.column>
             <flux:table.column>{{ __('app.warehouse_warranty_received_at') }}</flux:table.column>
@@ -142,6 +145,10 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
             @forelse ($this->shipments as $shipment)
                 <flux:table.row :key="$shipment->id">
                     <flux:table.cell>{{ $shipment->item_title }}</flux:table.cell>
+                    <flux:table.cell class="tabular-nums">{{ $shipment->quantity }}</flux:table.cell>
+                    <flux:table.cell class="max-w-40 truncate" title="{{ $shipment->serial_number }}">
+                        {{ $shipment->serial_number ?: '—' }}
+                    </flux:table.cell>
                     <flux:table.cell>{{ $shipment->warranty_company }}</flux:table.cell>
                     <flux:table.cell>{{ $this->formatDate($shipment->sent_at) }}</flux:table.cell>
                     <flux:table.cell>{{ $this->formatDate($shipment->received_at) }}</flux:table.cell>
@@ -183,7 +190,7 @@ new #[Layout('layouts::panels.warehouse')] class extends Component
                 </flux:table.row>
             @empty
                 <flux:table.row>
-                    <flux:table.cell colspan="7" class="py-4 text-center text-zinc-500">
+                    <flux:table.cell colspan="9" class="py-4 text-center text-zinc-500">
                         {{ __('app.no_results') }}
                     </flux:table.cell>
                 </flux:table.row>

@@ -49,6 +49,8 @@ Route::middleware(['auth', 'local.network'])->group(function () {
     Route::livewire('/panels/service-center/dashboard/index', 'pages::panels.service-center.dashboard.index')->name('panels.service-center.dashboard.index');
     Route::livewire('/panels/service-center/assembly/index', 'pages::panels.service-center.assembly.index')->name('panels.service-center.assembly.index');
     Route::livewire('/panels/service-center/repair/index', 'pages::panels.service-center.repair.index')->name('panels.service-center.repair.index');
+    Route::livewire('/panels/service-center/repair/print/{repair}', 'pages::panels.service-center.repair.print')->name('panels.service-center.repair.print');
+    Route::get('/panels/service-center/repair/pdf/{repair}', \App\Http\Controllers\Panels\ServiceCenter\RepairPdfController::class)->name('panels.service-center.repair.pdf');
 
     Route::livewire('/panels/warehouse/dashboard/index', 'pages::panels.warehouse.dashboard.index')->name('panels.warehouse.dashboard.index');
     Route::livewire('/panels/warehouse/item/index', 'pages::panels.warehouse.item.index')->name('panels.warehouse.item.index');
@@ -154,6 +156,10 @@ Route::get('/invoice/{invoiceId}/view', View::class)
 
 Route::get('/customer/{partyId}/history', History::class)
     ->name('panels.customer.invoice.history')
+    ->middleware('signed');
+
+Route::livewire('/repair/{repair}/view', 'pages::panels.customer.repair.view')
+    ->name('panels.customer.repair.view')
     ->middleware('signed');
 
 Route::get('/i/{code}', function (string $code) {

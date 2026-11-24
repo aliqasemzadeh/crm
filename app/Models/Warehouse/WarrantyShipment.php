@@ -14,6 +14,8 @@ class WarrantyShipment extends Model
 
     protected $fillable = [
         'item_title',
+        'quantity',
+        'serial_number',
         'warranty_company',
         'sent_at',
         'received_at',
@@ -26,6 +28,7 @@ class WarrantyShipment extends Model
     protected function casts(): array
     {
         return [
+            'quantity' => 'integer',
             'sent_at' => 'date',
             'received_at' => 'date',
             'last_reminded_at' => 'datetime',
