@@ -4,9 +4,12 @@ namespace App\Models\ServiceCenter;
 
 use App\Enums\StatusEnum;
 use App\Jobs\Notification\SendSmsMessageJob;
+use App\Models\ShortLink;
+use App\Support\ShortLinkService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\URL;
 use Morilog\Jalali\Jalalian;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -29,6 +32,7 @@ class Repair extends Model implements HasMedia
         'admission_description',
         'admission_code',
         'admission_counter',
+        'short_code',
         'status',
         'status_description',
         'status_date',
@@ -100,8 +104,33 @@ class Repair extends Model implements HasMedia
 
         static::created(function (Repair $repair) {
             $repair->saveAdmissionCode();
+            $repair->ensureShortUrl();
             $repair->sendAdmissionSms();
         });
+    }
+
+    /**
+     * Create or reuse a stable short URL for the customer tracking page.
+     */
+    public function ensureShortUrl(): string
+    {
+        $shortLinkService = app(ShortLinkService::class);
+
+        if (filled($this->short_code)) {
+            $existing = ShortLink::query()->where('code', $this->short_code)->first();
+
+            if ($existing && ! $existing->isExpired()) {
+                return $shortLinkService->urlForCode($this->short_code);
+            }
+        }
+
+        $destination = URL::signedRoute('panels.customer.repair.view', ['repair' => $this->id]);
+        $shortLink = $shortLinkService->createLink($destination);
+
+        $this->short_code = $shortLink->code;
+        $this->saveQuietly();
+
+        return $shortLinkService->urlForCode($shortLink->code);
     }
 
     /**
@@ -115,7 +144,8 @@ class Repair extends Model implements HasMedia
 
         $message = __('app.repair_admission_sms', [
             'admission_code' => $this->admission_code,
-        ]).PHP_EOL. "لغو 11";
+            'link' => $this->ensureShortUrl(),
+        ]).PHP_EOL.'لغو 11';
 
         SendSmsMessageJob::dispatch($this->owner_mobile, $message);
     }
@@ -131,6 +161,7 @@ class Repair extends Model implements HasMedia
 
         $message = __('app.repair_completed_sms', [
             'admission_code' => $this->admission_code,
+            'link' => $this->ensureShortUrl(),
         ]);
 
         SendSmsMessageJob::dispatch($this->owner_mobile, $message);
@@ -183,7 +214,7 @@ class Repair extends Model implements HasMedia
             $this->device_model,
         ]);
 
-        return !empty($parts) ? implode(' ', $parts) : __('app.unknown_device');
+        return ! empty($parts) ? implode(' ', $parts) : __('app.unknown_device');
     }
 
     /**

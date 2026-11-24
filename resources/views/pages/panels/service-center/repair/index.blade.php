@@ -325,13 +325,37 @@ new #[Layout('layouts.panels.service-center')] class extends Component {
                         </flux:table.cell>
                         <flux:table.cell>
                             @can('service_center_repair_view')
-                            <flux:button
-                                size="xs"
-                                variant="primary"
-                                wire:click="$dispatch('panels.service-center.repair.view.assign-data', { id: {{ $repair->id }} })"
-                            >
-                                {{ __('app.view') }}
-                            </flux:button>
+                            <flux:tooltip content="{{ __('app.view') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="sky"
+                                    icon="eye"
+                                    icon:variant="outline"
+                                    wire:click="$dispatch('panels.service-center.repair.view.assign-data', { id: {{ $repair->id }} })"
+                                />
+                            </flux:tooltip>
+                            <flux:tooltip content="{{ __('app.print') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="zinc"
+                                    icon="printer"
+                                    icon:variant="outline"
+                                    href="{{ route('panels.service-center.repair.print', $repair) }}"
+                                    wire:navigate
+                                />
+                            </flux:tooltip>
+                            <flux:tooltip content="{{ __('app.download_pdf') }}">
+                                <flux:button
+                                    size="xs"
+                                    variant="primary"
+                                    color="teal"
+                                    icon="download"
+                                    icon:variant="outline"
+                                    href="{{ route('panels.service-center.repair.pdf', $repair) }}"
+                                />
+                            </flux:tooltip>
                             <flux:button
                                 size="xs"
                                 variant="danger"
