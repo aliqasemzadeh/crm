@@ -5,13 +5,13 @@
     <title>{{ __('app.repair_admission_receipt') }} #{{ $repair->admission_code }}</title>
     <style>
         body {
-            font-family: DejaVu Sans, sans-serif;
+            font-family: vazirmatn;
             font-size: 12px;
             color: #111;
             direction: rtl;
         }
-        h1 { font-size: 20px; margin: 0 0 6px; }
-        h2 { font-size: 14px; margin: 0 0 10px; }
+        h1 { font-size: 20px; margin: 0 0 6px; font-weight: bold; }
+        h2 { font-size: 14px; margin: 0 0 10px; font-weight: bold; }
         .header { width: 100%; border-bottom: 1px solid #ccc; padding-bottom: 12px; margin-bottom: 18px; }
         .header td { vertical-align: top; }
         .muted { color: #666; font-size: 11px; }
